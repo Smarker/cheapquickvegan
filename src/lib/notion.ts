@@ -113,7 +113,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
           .replace(/[^a-z0-9]+/g, "-") // Replace any non-alphanumeric chars with dash
           .replace(/^-+|-+$/g, "") || // Remove leading/trailing dashes
         "untitled",
-      coverImage: "/images/44866e04-2882-4ced-a8c9-728578fe94ae.JPG",
+      coverImage: `/images/${properties.url}.JPG`,
       description,
       date:
         properties["Published Date"]?.date?.start || new Date().toISOString(),
