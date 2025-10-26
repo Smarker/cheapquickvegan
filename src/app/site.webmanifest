@@ -1,0 +1,22 @@
+{
+  "name": "Quick Cheap Vegan",
+  "short_name": "Vegan Recipes",
+  "description": "Easy, affordable vegan recipes you can make fast!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/44866e04-2882-4ced-a8c9-728578fe94ae.JPG",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/44866e04-2882-4ced-a8c9-728578fe94ae.JPG",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

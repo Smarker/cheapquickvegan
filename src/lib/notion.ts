@@ -1,10 +1,16 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+if (!process.env.VERCEL && !process.env.NOTION_TOKEN) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+}
+
 import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 import { PageObjectResponse } from "@notionhq/client/";
 import fs from "fs";
-import path from "path";
 
-export const notion = new Client({ auth: process.env.NOTION_TOKEN });
+export const notion = new Client({ auth: process.env.NOTION_TOKEN, notionVersion: '2022-06-28'});
 export const n2m = new NotionToMarkdown({ notionClient: notion });
 
 export interface Post {
@@ -51,6 +57,7 @@ export function getPostsFromCache(): Post[] {
 
 export async function fetchPublishedPosts() {
   // This function is now intended to be used only by the caching script.
+  // @ts-ignore - bypass TypeScript error with v4 SDK types
   const posts = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
@@ -106,7 +113,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
           .replace(/[^a-z0-9]+/g, "-") // Replace any non-alphanumeric chars with dash
           .replace(/^-+|-+$/g, "") || // Remove leading/trailing dashes
         "untitled",
-      coverImage: properties["Featured Image"]?.url || undefined,
+      coverImage: "/images/44866e04-2882-4ced-a8c9-728578fe94ae.JPG",
       description,
       date:
         properties["Published Date"]?.date?.start || new Date().toISOString(),

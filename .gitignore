@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# cached posts (regenerated on each build)
+posts-cache.json
+
 # next.js
 /.next/
 /out/

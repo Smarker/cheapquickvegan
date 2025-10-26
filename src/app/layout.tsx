@@ -6,26 +6,26 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Gesturs - The Notion Blog",
-    template: `%s | Gesturs`,
+    default: "CheapQuickVegan",
+    template: `%s | CheapQuickVegan`,
   },
-  description: "A blog built with Next.js and Notion",
+  description: "Cheap quick vegan recipes",
   openGraph: {
-    title: "Gesturs - The Notion Blog",
-    description: "A blog built with Next.js and Notion",
+    title: "CheapQuickVegan",
+    description: "Cheap quick vegan recipes",
     url: siteUrl,
-    siteName: "Gesturs",
+    siteName: "CheapQuickVegan",
     images: [
       {
         url: `${siteUrl}/opengraph-image.png`,
         width: 1200,
         height: 630,
-        alt: "Gesturs - The Notion Blog",
+        alt: "CheapQuickVegan",
       },
     ],
     locale: "en_US",
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gesturs - The Notion Blog",
-    description: "A blog built with Next.js and Notion",
+    title: "CheapQuickVegan",
+    description: "Cheap quick vegan recipes",
     images: [`${siteUrl}/opengraph-image.png`],
   },
   robots: {

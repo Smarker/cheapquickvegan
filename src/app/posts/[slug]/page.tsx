@@ -29,7 +29,7 @@ export async function generateMetadata(
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
   return {
     title: post.title,
@@ -78,7 +78,7 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com/";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -93,7 +93,7 @@ export default async function PostPage({ params }: PostPageProps) {
     },
     publisher: {
       "@type": "Organization",
-      name: "Your Site Name",
+      name: "Cheap Quick Vegan",
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.png`,
