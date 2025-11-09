@@ -10,8 +10,7 @@ export default function Home() {
     <div className="max-w-6xl mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center mb-12 gap-6">
         {/* Photo on the left */}
-        <div className="relative w-40 h-40 flex-shrink-0 rounded-full overflow-hidden 
-                        shadow-2xl ring-2 ring-[#fefae0]">
+        <div className="relative w-40 h-40 flex-shrink-0 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#fefae0]">
           <Image
             src="/images/stephanie.jpg"
             alt="Stephanie"
