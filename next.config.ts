@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     domains: [
-        "www.notion.so",      // Notion-hosted images
+        "www.notion.so", "notion.so" // notion hosted images
     ],
   },
   env: {

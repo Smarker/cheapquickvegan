@@ -10,6 +10,7 @@ import { calculateReadingTime } from "@/lib/utils";
 import { components } from "@/components/mdx-component";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { NotionImage } from "@/components/notion-image";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -112,17 +113,7 @@ export default async function PostPage({ params }: PostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <article className="max-w-3xl mx-auto prose dark:prose-invert">
-        {post.coverImage && (
-          <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={post.coverImage}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
+        {post.coverImage && <NotionImage src={post.coverImage} alt={post.title} />}
 
         <header className="mb-8">
           <div className="flex items-center gap-4 text-muted-foreground mb-4">
@@ -151,7 +142,13 @@ export default async function PostPage({ params }: PostPageProps) {
 
         <div className="max-w-none">
           <ReactMarkdown
-            components={components}
+            components={{
+              ...components,
+              img: ({ src, alt }) => {
+                if (!src) return null;
+                return <NotionImage src={src} alt={alt} />;
+              },
+            }}
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
           >
