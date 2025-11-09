@@ -1,13 +1,11 @@
 import { getPostsFromCache, getWordCount } from "@/lib/notion";
 import { format } from "date-fns";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import { ResolvingMetadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { calculateReadingTime } from "@/lib/utils";
-import { components } from "@/components/mdx-component";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
