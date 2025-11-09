@@ -13,16 +13,17 @@ export function NotionImage({ src, alt, className }: NotionImageProps) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only run on the client
     if (src) {
       setImgSrc(src);
     }
   }, [src]);
 
-  if (!imgSrc) return null; // render nothing on the server
+  if (!imgSrc) return null;
 
   return (
-    <div className={`relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden ${className || ""}`}>
+    <div
+      className={`relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden ${className || ""}`}
+    >
       <Image
         src={imgSrc}
         alt={alt || ""}

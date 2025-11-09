@@ -143,4 +143,14 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .prose img,
+  .dark .prose-dark img {
+    @apply rounded-lg overflow-hidden my-6;
+  }
+
+  /* optional: match your site background tone around images */
+  .prose img {
+    background-color: #fefae0;
+  }
 }
