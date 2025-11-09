@@ -143,10 +143,9 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="max-w-none">
           <ReactMarkdown
             components={{
-              ...components,
-              img: ({ src, alt }) => {
-                if (!src) return null;
-                return <NotionImage src={src} alt={alt} />;
+              img: ({ src, alt, ...props }) => {
+                if (!src || typeof src !== "string") return null;
+                return <NotionImage src={src} alt={alt ?? ""} {...props} />;
               },
             }}
             remarkPlugins={[remarkGfm]}
