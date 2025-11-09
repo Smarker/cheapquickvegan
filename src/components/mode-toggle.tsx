@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
+import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface ThemeToggleProps {
   className?: string;
@@ -11,15 +11,6 @@ interface ThemeToggleProps {
 
 export function ModeToggle({ className }: ThemeToggleProps) {
   const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Only render after mount to prevent SSR mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   const isDark = resolvedTheme === "dark";
 
   return (

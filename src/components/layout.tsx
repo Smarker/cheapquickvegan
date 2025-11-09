@@ -9,7 +9,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header className="bg-secondary text-secondary-foreground shadow-md">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
@@ -31,13 +31,14 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      <footer className="bg-muted border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-muted-foreground">
+      <footer className="bg-secondary text-secondary-foreground shadow-inner">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <p className="text-center text-secondary-foreground">
             © {new Date().getFullYear()} CheapQuickVegan. All rights reserved.
           </p>
         </div>
       </footer>
+
     </div>
   );
 }
