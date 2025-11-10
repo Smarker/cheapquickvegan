@@ -11,15 +11,34 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-background">
       <header className="bg-secondary text-secondary-foreground shadow-md">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
+          <div className="flex justify-between h-16 items-center">
+            {/* Left side: logo + nav links */}
+            <div className="flex items-center space-x-8">
               <Link
                 href="/"
                 className="flex items-center text-xl font-bold text-foreground"
               >
                 CheapQuickVegan
               </Link>
+
+              {/* 🥦 Navigation links */}
+              <div className="flex space-x-6 text-foreground/80">
+                <Link
+                  href="/shop"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Shop
+                </Link>
+                <Link
+                  href="/about"
+                  className="hover:text-foreground transition-colors"
+                >
+                  About
+                </Link>
+              </div>
             </div>
+
+            {/* Right side: mode toggle */}
             <div className="flex items-center">
               <ModeToggle />
             </div>
@@ -38,7 +57,6 @@ export default function Layout({ children }: LayoutProps) {
           </p>
         </div>
       </footer>
-
     </div>
   );
 }
