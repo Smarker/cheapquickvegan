@@ -25,7 +25,7 @@ export default function Home() {
             Welcome to CheapQuickVegan
           </h1>
           <p className="text-lg text-muted-foreground">
-            I'm Stephanie, a rock-climbing foodie who turns simple ingredients into amazing vegan meals. Cheap Quick Vegan serves quick, flavorful recipes—no fluff, just meals that actually work.
+            I'm Stephanie, a rock-climbing foodie who turns simple ingredients into amazing vegan meals to fuel an active lifestyle. Here, you can find quick, flavorful, no-fluff plant-based recipes. If you're new to veganism, each recipe comes with several tips and substitutions to make easy but tasty meals.
           </p>
         </div>
       </div>

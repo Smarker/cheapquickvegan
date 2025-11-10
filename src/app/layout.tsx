@@ -75,8 +75,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"  // default to light mode
-          enableSystem={false}  // disable following system preference
+          enableSystem
           disableTransitionOnChange
         >
           <Layout>{children}</Layout>
