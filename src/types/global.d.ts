@@ -1,10 +1,10 @@
-// tell TypeScript about custom web components
+// src/types/global.d.ts
 declare namespace JSX {
   interface IntrinsicElements {
     'stripe-buy-button': {
       'buy-button-id': string;
       'publishable-key': string;
-      [key: string]: any; // allow other props
+      [key: string]: any;
     };
   }
 }
