@@ -77,7 +77,7 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com/";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
   const jsonLd = {
     "@context": "https://schema.org",
