@@ -7,7 +7,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: "/private/",
+      disallow: [
+        "/private/",
+        "/_next/", // prevent indexing build/static assets
+        "/site.webmanifest", // not meant for indexing
+        "/*.ico$", // favicon or icon files
+      ]
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };
