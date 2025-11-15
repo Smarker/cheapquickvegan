@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-secondary text-secondary-foreground shadow-md">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -35,6 +35,12 @@ export default function Layout({ children }: LayoutProps) {
                 >
                   About
                 </Link>
+                <Link
+                  href="/contact"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Contact
+                </Link>
               </div>
             </div>
 
@@ -46,7 +52,7 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {children}
       </main>
 
