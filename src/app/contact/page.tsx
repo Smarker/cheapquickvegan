@@ -5,21 +5,21 @@ import { Leaf } from "lucide-react";
 
 interface HerbConfig {
   id: number;
-  left: number;
-  size: number;
-  rotation: number;
+  left: number; // percentage
+  size: number; // px
+  rotation: number; // degrees
   type: "basil" | "mint" | "parsley" | "rosemary";
-  windAmplitude: number; // max horizontal sway
-  windSpeed: number; // sway frequency
-  fallSpeed: number; // vertical speed
-  rotationSpeed: number; // deg per second
+  windAmplitude: number; // max horizontal sway in px
+  windSpeed: number; // sway speed multiplier
+  fallSpeed: number; // vertical speed multiplier
+  rotationSpeed: number; // deg/sec
 }
 
 export default function ContactPage() {
   const [herbs, setHerbs] = useState<HerbConfig[]>([]);
   const herbCount = 14;
 
-  // Generate herbs (client-side)
+  // Generate herb configs (client-side)
   useEffect(() => {
     const types: HerbConfig["type"][] = [
       "basil",
@@ -45,7 +45,7 @@ export default function ContactPage() {
     setHerbs(generated);
   }, []);
 
-  // Animate herbs with wind gusts & falling
+  // Animate herbs
   useEffect(() => {
     let animationFrame: number;
 
@@ -57,16 +57,14 @@ export default function ContactPage() {
         const herb = herbs[idx];
         if (!herb) return;
 
-        // horizontal sway: sinusoidal "wind gust"
         const swayX = Math.sin(t * herb.windSpeed + herb.id) * herb.windAmplitude;
 
-        // vertical falling
-        const fallY = ((t * 30 * herb.fallSpeed + herb.id * 10) % window.innerHeight) - 60;
+        // Vertical position as percentage for mobile safety
+        const fallY = ((t * 10 * herb.fallSpeed + herb.id * 7) % 100); // 0-100%
 
-        // rotation
         const rotation = (herb.rotation + t * herb.rotationSpeed) % 360;
 
-        el.style.transform = `translate(${swayX}px, ${fallY}px) rotate(${rotation}deg)`;
+        el.style.transform = `translate(${swayX}px, ${fallY}%) rotate(${rotation}deg)`;
       });
 
       animationFrame = requestAnimationFrame(animateHerbs);
@@ -76,7 +74,6 @@ export default function ContactPage() {
     return () => cancelAnimationFrame(animationFrame);
   }, [herbs]);
 
-  // Herb colors with dark/light mode
   const herbColors: Record<HerbConfig["type"], string> = {
     basil: "text-green-700 dark:text-green-400",
     mint: "text-emerald-600 dark:text-emerald-400",
@@ -85,25 +82,29 @@ export default function ContactPage() {
   };
 
   return (
-    <section className="w-full flex justify-center relative overflow-hidden py-20 bg-background">
-      {/* Floating Herbs */}
-      {herbs.map((herb) => (
-        <div
-          key={herb.id}
-          className="absolute pointer-events-none opacity-35 herb-floating"
-          style={{
-            left: `${herb.left}%`,
-            width: `${herb.size}px`,
-            height: `${herb.size}px`,
-            top: "-60px",
-          }}
-        >
-          <Leaf className={`${herbColors[herb.type]} w-full h-full`} />
-        </div>
-      ))}
+    <section className="relative w-full min-h-screen overflow-hidden py-20 bg-background flex justify-center">
+      {/* Herb container */}
+      <div className="absolute inset-0 pointer-events-none">
+        {herbs.map((herb) => (
+          <div
+            key={herb.id}
+            className="absolute herb-floating"
+            style={{
+              left: `${herb.left}%`,
+              width: `${herb.size}px`,
+              height: `${herb.size}px`,
+              top: "-10%",
+              opacity: 0.35,
+            }}
+          >
+            <Leaf className={`${herbColors[herb.type]} w-full h-full`} />
+          </div>
+        ))}
+      </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center text-center max-w-2xl mx-auto z-10 pointer-events-auto">
+      <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto px-4">
+        {/* Top Icon */}
         <div className="bg-green-700/10 p-4 rounded-full mb-6">
           <Leaf className="h-10 w-10 text-green-700 dark:text-green-400" />
         </div>
