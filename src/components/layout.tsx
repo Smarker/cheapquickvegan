@@ -102,10 +102,43 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       <footer className="bg-secondary text-secondary-foreground shadow-inner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4">
+          {/* Top section: copyright */}
           <p className="text-center text-secondary-foreground">
             © {new Date().getFullYear()} CheapQuickVegan. All rights reserved.
           </p>
+
+          {/* Desktop: links inline */}
+          <div className="hidden md:flex gap-4">
+            <a
+              href="/contact"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
+            >
+              Contact
+            </a>
+            <a
+              href="/privacy-policy"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
+            >
+              Privacy Policy
+            </a>
+          </div>
+
+          {/* Mobile: privacy policy separate below */}
+          <div className="flex md:hidden flex-col mt-2">
+            <a
+              href="/contact"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center mb-1"
+            >
+              Contact
+            </a>
+            <a
+              href="/privacy-policy"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center"
+            >
+              Privacy Policy
+            </a>
+          </div>
         </div>
       </footer>
     </div>
