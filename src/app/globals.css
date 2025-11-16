@@ -158,3 +158,15 @@
 html {
   scroll-behavior: smooth;
 }
+
+.section-title {
+  @apply text-2xl font-semibold mb-4 text-foreground;
+}
+
+.styled-list {
+  @apply space-y-2 text-foreground/80 list-disc ml-6;
+}
+
+.styled-list-ordered {
+  @apply space-y-2 text-foreground/80 list-decimal ml-6;
+}

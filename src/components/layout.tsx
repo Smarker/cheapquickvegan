@@ -32,6 +32,12 @@ export default function Layout({ children }: LayoutProps) {
               {/* Desktop nav */}
               <div className="hidden md:flex space-x-6 text-foreground/80">
                 <Link
+                  href="/start-here"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Start Here
+                </Link>
+                <Link
                   href="/shop"
                   className="hover:text-foreground transition-colors"
                 >
@@ -71,6 +77,13 @@ export default function Layout({ children }: LayoutProps) {
             }`}
           >
             <div className="flex flex-col">
+              <Link
+                href="/start-here"
+                className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Start Here
+              </Link>
               <Link
                 href="/shop"
                 className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition"
