@@ -16,7 +16,9 @@ export default function ShopPage() {
         Buy my Notion recipe bundles and get instant access after purchase!
       </p>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className={`grid gap-8 ${
+        products.length === 1 ? 'grid-cols-1 justify-items-center' : 'md:grid-cols-2'
+      }`}>
         {products.map((p) => (
           <div
             key={p.name}
