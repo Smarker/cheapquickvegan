@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Menu, X } from "lucide-react";
 
@@ -9,12 +10,61 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+const navLinks = [
+  { name: "Recipes", href: "/" },
+  { name: "Start Here", href: "/start-here" },
+  { name: "Shop", href: "/shop" },
+  { name: "About", href: "/about" },
+  { name: "Contact", href: "/contact" },
+];
+
 export default function Layout({ children }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const desktopNavRef = useRef<HTMLDivElement>(null);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  const [desktopMagicLine, setDesktopMagicLine] = useState({ left: 0, width: 0 });
+  const [mobileMagicLine, setMobileMagicLine] = useState({ top: 0, height: 0 });
+
+  const isActive = (href: string) => pathname === href;
+
+  // Desktop magic line
+  useEffect(() => {
+    if (!desktopNavRef.current) return;
+    const activeLink = Array.from(desktopNavRef.current.children).find((child) => {
+      const a = child.querySelector("a");
+      return a?.getAttribute("href") === pathname;
+    }) as HTMLDivElement | undefined;
+
+    if (activeLink) {
+      setDesktopMagicLine({
+        left: activeLink.offsetLeft,
+        width: activeLink.offsetWidth,
+      });
+    }
+  }, [pathname]);
+
+  // Mobile magic line
+  useEffect(() => {
+    if (!mobileNavRef.current) return;
+    const activeLink = Array.from(mobileNavRef.current.children).find((child) => {
+      const a = child.querySelector("a");
+      return a?.getAttribute("href") === pathname;
+    }) as HTMLDivElement | undefined;
+
+    if (activeLink) {
+      setMobileMagicLine({
+        top: activeLink.offsetTop,
+        height: activeLink.offsetHeight,
+      });
+    }
+  }, [pathname, mobileMenuOpen]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="bg-secondary text-secondary-foreground shadow-md">
+      {/* Sticky header */}
+      <header className="sticky top-0 z-50 bg-secondary text-secondary-foreground shadow-md">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
@@ -30,31 +80,32 @@ export default function Layout({ children }: LayoutProps) {
             {/* Right side */}
             <div className="flex items-center space-x-4">
               {/* Desktop nav */}
-              <div className="hidden md:flex space-x-6 text-foreground/80">
-                <Link
-                  href="/start-here"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Start Here
-                </Link>
-                <Link
-                  href="/shop"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Shop
-                </Link>
-                <Link
-                  href="/about"
-                  className="hover:text-foreground transition-colors"
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Contact
-                </Link>
+              <div className="hidden md:flex space-x-6 relative text-foreground/80">
+                <div ref={desktopNavRef} className="relative flex space-x-6">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="relative px-1 py-2 transition-colors"
+                    >
+                      <span
+                        className={`relative z-10 ${
+                          isActive(link.href) ? "font-semibold text-primary" : ""
+                        }`}
+                      >
+                        {link.name}
+                      </span>
+                    </Link>
+                  ))}
+                  {/* Desktop magic line */}
+                  <span
+                    className="absolute bottom-0 h-[2px] bg-primary transition-all duration-300 ease-in-out"
+                    style={{
+                      left: desktopMagicLine.left,
+                      width: desktopMagicLine.width,
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Mode toggle */}
@@ -73,56 +124,50 @@ export default function Layout({ children }: LayoutProps) {
           {/* Mobile menu */}
           <div
             className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-              mobileMenuOpen ? "max-h-60 mt-2" : "max-h-0"
+              mobileMenuOpen ? "max-h-96 mt-2" : "max-h-0"
             }`}
           >
-            <div className="flex flex-col">
-              <Link
-                href="/start-here"
-                className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Start Here
-              </Link>
-              <Link
-                href="/shop"
-                className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Shop
-              </Link>
-              <Link
-                href="/about"
-                className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="block px-3 py-2 rounded hover:bg-secondary-foreground/10 transition mb-4"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
+            <div ref={mobileNavRef} className="relative flex flex-col">
+              {navLinks.map((link, idx) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block px-3 py-3 rounded transition ${
+                    isActive(link.href)
+                      ? "bg-primary/10 border-l-4 border-primary font-semibold"
+                      : "hover:bg-secondary-foreground/10"
+                  } ${idx === navLinks.length - 1 ? "mb-3" : ""}`} // extra spacing for last item
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              {/* Mobile magic line */}
+              <span
+                className="absolute left-0 w-1 bg-primary rounded transition-all duration-300 ease-in-out"
+                style={{
+                  top: mobileMagicLine.top,
+                  height: mobileMagicLine.height,
+                }}
+              />
             </div>
           </div>
         </nav>
       </header>
 
+      {/* Page content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {children}
       </main>
 
+      {/* Footer */}
       <footer className="bg-secondary text-secondary-foreground shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4">
-
-          {/* Top section: copyright */}
           <p className="text-center text-secondary-foreground">
             © {new Date().getFullYear()} CheapQuickVegan. All rights reserved.
           </p>
 
-          {/* Desktop: links inline */}
+          {/* Desktop links */}
           <div className="hidden md:flex gap-4">
             <a
               href="/contact"
@@ -144,7 +189,7 @@ export default function Layout({ children }: LayoutProps) {
             </a>
           </div>
 
-          {/* Mobile: links stacked */}
+          {/* Mobile links */}
           <div className="flex md:hidden flex-col mt-2 space-y-1">
             <a
               href="/contact"
@@ -165,7 +210,6 @@ export default function Layout({ children }: LayoutProps) {
               Terms & Conditions
             </a>
           </div>
-
         </div>
       </footer>
     </div>
