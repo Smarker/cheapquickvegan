@@ -103,6 +103,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <footer className="bg-secondary text-secondary-foreground shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4">
+
           {/* Top section: copyright */}
           <p className="text-center text-secondary-foreground">
             © {new Date().getFullYear()} CheapQuickVegan. All rights reserved.
@@ -122,13 +123,19 @@ export default function Layout({ children }: LayoutProps) {
             >
               Privacy Policy
             </a>
+            <a
+              href="/terms-and-conditions"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
+            >
+              Terms & Conditions
+            </a>
           </div>
 
-          {/* Mobile: privacy policy separate below */}
-          <div className="flex md:hidden flex-col mt-2">
+          {/* Mobile: links stacked */}
+          <div className="flex md:hidden flex-col mt-2 space-y-1">
             <a
               href="/contact"
-              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center mb-1"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center"
             >
               Contact
             </a>
@@ -138,7 +145,14 @@ export default function Layout({ children }: LayoutProps) {
             >
               Privacy Policy
             </a>
+            <a
+              href="/terms-and-conditions"
+              className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center"
+            >
+              Terms & Conditions
+            </a>
           </div>
+
         </div>
       </footer>
     </div>
