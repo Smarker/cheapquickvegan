@@ -114,21 +114,19 @@ export default async function PostPage({ params }: PostPageProps) {
         {post.coverImage && <NotionImage src={post.coverImage} alt={post.title} />}
 
         <header className="mb-8">
-          <div className="flex items-center gap-4 text-muted-foreground mb-4">
+          <div className="flex flex-wrap gap-2 text-muted-foreground mb-4 text-sm">
             <time>{format(new Date(post.date), "MMMM d, yyyy")}</time>
             {post.author && <span>By {post.author}</span>}
             <span>{calculateReadingTime(wordCount)}</span>
             <span>{wordCount} words</span>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4 text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
             {post.title}
           </h1>
 
-          <div className="flex gap-4 mb-4">
-            {post.category && (
-              <Badge variant="secondary">{post.category}</Badge>
-            )}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {post.category && <Badge variant="secondary">{post.category}</Badge>}
             {post.tags &&
               post.tags.map((tag) => (
                 <Badge key={tag} variant="outline">
