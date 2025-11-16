@@ -154,36 +154,3 @@
     background-color: #fefae0;
   }
 }
-
-.basil-leaf {
-  position: absolute;
-  top: -50px;
-  width: 40px;
-  height: 40px;
-
-  background-image: url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' fill='%23606C38' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M32 2C20 10 12 22 10 34c-2 13 5 22 18 24 11 2 22-6 26-18C58 24 46 10 32 2z'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-
-  animation-name: driftBasil;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-/* 🌿 Drifting floating animation */
-@keyframes driftBasil {
-  0% {
-    transform: translate(0px, 0px) rotate(0deg);
-    opacity: 0.9;
-  }
-  30% {
-    transform: translate(-20px, 60px) rotate(10deg);
-  }
-  60% {
-    transform: translate(20px, 120px) rotate(-10deg);
-  }
-  100% {
-    transform: translate(0px, 200px) rotate(0deg);
-    opacity: 0;
-  }
-}
