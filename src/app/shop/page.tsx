@@ -3,7 +3,7 @@ import StripeBuyButton from '@/components/stripe-buy-button';
 const products = [
   {
     name: '15 Vegan Recipes Notion Bundle',
-    description: 'A collection of the first 15 recipes on my site in notion, ad-free.',
+    description: 'The first 15 recipes on my site in notion, ad-free.',
     buyButtonId: 'buy_btn_1SMfQCA32Su6hYKXu1SFKQZe',
   },
 ];
