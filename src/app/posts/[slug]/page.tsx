@@ -14,6 +14,37 @@ interface PostPageProps {
   params: Promise<{ slug: string }>;
 }
 
+// --- Helper to parse Markdown for recipe structured data ---
+function parseRecipeContent(markdown: string) {
+  const lines = markdown.split("\n").map((line) => line.trim());
+  let section: "ingredients" | "instructions" | null = null;
+  const ingredients: string[] = [];
+  const instructions: string[] = [];
+
+  for (const line of lines) {
+    if (/^##\s*Ingredients/i.test(line)) {
+      section = "ingredients";
+      continue;
+    }
+    if (/^##\s*Instructions/i.test(line)) {
+      section = "instructions";
+      continue;
+    }
+    if (/^##\s*/.test(line)) {
+      section = null; // other headings
+      continue;
+    }
+
+    if (section === "ingredients" && line) {
+      ingredients.push(line);
+    } else if (section === "instructions" && line) {
+      instructions.push(line);
+    }
+  }
+
+  return { ingredients, instructions };
+}
+
 export async function generateMetadata(
   { params }: PostPageProps,
   parent: ResolvingMetadata
@@ -22,20 +53,14 @@ export async function generateMetadata(
   const posts = getPostsFromCache();
   const post = posts.find((p) => p.slug === slug);
 
-  if (!post) {
-    return {
-      title: "Post Not Found",
-    };
-  }
+  if (!post) return { title: "Post Not Found" };
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
   return {
     title: post.title,
     description: post.description,
-    alternates: {
-      canonical: `${siteUrl}/posts/${post.slug}`,
-    },
+    alternates: { canonical: `${siteUrl}/posts/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
@@ -73,31 +98,34 @@ export default async function PostPage({ params }: PostPageProps) {
   const post = posts.find((p) => p.slug === slug);
   const wordCount = post?.content ? getWordCount(post.content) : 0;
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
-  const jsonLd = {
+  // --- Parse recipe content ---
+  const { ingredients, instructions } = post.content
+    ? parseRecipeContent(post.content)
+    : { ingredients: [], instructions: [] };
+
+  // --- JSON-LD for SEO ---
+  const recipeJsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
+    "@type": "Recipe",
+    name: post.title,
     description: post.description,
     image: post.coverImage || `${siteUrl}/opengraph-image.png`,
-    datePublished: new Date(post.date).toISOString(),
     author: {
       "@type": "Person",
       name: post.author || "Guest Author",
     },
-    publisher: {
-      "@type": "Organization",
-      name: "Cheap Quick Vegan",
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteUrl}/logo.png`,
-      },
-    },
+    datePublished: new Date(post.date).toISOString(),
+    recipeCategory: post.category || undefined,
+    keywords: post.tags?.join(", ") || undefined,
+    recipeIngredient: ingredients,
+    recipeInstructions: instructions.map((step) => ({
+      "@type": "HowToStep",
+      text: step,
+    })),
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `${siteUrl}/posts/${post.slug}`,
@@ -108,8 +136,9 @@ export default async function PostPage({ params }: PostPageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
       />
+
       <article className="max-w-3xl mx-auto prose dark:prose-invert">
         {post.coverImage && <NotionImage src={post.coverImage} alt={post.title} />}
 
@@ -121,9 +150,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <span>{wordCount} words</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-            {post.title}
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">{post.title}</h1>
 
           <div className="flex flex-wrap gap-2 mb-4">
             {post.category && <Badge variant="secondary">{post.category}</Badge>}
