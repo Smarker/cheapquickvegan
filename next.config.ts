@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL, // your Vercel URL
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   },
+  experimental: {
+    optimizeCss: true, // Next.js 15+ built-in CSS optimization
+  },
 };
 
 export default nextConfig;
