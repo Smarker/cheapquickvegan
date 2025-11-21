@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "http://www.cheapquickvegan.com/:path*",
+      "destination": "https://cheapquickvegan.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "http://cheapquickvegan.com/:path*",
+      "destination": "https://cheapquickvegan.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "https://www.cheapquickvegan.com/:path*",
+      "destination": "https://cheapquickvegan.com/:path*",
+      "permanent": true
+    }
+  ]
+}
