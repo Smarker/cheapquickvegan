@@ -62,10 +62,10 @@
   "packageManager": "pnpm@10.11.0",
   "browserslist": {
     "production": [
-      "defaults",
-      "not IE 11",
-      "not op_mini all",
-      "not safari < 13"
+      "last 2 Chrome versions",
+      "last 2 Firefox versions",
+      "last 2 Edge versions",
+      "last 2 Safari versions"
     ],
     "development": [
       "last 1 chrome version",
