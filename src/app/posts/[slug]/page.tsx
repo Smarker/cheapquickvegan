@@ -107,7 +107,7 @@ export default async function PostPage({ params }: PostPageProps) {
     ? parseRecipeContent(post.content)
     : { ingredients: [], instructions: [] };
 
-  // --- JSON-LD for SEO ---
+  // --- JSON-LD for SEO Recipe cards ---
   const recipeJsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
