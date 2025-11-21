@@ -29,13 +29,6 @@ export default function Layout({ children }: LayoutProps) {
 
   const isActive = (href: string) => pathname === href;
 
-  // === FIX BACK-BUTTON SCROLL ===
-  useEffect(() => {
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual"; // prevent browser from restoring old scroll
-    }
-  }, []);
-
   // Desktop magic line
   useEffect(() => {
     if (!desktopNavRef.current) return;
