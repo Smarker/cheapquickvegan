@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
-import { Post, getWordCount } from "@/lib/notion";
+import { getWordCount } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { calculateReadingTime } from "@/lib/utils";
 import {
@@ -11,6 +11,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Clock, Calendar, ArrowUpRight } from "lucide-react";
+import { Post } from "@/lib/types";
 
 interface PostCardProps {
   post: Post;

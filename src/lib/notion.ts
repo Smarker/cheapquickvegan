@@ -35,14 +35,6 @@ export async function getDatabaseStructure() {
   return database;
 }
 
-export function getWordCount(content: string): number {
-  const cleanText = content
-    .replace(/[^\w\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return cleanText.split(" ").length;
-}
-
 export function getPostsFromCache(): Post[] {
   const cachePath = path.join(process.cwd(), "posts-cache.json");
   if (fs.existsSync(cachePath)) {
