@@ -32,7 +32,7 @@ export function NotionImage({ src, alt, className }: NotionImageProps) {
         placeholder="blur"
         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+"
         sizes="(max-width: 768px) 100vw, 800px"
-        loading="lazy"
+        priority
       />
     </div>
   );
