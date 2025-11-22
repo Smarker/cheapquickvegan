@@ -154,7 +154,7 @@ export default async function PostPage({ params }: PostPageProps) {
             components={{
               img: ({ src, alt, ...props }) => {
                 if (!src || typeof src !== "string") return null;
-                return <NotionImage src={src} alt={alt ?? ""} {...props} />;
+                return <NotionImage src={src} alt={alt ?? post.title} {...props} />;
               },
             }}
             remarkPlugins={[remarkGfm]}
