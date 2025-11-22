@@ -6,10 +6,14 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
+      allow: [
+        "/_next/static/chunks/", // so Googlebot can fetch JS and image
+        "/_next/static/media/", // so Googlebot can fetch JS and image
+        "/", // allow main pages
+      ],
       disallow: [
         "/private/",
-        "/_next/", // prevent indexing build/static assets
+        "/_next/data/", // Next.js data JSON files
         "/site.webmanifest", // not meant for indexing
         "/*.ico$", // favicon or icon files
       ]
