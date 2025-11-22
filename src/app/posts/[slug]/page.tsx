@@ -88,7 +88,11 @@ export default async function PostPage({ params }: PostPageProps) {
     "@type": "Recipe",
     name: post.title,
     description: post.description,
-    image: post.coverImage || `${siteUrl}/opengraph-image.png`,
+    image: post.coverImage
+      ? post.coverImage.startsWith("http")
+        ? post.coverImage
+        : `${siteUrl}${post.coverImage}`
+      : `${siteUrl}/opengraph-image.png`,
     author: {
       "@type": "Person",
       name: post.author || "Guest Author",
@@ -96,36 +100,17 @@ export default async function PostPage({ params }: PostPageProps) {
     datePublished: new Date(post.date).toISOString(),
     recipeCategory: post.category || undefined,
     keywords: post.tags?.join(", ") || undefined,
-    recipeIngredient: ingredients,
-    recipeInstructions: instructions.map((step) => ({
-      "@type": "HowToStep",
-      text: step,
-    })),
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${siteUrl}/posts/${post.slug}`,
-    },
-  };
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.description,
-    image: post.coverImage || `${siteUrl}/opengraph-image.png`,
-    datePublished: new Date(post.date).toISOString(),
-    author: {
-      "@type": "Person",
-      name: post.author || "Guest Author",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Cheap Quick Vegan",
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteUrl}/logo.png`,
-      },
-    },
+    recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")), // remove leading dashes
+    recipeInstructions: instructions
+      .filter((step) => step.trim() && step.trim() !== "---")
+      .map((step) => ({
+        "@type": "HowToStep",
+        text: step.trim(),
+      })),
+    prepTime: undefined, // e.g., "PT10M"
+    cookTime: undefined, // e.g., "PT20M"
+    totalTime: undefined, // e.g., "PT30M"
+    recipeYield: undefined, //post.yield || e.g., "2 servings"
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `${siteUrl}/posts/${post.slug}`,
