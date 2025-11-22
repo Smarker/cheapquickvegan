@@ -25,6 +25,7 @@ export interface Post {
   author?: string;
   tags?: string[];
   category?: string;
+  relatedRecipes: string[];
 }
 
 export async function getDatabaseStructure() {
@@ -123,6 +124,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       author: properties.Author?.people[0]?.name,
       tags: properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
       category: properties.Category?.select?.name,
+      relatedRecipes: properties["Related Recipes"]?.relation?.map((r: { id: any; }) => r.id) || [],
     };
 
     return post;

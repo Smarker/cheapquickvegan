@@ -83,6 +83,23 @@ export default async function PostPage({ params }: PostPageProps) {
   ? parseRecipeContent(post.content)
   : { ingredients: [], instructions: [] };
 
+  // --- RELATED RECIPES LOGIC ---
+  let relatedRecipes: any[] = [];
+
+  // If Related Recipes relation exists and has entries
+  if (post.relatedRecipes?.length) {
+    relatedRecipes = post.relatedRecipes
+      .map((id) => posts.find((p) => p.id === id))
+      .filter(Boolean)
+      .slice(0, 3); // limit to 3
+  } else if (post.category) {
+    // fallback: random 3 recipes from same category, excluding current post
+    const sameCategory = posts.filter(
+      (p) => p.category === post.category && p.id !== post.id
+    );
+    relatedRecipes = sameCategory.sort(() => 0.5 - Math.random()).slice(0, 3);
+  }
+
   const recipeJsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -163,6 +180,39 @@ export default async function PostPage({ params }: PostPageProps) {
             {post.content}
           </ReactMarkdown>
         </div>
+
+{relatedRecipes.length > 0 && (
+  <section className="mt-6 sm:mt-12">
+    <h2 className="text-2xl font-semibold mb-2 sm:mb-4">
+      Try these similar recipes
+    </h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+      {relatedRecipes.map((r) => (
+        <a
+          key={r.id}
+          href={`/posts/${r.slug}`}
+          className="relative block rounded overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
+        >
+          <div className="relative w-full h-72 sm:h-56 overflow-hidden">
+            <NotionImage
+              src={r.coverImage}
+              alt={r.alt || r.title}
+              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="absolute bottom-1 sm:bottom-2 left-2 sm:left-3 right-2 sm:right-3">
+              <h3 className="text-white font-semibold text-lg line-clamp-2">
+                {r.title}
+              </h3>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+)}
+
+
       </article>
     </>
   );
