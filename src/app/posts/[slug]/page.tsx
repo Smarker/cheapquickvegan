@@ -105,12 +105,12 @@ export default async function PostPage({ params }: PostPageProps) {
       .filter((step) => step.trim() && step.trim() !== "---")
       .map((step) => ({
         "@type": "HowToStep",
-        text: step.trim(),
+        text: step.replace(/^-+\s*/, "").trim(), // remove leading dashes and trim
       })),
-    prepTime: undefined, // e.g., "PT10M"
-    cookTime: undefined, // e.g., "PT20M"
-    totalTime: undefined, // e.g., "PT30M"
-    recipeYield: undefined, //post.yield || e.g., "2 servings"
+    prepTime: undefined,    // ISO 8601 format e.g., "PT10M"
+    cookTime: undefined,    // ISO 8601 format e.g., "PT20M"
+    totalTime: undefined,  // ISO 8601 format e.g., "PT30M"
+    recipeYield: undefined,    // post.yield e.g., "2 servings"
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `${siteUrl}/posts/${post.slug}`,
