@@ -16,6 +16,7 @@ export const n2m = new NotionToMarkdown({ notionClient: notion });
 export interface Post {
   id: string;
   title: string;
+  alt: string;
   slug: string;
   coverImage?: string;
   description: string;
@@ -107,6 +108,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
     const post: Post = {
       id: page.id,
       title: properties.Title.title[0]?.plain_text || "Untitled",
+      alt: properties.Alt.rich_text[0]?.plain_text || "",
       slug:
         properties.Title.title[0]?.plain_text
           .toLowerCase()

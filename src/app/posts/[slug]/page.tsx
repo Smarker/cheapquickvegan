@@ -49,7 +49,7 @@ export async function generateMetadata(
           url: post.coverImage || `${siteUrl}/opengraph-image.png`,
           width: 1200,
           height: 630,
-          alt: post.title,
+          alt: post.alt || post.title,
         },
       ],
     },
@@ -60,7 +60,7 @@ export async function generateMetadata(
       images: [
         {
           url: post.coverImage || `${siteUrl}/opengraph-image.png`,
-          alt: post.title,
+          alt: post.alt || post.title,
         },
       ],
     },
@@ -124,7 +124,7 @@ export default async function PostPage({ params }: PostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
       />
       <article className="max-w-3xl mx-auto prose dark:prose-invert">
-        {post.coverImage && <NotionImage src={post.coverImage} alt={post.title} />}
+        {post.coverImage && <NotionImage src={post.coverImage} alt={post.alt || post.title} />}
 
         <header className="mb-8">
           <div className="flex flex-wrap gap-2 text-muted-foreground mb-4 text-sm">
