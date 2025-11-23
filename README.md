@@ -101,7 +101,7 @@ export async function getPost(pageId: string): Promise<Post | null> {
 
 ### Customizing the Layout
 
-- Modify `src/app/posts/[slug]/page.tsx` to change the blog post layout
+- Modify `src/app/recipes/[slug]/page.tsx` to change the blog post layout
 - Update `src/components/mdx-component.tsx` to customize markdown rendering
 - Style components using Tailwind CSS classes
 
@@ -112,7 +112,7 @@ export async function getPost(pageId: string): Promise<Post | null> {
    - Find your integration
    - Click "•••" -> "Manage in developer portal"
 
-2. Create new blog posts:
+2. Create new blog recipes:
    - Add a new page to your Notion database
    - Fill in the required properties
    - Set status to "Published" when ready

@@ -36,13 +36,13 @@ export async function getDatabaseStructure() {
 }
 
 export function getPostsFromCache(): Post[] {
-  const cachePath = path.join(process.cwd(), "posts-cache.json");
+  const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
       const cache = fs.readFileSync(cachePath, "utf-8");
       return JSON.parse(cache);
     } catch (error) {
-      console.error("Error reading posts cache:", error);
+      console.error("Error reading recipes cache:", error);
       return [];
     }
   }
@@ -52,7 +52,7 @@ export function getPostsFromCache(): Post[] {
 export async function fetchPublishedPosts() {
   // This function is now intended to be used only by the caching script.
   // @ts-ignore - bypass TypeScript error with v4 SDK types
-  const posts = await notion.databases.query({
+  const recipes = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
       and: [
@@ -72,12 +72,12 @@ export async function fetchPublishedPosts() {
     ],
   });
 
-  return posts.results as PageObjectResponse[];
+  return recipes.results as PageObjectResponse[];
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
-  const posts = getPostsFromCache();
-  const post = posts.find((p) => p.slug === slug);
+  const recipes = getPostsFromCache();
+  const post = recipes.find((p) => p.slug === slug);
   return post || null;
 }
 

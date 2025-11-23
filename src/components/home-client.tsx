@@ -6,21 +6,21 @@ import Image from "next/image";
 import { Post } from "@/lib/types";
 
 interface HomeClientProps {
-  posts: Post[];
+  recipes: Post[];
 }
 
-export default function HomeClient({ posts }: HomeClientProps) {
+export default function HomeClient({ recipes }: HomeClientProps) {
   // get unique categories
   const categories = Array.from(
-    new Set(posts.map((p) => p.category).filter((c): c is string => !!c))
+    new Set(recipes.map((p) => p.category).filter((c): c is string => !!c))
   );
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // filter posts by selected category
+  // filter recipes by selected category
   const filteredPosts = selectedCategory
-    ? posts.filter((p) => p.category === selectedCategory)
-    : posts;
+    ? recipes.filter((p) => p.category === selectedCategory)
+    : recipes;
 
   return (
     <div className="max-w-6xl mx-auto px-4">
@@ -74,7 +74,7 @@ export default function HomeClient({ posts }: HomeClientProps) {
         ))}
       </div>
 
-      {/* Posts Grid */}
+      {/* recipes Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredPosts.map((post) => (
           <PostCard key={post.id} post={post} />

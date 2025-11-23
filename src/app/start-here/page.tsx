@@ -42,22 +42,22 @@ export default function StartHerePage() {
             {[
             {
                 title: "Vegan Coconut Red Curry",
-                link: "/posts/vegan-coconut-red-curry",
+                link: "/recipes/vegan-coconut-red-curry",
                 subtitle: "Creamy, fragrant, and easy for weeknights",
             },
             {
                 title: "Spinach, Tofu & Sesame Stir-Fry",
-                link: "/posts/vegan-spinach-tofu-and-sesame-stir-fry",
+                link: "/recipes/vegan-spinach-tofu-and-sesame-stir-fry",
                 subtitle: "Quick, nutrient-packed, and full of flavor",
             },
             {
                 title: "Potato & Leek Soup",
-                link: "/posts/vegan-potato-and-leek-soup",
+                link: "/recipes/vegan-potato-and-leek-soup",
                 subtitle: "Warm, comforting, and budget-friendly",
             },
             {
                 title: "Vegan Agadashi Tofu",
-                link: "/posts/vegan-agadashi-tofu",
+                link: "/recipes/vegan-agadashi-tofu",
                 subtitle: "Crispy tofu in a savory umami broth",
             },
             ].map((recipe) => (

@@ -19,8 +19,8 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const posts = getPostsFromCache();
-  const post = posts.find((p) => p.slug === slug);
+  const recipes = getPostsFromCache();
+  const post = recipes.find((p) => p.slug === slug);
 
   if (!post) {
     return {
@@ -34,13 +34,13 @@ export async function generateMetadata(
     title: post.title,
     description: post.description,
     alternates: {
-      canonical: `${siteUrl}/posts/${post.slug}`,
+      canonical: `${siteUrl}/recipes/${post.slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
-      url: `${siteUrl}/posts/${post.slug}`,
+      url: `${siteUrl}/recipes/${post.slug}`,
       publishedTime: new Date(post.date).toISOString(),
       authors: post.author ? [post.author] : [],
       tags: post.tags,
@@ -69,8 +69,8 @@ export async function generateMetadata(
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
-  const posts = getPostsFromCache();
-  const post = posts.find((p) => p.slug === slug);
+  const recipes = getPostsFromCache();
+  const post = recipes.find((p) => p.slug === slug);
   const wordCount = post?.content ? getWordCount(post.content) : 0;
 
   if (!post) {
@@ -89,12 +89,12 @@ export default async function PostPage({ params }: PostPageProps) {
   // If Related Recipes relation exists and has entries
   if (post.relatedRecipes?.length) {
     relatedRecipes = post.relatedRecipes
-      .map((id) => posts.find((p) => p.id === id))
+      .map((id) => recipes.find((p) => p.id === id))
       .filter(Boolean)
       .slice(0, 3); // limit to 3
   } else if (post.category) {
     // fallback: random 3 recipes from same category, excluding current post
-    const sameCategory = posts.filter(
+    const sameCategory = recipes.filter(
       (p) => p.category === post.category && p.id !== post.id
     );
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -130,7 +130,7 @@ export default async function PostPage({ params }: PostPageProps) {
     recipeYield: undefined,    // post.yield e.g., "2 servings"
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${siteUrl}/posts/${post.slug}`,
+      "@id": `${siteUrl}/recipes/${post.slug}`,
     },
   };
 
@@ -190,7 +190,7 @@ export default async function PostPage({ params }: PostPageProps) {
       {relatedRecipes.map((r) => (
         <a
           key={r.id}
-          href={`/posts/${r.slug}`}
+          href={`/recipes/${r.slug}`}
           className="relative block rounded overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
         >
           <div className="relative w-full h-72 sm:h-56 overflow-hidden">

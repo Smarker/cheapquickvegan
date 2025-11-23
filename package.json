@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm run cache:posts && next dev --turbopack",
-    "build": "pnpm run cache:posts && next build",
+    "dev": "pnpm run cache:recipes && next dev --turbopack",
+    "build": "pnpm run cache:recipes && next build",
     "start": "next start",
     "lint": "next lint",
-    "cache:posts": "tsx scripts/cache-posts.ts"
+    "cache:recipes": "tsx scripts/cache-recipes.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

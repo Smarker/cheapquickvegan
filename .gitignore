@@ -13,8 +13,8 @@
 # testing
 /coverage
 
-# cached posts (regenerated on each build)
-posts-cache.json
+# cached recipes (regenerated on each build)
+recipes-cache.json
 
 # next.js
 /.next/
