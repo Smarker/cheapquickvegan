@@ -8,8 +8,8 @@ interface CategoryPageProps {
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const props = await params;
-  const cat = props.cat;
+  const { cat } = await params;
+
   const allPosts: Post[] = getPostsFromCache().filter(
     (p) => p.category?.toLowerCase() === cat.toLowerCase()
   );
@@ -25,11 +25,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {allPosts.map((post) => (
-            <Link
-              key={post.id}
-              href={`/recipes/${post.slug}`}
-              className="group relative block"
-            >
+            <Link key={post.id} href={`/recipes/${post.slug}`} className="group relative block">
               {/* Card container */}
               <div className="bg-white dark:bg-neutral-800 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg overflow-hidden relative">
                 {/* Image */}
