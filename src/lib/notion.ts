@@ -103,7 +103,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       title: properties.Title.title[0]?.plain_text || "Untitled",
       alt: properties.Alt.rich_text[0]?.plain_text || "",
       slug:
-        properties.Title.title[0]?.plain_text
+        properties['Featured Image']?.url
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-") // Replace any non-alphanumeric chars with dash
           .replace(/^-+|-+$/g, "") || // Remove leading/trailing dashes
