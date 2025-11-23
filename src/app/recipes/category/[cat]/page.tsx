@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface CategoryPageProps {
-  params: { cat: string };
+  params: Promise<{ cat: string }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
