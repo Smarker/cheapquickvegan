@@ -18,13 +18,13 @@ export interface Post {
   title: string;
   alt: string;
   slug: string;
-  coverImage?: string;
+  coverImage: string;
   description: string;
   date: string;
   content: string;
   author?: string;
   tags?: string[];
-  category?: string;
+  category: string;
   relatedRecipes: string[];
 }
 
@@ -47,6 +47,11 @@ export function getPostsFromCache(): Post[] {
     }
   }
   return [];
+}
+
+export function getPostsByCategory(category: string) {
+  const posts = getPostsFromCache();
+  return posts.filter((p) => p.category?.toLowerCase() === category.toLowerCase());
 }
 
 export async function fetchPublishedPosts() {

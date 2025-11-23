@@ -11,7 +11,7 @@ interface LayoutProps {
 }
 
 const navLinks = [
-  { name: "Recipes", href: "/" },
+  { name: "All Recipes", href: "/recipes" },
   { name: "Start Here", href: "/start-here" },
   { name: "Shop", href: "/shop" },
   { name: "About", href: "/about" },

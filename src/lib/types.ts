@@ -4,7 +4,7 @@ export interface Post {
   title: string;
   slug: string;
   description: string;
-  category?: string;
+  category: string;
   coverImage?: string;
   alt: string;
   content: string;
