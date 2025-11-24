@@ -37,7 +37,7 @@ export default function ContactPage() {
           />
         </div>
 
-        <h1 className="text-3xl font-extrabold mb-2">Contact Us</h1>
+        <h1 className="text-3xl font-extrabold mb-2">Contact Me</h1>
         <p className="text-foreground/70 mb-6">
           Whether you have questions about a recipe, ideas for new content, or just want to say hi — I'd love to hear from you. 🌱
         </p>

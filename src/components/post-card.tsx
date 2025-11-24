@@ -70,11 +70,6 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
         <p className="text-muted-foreground line-clamp-2">{post.description}</p>
       </CardHeader>
-      <CardContent>
-        {post.author && (
-          <p className="text-sm text-muted-foreground">By {post.author}</p>
-        )}
-      </CardContent>
       {post.tags && post.tags.length > 0 && (
         <CardFooter>
           <div className="flex gap-2 flex-wrap">

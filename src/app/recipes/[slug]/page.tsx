@@ -42,7 +42,7 @@ export async function generateMetadata(
       type: "article",
       url: `${siteUrl}/recipes/${post.slug}`,
       publishedTime: new Date(post.date).toISOString(),
-      authors: post.author ? [post.author] : [],
+      authors: [],
       tags: post.tags,
       images: [
         {
@@ -146,7 +146,6 @@ export default async function PostPage({ params }: PostPageProps) {
         <header className="mb-8">
           <div className="flex flex-wrap gap-2 text-muted-foreground mb-4 text-sm">
             <time>{format(new Date(post.date), "MMMM d, yyyy")}</time>
-            {post.author && <span>By {post.author}</span>}
             <span>{calculateReadingTime(wordCount)}</span>
             <span>{wordCount} words</span>
           </div>
