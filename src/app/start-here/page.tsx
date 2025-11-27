@@ -135,19 +135,196 @@ export default function StartHerePage() {
 
       {/* Beginner Grocery List */}
       <section className="mb-14">
-        <h2 className="section-title">Beginner Grocery List</h2>
-        <p className="text-foreground/80 mb-3">
-          No huge pantry needed — start with these affordable basics:
-        </p>
-        <ul className="styled-list">
-          <li>🥬 Tofu, 🍝 pasta, 🍚 rice, lentils, canned beans</li>
-          <li>🌱 Vegan chicken strips, vegan sausage, oat milk</li>
-          <li>🥥 Coconut milk, veggie broth, tomato paste, curry paste</li>
-          <li>🧄 Garlic, 🧅 onions, 🥔 potatoes, spinach, leeks</li>
-          <li>🧂 Nutritional yeast, smoked paprika, turmeric</li>
-          <li>🍶 Soy sauce, mirin, sesame oil, maple syrup</li>
-        </ul>
-      </section>
+    <h2 className="section-title">The Complete Beginner Vegan Grocery List: Essential Plant-Based Staples</h2>
+    <p className="text-foreground/80 mb-3">
+        No huge pantry needed - start with these affordable beginner vegan staples, organized by store section, for cheap and quick meal prep:
+    </p>
+
+    {/* Using an outer list for the main categories */}
+    <ul className="space-y-6">
+
+        {/* 🍏 Produce & Fresh Items */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">🍏</span> Fresh Produce & Aromatics
+            </h3>
+            {/* H4 for subcategories is excellent for SEO/semantics */}
+            <h4 className="font-bold text-base mt-2 ml-5 list-none">Aromatics:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🧄 Garlic (or bottled)</li>
+                <li>🧅 Onion</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Veggies:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🌶️ Bell Peppers</li>
+                <li>🥬 Spinach</li>
+                <li>🥔 Potatoes</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Citrus & Herbs:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍋 Lemon juice and/or Lime juice</li>
+                <li>🌿 Fresh Herbs (Cilantro, etc.)</li>
+            </ul>
+        </li>
+
+        {/* 🧈 Refrigerated & Dairy Alternatives */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">🧈</span> Refrigerated Plant-Based Alternatives
+            </h3>
+            <h4 className="font-bold text-base mt-2 ml-5 list-none">Vegan Proteins:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>⬜ 4x Firm Tofu</li>
+                <li>🍳 Mini box of Just Egg / Eggs from Plants</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Milks & Creams:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🥛 2x Oat Milk</li>
+                <li>🥄 Vegan Yogurt (plain coconut)</li>
+                <li>🧀 Vegan Cream Cheese (Myokos)</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Fats & Shredded Cheese:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🧈 Vegan Butter (Smart Balance/Earth Balance)</li>
+                <li>🧀 Vegan Cheese (shredded mozzarella)</li>
+            </ul>
+        </li>
+
+        {/* 🥫 Pantry Staples (Cans, Jars, Dry Goods, Oils) */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">🥫</span> Essential Pantry Staples
+            </h3>
+            <h4 className="font-bold text-base mt-2 ml-5 list-none">Cooking Oils:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🫒 Olive oil</li>
+                <li>🥡 Sesame oil</li>
+                <li>🥥 Coconut oil</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Cans & Jars:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍅 Canned Crushed Tomato (Tutto Rosso)</li>
+                <li>🥥 Canned Coconut Milk</li>
+                <li>🥒 Jar of Pickles</li>
+                <li>🥫 Kidney Beans</li>
+                <li>🥫 Refried Beans</li>
+                <li>🌶️ Salsa</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Grains & Nut Butters:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍚 Basmati/Brown Rice</li>
+                <li>🍝 Pasta noodles</li>
+                <li>🥜 Natural peanut butter</li>
+                <li>🥣 Tahini</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Flavor Boosters & Condiments:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍄 Nutritional Yeast</li>
+                <li>Knorr Bouillon cubes</li>
+                <li>🍶 Soy Sauce</li>
+                <li>🍶 Mirin</li>
+                <li>🧪 White Vinegar</li>
+                <li>🌶️ Curry Paste</li>
+                <li>🔥 Liquid Smoke</li>
+                <li>🌰 Pistachios (ideally no shells)</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Snacks:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍟 Tortilla chips</li>
+                <li>🍜 Vegan ramen</li>
+                <li>🍿 Popcorn kernels</li>
+            </ul>
+        </li>
+
+        {/* ✨ Baking & Flours */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">✨</span> Baking, Flours & Sweeteners
+            </h3>
+            <h4 className="font-bold text-base mt-2 ml-5 list-none">Flours & Binders:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🍞 All-purpose flour</li>
+                <li>🥖 Bread flour</li>
+                <li>🥄 Corn starch</li>
+                <li>🥚 Ground flax seed</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Leavening:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🥄 Instant yeast or sourdough discard</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Sweeteners & Treats:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🥄 Sugar</li>
+                <li>🍁 Maple Syrup</li>
+                <li>🍫 Vegan chocolate chips</li>
+            </ul>
+        </li>
+
+        {/* 🍞 Breads & Wraps */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">🍞</span> Breads, Bagels & Wraps
+            </h3>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🥯 2 packs of Everything Bagels (1 can be frozen)</li>
+                <li>🌮 Large Flour Tortillas</li>
+                <li>🌮 Small Corn Tortillas</li>
+            </ul>
+        </li>
+
+        {/* 🧂 Spices */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">🧂</span> Spices & Flavoring Agents
+            </h3>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🧂 Salt</li>
+                <li>🧂 Pepper</li>
+                <li>💛 Turmeric</li>
+                <li>🌶️ Cumin</li>
+                <li>🧄 Garlic Powder</li>
+                <li>🔥 Smoked Paprika</li>
+                <li>🌿 Rosemary</li>
+                <li>🌿 Basil</li>
+            </ul>
+        </li>
+
+        {/* ❄️ Frozen Foods */}
+        <li className="list-none">
+            <h3 className="text-lg font-semibold mb-1 flex items-center">
+                <span className="text-xl mr-2">❄️</span> Frozen Vegan Proteins & Meals
+            </h3>
+            <h4 className="font-bold text-base mt-2 ml-5 list-none">Bulk Proteins:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🚫🥩 4x Vegan Ground Beef (Morningstar/Gardein)</li>
+                <li>🍔 2x Beyond Burger patties</li>
+                <li>🌭 Vegan sausage</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Quick Meals:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🚫🐔 2x Vegan Chicken Strips</li>
+                <li>🚫🐔 1x Large Vegan Chicken Nuggets</li>
+                <li>🍕 3x Daiya pizzas</li>
+            </ul>
+
+            <h4 className="font-bold text-base mt-4 ml-5 list-none">Dessert:</h4>
+            <ul className="ml-12 list-disc text-foreground/90 space-y-1">
+                <li>🫐 2x Frozen Blueberries (plus small organic bag)</li>
+            </ul>
+        </li>
+    </ul>
+</section>
 
       {/* Tips Box with Fade-In (Reduced margin) */}
       <div
