@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/mode-toggle"; // Assuming this path is correct
 import { Menu, X } from "lucide-react";
 
 interface LayoutProps {
@@ -175,17 +175,19 @@ export default function Layout({ children }: LayoutProps) {
             >
               Contact
             </a>
+            {/* Link to dedicated Privacy Policy page */}
             <a
               href="/privacy-policy"
               className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
             >
               Privacy Policy
             </a>
+            {/* Link to dedicated Disclaimer page */}
             <a
-              href="/terms-and-conditions"
+              href="/disclaimer" 
               className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
             >
-              Terms & Conditions
+              Disclaimer
             </a>
           </div>
 
@@ -197,17 +199,19 @@ export default function Layout({ children }: LayoutProps) {
             >
               Contact
             </a>
+             {/* Link to dedicated Privacy Policy page */}
             <a
               href="/privacy-policy"
               className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center"
             >
               Privacy Policy
             </a>
+             {/* Link to dedicated Disclaimer page */}
             <a
-              href="/terms-and-conditions"
+              href="/disclaimer"
               className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center"
             >
-              Terms & Conditions
+              Disclaimer
             </a>
           </div>
         </div>
