@@ -1,45 +1,43 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import klaroConfig from "../../../klaro-config";
 
 export default function KlaroLoader() {
-  const pathname = usePathname(); // detects route changes
+  const pathname = usePathname();
+  const bannerShown = useRef(false); // track if banner was already shown
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Assign global config
     window.klaroConfig = klaroConfig;
 
     const initKlaro = () => {
-      // Check if Klaro script is already loaded
       if (!window.klaro) {
+        // Only load script once
         const script = document.createElement("script");
-        script.src =
-          "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
+        script.src = "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
         script.async = true;
 
         script.onload = () => {
           const manager = window.klaro?.getManager?.();
           if (manager && !document.cookie.includes(klaroConfig.cookieName)) {
-            window.klaro?.show?.(); // only show if cookie missing
+            window.klaro?.show?.();
+            bannerShown.current = true;
           }
         };
 
         document.body.appendChild(script);
-      } else {
-        // Klaro already loaded, check cookie on route change
-        const manager = window.klaro?.getManager?.();
-        if (manager && !document.cookie.includes(klaroConfig.cookieName)) {
-          window.klaro.show?.();
-        }
+      } else if (!bannerShown.current && !document.cookie.includes(klaroConfig.cookieName)) {
+        // Klaro already loaded, show banner only if cookie missing and not shown yet
+        window.klaro.show?.();
+        bannerShown.current = true;
       }
     };
 
     initKlaro();
-  }, [pathname]); // re-run on route changes
+  }, [pathname]);
 
   return <div id="klaro" />;
 }
