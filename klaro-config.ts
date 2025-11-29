@@ -7,7 +7,8 @@ const klaroConfig = {
     // The name of the cookie that stores the user's consent decisions.
     cookieName: 'klaro_consent',
 
-    cookieDomain: 'cheapquickvegan.com',
+    // Browsers treat cookies set for cheapquickvegan.com differently from www.cheapquickvegan.com unless you include the leading dot:
+    cookieDomain: ".cheapquickvegan.com",
 
     cookieExpiresAfterDays: 365,
 
