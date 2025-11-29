@@ -4,13 +4,6 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import klaroConfig from "../../../klaro-config";
 
-declare global {
-  interface Window {
-    klaro?: any;
-    klaroConfig?: typeof klaroConfig;
-  }
-}
-
 export default function KlaroLoader() {
   const pathname = usePathname(); // detects route changes
 
@@ -31,7 +24,7 @@ export default function KlaroLoader() {
         script.onload = () => {
           const manager = window.klaro?.getManager?.();
           if (manager && !document.cookie.includes(klaroConfig.cookieName)) {
-            window.klaro.show?.(); // only show if cookie missing
+            window.klaro?.show?.(); // only show if cookie missing
           }
         };
 

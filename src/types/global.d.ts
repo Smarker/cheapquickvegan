@@ -19,15 +19,22 @@ declare module 'react' {
 //
 // Klaro type definitions
 //
+interface KlaroManager {
+  getConsent: (serviceName: string) => boolean;
+}
+
+interface Klaro {
+  getManager?: () => KlaroManager;
+  on?: (event: string, callback: (consent: boolean, service: { name: string }) => void) => void;
+  show?: (serviceName?: string) => void;
+  setup?: (config?: any) => void;
+}
+
+// Extend the Window interface globally
 declare global {
   interface Window {
-    klaro?: {
-      getManager?: () => { getConsent: (serviceName: string) => boolean };
-      on?: (event: string, callback: (consent: boolean, service: { name: string }) => void) => void;
-      show?: (serviceName?: string) => void;
-      setup?: (config?: any) => void;
-    };
-    klaroConfig?: typeof klaroConfig;
+    klaro?: Klaro;
+    klaroConfig?: typeof import('../../../klaro-config').default;
   }
 }
 
