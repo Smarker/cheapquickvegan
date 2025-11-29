@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import VercelConsentGate from "@/components/consent/vercel-consent-gate";
+import KlaroLoader from "@/components/consent/klaro-loader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CheapQuickVegan - - Easy, Fast and Budget Friendly Vegan Recipes",
+    title: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
     description: "Cheap, quick, and delicious vegan recipes with minimal ingredients",
     images: [`${siteUrl}/opengraph-image.png`],
   },
@@ -56,7 +56,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
-    // If someone bookmarks your site on an apple phone, then this is the icon they'd see:
     apple: "/apple-touch-icon.jpg",
   },
   manifest: `${siteUrl}/site.webmanifest`,
@@ -76,17 +75,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Klaro CSS */}
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro.min.css"
+        />
+      </head>
+
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
           <Layout>{children}</Layout>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
 
+        {/* Load Klaro after hydration (client-only) */}
+        <KlaroLoader />
+
+        {/* Reads Klaro consent state and triggers Vercel Analytics */}
+        <VercelConsentGate />
+
+        {/* Where Klaro injects UI */}
+        <div id="klaro" suppressHydrationWarning />
+
+        {/* Schema.org structured data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

@@ -34,6 +34,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     src={post.coverImage || "/images/placeholder.jpg"}
                     alt={post.alt || post.title}
                     fill
+                    sizes="
+                      (max-width: 640px) 100vw,   /* mobile: full width */
+                      (max-width: 1024px) 50vw,   /* tablets: 2 per row */
+                      (max-width: 1280px) 33vw,   /* small desktops: 3 per row */
+                      25vw                        /* large desktops: 4 per row */
+                    "
                     className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105"
                   />
 
