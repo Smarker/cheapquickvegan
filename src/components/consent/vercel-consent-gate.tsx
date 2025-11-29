@@ -30,11 +30,14 @@ export default function VercelConsentGate() {
       setHasConsent(initialConsent);
 
       // Listen for live changes
-      klaro.on?.("consentChanged", (consent, service) => {
-        if (service?.name === serviceName) {
-          setHasConsent(consent);
+      klaro.on?.(
+        "consentChanged",
+        (consent: boolean, service: { name: string }) => {
+          if (service?.name === serviceName) {
+            setHasConsent(consent);
+          }
         }
-      });
+      );
     }
 
     // Poll every 100ms until Klaro exists and is initialized

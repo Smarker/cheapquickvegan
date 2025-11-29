@@ -22,22 +22,13 @@ declare module 'react' {
 declare global {
   interface Window {
     klaro?: {
-      getManager?: () => {
-        getConsent: (serviceName: string) => boolean;
-      };
-      on?: (
-        event: "consentChanged" | string,
-        callback: (consent: boolean, service: { name: string }) => void
-      ) => void;
+      getManager?: () => { getConsent: (serviceName: string) => boolean };
+      on?: (event: string, callback: (consent: boolean, service: { name: string }) => void) => void;
       show?: (serviceName?: string) => void;
       setup?: (config?: any) => void;
     };
-
-    // Add this line:
-    klaroConfig?: any;
+    klaroConfig?: typeof klaroConfig;
   }
 }
-
-
 
 export {};
