@@ -76,6 +76,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Essential resources - always load */}
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="icon" href="/favicon.ico" />
         {/* Klaro CSS */}
         <link
           rel="stylesheet"
