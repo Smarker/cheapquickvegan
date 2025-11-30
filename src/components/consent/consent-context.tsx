@@ -42,10 +42,18 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       setConsent(initialConsent);
       console.log("[ConsentProvider] Initial consent:", initialConsent);
 
-      // Listen for consent changes per service
-      window.klaro?.on?.("consentChanged", (newConsent, service) => {
-        console.log("[ConsentProvider] consentChanged:", service.name, newConsent);
-        setConsent((prev) => ({ ...prev, [service.name]: !!newConsent }));
+      // Fetch the full consent state after any change, instead of only updating the single service:
+      window.klaro?.on?.("consentChanged", () => {
+        const manager = window.klaro?.getManager?.();
+        if (!manager) return;
+
+        const updatedConsent: Record<string, boolean> = {};
+        klaroConfig.services.forEach((s) => {
+            updatedConsent[s.name] = manager.getConsent(s.name);
+        });
+
+        console.log("[GDPR] Updated full consent:", updatedConsent);
+        setConsent(updatedConsent);
       });
 
       // Show banner if no cookie yet
