@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Metadata } from "next";
-import { Instagram, Mail } from "lucide-react";
+import { Instagram, Facebook, Mail } from "lucide-react";
 
 // --- OPTIMIZED METADATA ---
 export const metadata: Metadata = {
@@ -80,6 +80,14 @@ export default function AboutPage() {
             className="text-foreground/80 hover:text-[#BC6C25] transition"
           >
             <Instagram size={32} />
+          </a>
+          <a
+            href="https://www.facebook.com/profile.php?id=61584092626079"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground/80 hover:text-[#BC6C25] transition"
+          >
+            <Facebook size={32} />
           </a>
           <a
             href="mailto:cheapquickvegan@gmail.com"
