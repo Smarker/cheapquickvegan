@@ -6,18 +6,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import klaroConfig from "../../../klaro-config";
 
-declare global {
-  interface Window {
-    klaro?: {
-      getManager?: () => { getConsent: (serviceName: string) => boolean };
-      on?: (event: string, callback: (consent: boolean, service: { name: string }) => void) => void;
-      show?: () => void;
-      setup?: (config?: any) => void;
-    };
-    klaroConfig?: typeof klaroConfig;
-  }
-}
-
 export default function GDPRConsent() {
   const [klaroReady, setKlaroReady] = useState(false);
   const [analyticsConsent, setAnalyticsConsent] = useState(false);
