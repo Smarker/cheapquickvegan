@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle"; // Assuming this path is correct
 import { Menu, X } from "lucide-react";
+import CookieSettingsButton from "./consent/cookie-settings-button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -184,11 +185,12 @@ export default function Layout({ children }: LayoutProps) {
             </a>
             {/* Link to dedicated Disclaimer page */}
             <a
-              href="/disclaimer" 
+              href="/disclaimer"
               className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm"
             >
               Disclaimer
             </a>
+            <CookieSettingsButton className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm" />
           </div>
 
           {/* Mobile links */}
@@ -213,6 +215,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               Disclaimer
             </a>
+              <CookieSettingsButton className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center" />
           </div>
         </div>
       </footer>

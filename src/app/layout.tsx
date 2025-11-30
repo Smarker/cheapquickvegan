@@ -11,9 +11,6 @@ const inter = Inter({ subsets: ["latin"] });
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
-// ------------------------------------------
-// METADATA — clean, safe, no duplicates
-// ------------------------------------------
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -74,8 +71,6 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
 };
-
-// ------------------------------------------
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
