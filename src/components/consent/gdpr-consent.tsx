@@ -1,43 +1,42 @@
-// src/components/consent/GDPRConsent.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import dynamic from "next/dynamic";
 import klaroConfig from "../../../klaro-config";
+
+// Dynamic imports of named exports
+const Analytics = dynamic(
+  () => import("@vercel/analytics/next").then(mod => mod.Analytics),
+  { ssr: false }
+);
+
+const SpeedInsights = dynamic(
+  () => import("@vercel/speed-insights/next").then(mod => mod.SpeedInsights),
+  { ssr: false }
+);
 
 export default function GDPRConsent() {
   const [klaroReady, setKlaroReady] = useState(false);
-  const [analyticsConsent, setAnalyticsConsent] = useState(false);
+  const [hasAnalyticsConsent, setHasAnalyticsConsent] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Assign Klaro config globally
     window.klaroConfig = klaroConfig;
 
-    // Inject Klaro script if not already present
-    if (!document.querySelector('script[src*="klaro-no-css"]')) {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
-      script.async = true;
-      script.onload = initializeKlaro;
-      document.body.appendChild(script);
-    } else {
-      initializeKlaro();
-    }
-
-    function initializeKlaro() {
+    const initKlaro = () => {
       const manager = window.klaro?.getManager?.();
       if (!manager) return;
 
       setKlaroReady(true);
-      setAnalyticsConsent(manager.getConsent("vercel-analytics"));
+
+      // Set initial consent
+      setHasAnalyticsConsent(manager.getConsent("vercel-analytics"));
 
       // Listen for live changes
-      window.klaro?.on?.("consentChanged", (consent: boolean, service: { name: string }) => {
+      window.klaro?.on?.("consentChanged", (consent, service) => {
         if (service.name === "vercel-analytics") {
-          setAnalyticsConsent(consent);
+          setHasAnalyticsConsent(consent);
         }
       });
 
@@ -45,16 +44,26 @@ export default function GDPRConsent() {
       if (!document.cookie.includes(klaroConfig.cookieName)) {
         window.klaro?.show?.();
       }
+    };
+
+    if (!document.querySelector('script[src*="klaro-no-css"]')) {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
+      script.async = true;
+      script.onload = initKlaro;
+      document.body.appendChild(script);
+    } else {
+      initKlaro();
     }
   }, []);
 
   return (
     <>
-      {/* Where Klaro injects the banner UI */}
-      <div id="klaro" />
+      {/* Where Klaro injects UI */}
+      <div id="klaro" suppressHydrationWarning />
 
-      {/* Render Vercel services only if consent granted */}
-      {klaroReady && analyticsConsent && (
+      {/* Render analytics only if Klaro is ready and user consented */}
+      {klaroReady && hasAnalyticsConsent && (
         <>
           <Analytics />
           <SpeedInsights />
