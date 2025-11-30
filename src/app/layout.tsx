@@ -76,8 +76,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Permissions Policy: allow Stripe Payment Request API */}
-        <meta httpEquiv="Permissions-Policy" content="payment=(self)" />
         {/* Klaro CSS */}
         <link
           rel="stylesheet"
