@@ -1,90 +1,74 @@
+// src/components/consent/GDPRConsent.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import klaroConfig from "../../../klaro-config";
 
-declare global {
-  interface Window {
-    klaro?: {
-      getManager?: () => { getConsent: (serviceName: string) => boolean };
-      on?: (event: string, callback: (consent: boolean, service: { name: string }) => void) => void;
-      show?: (serviceName?: string) => void;
-      setup?: (config?: any) => void;
-    };
-    klaroConfig?: typeof klaroConfig;
-    __vercelAnalyticsLoaded?: boolean;
-  }
-}
-
 export default function GDPRConsent() {
-  const pathname = usePathname();
   const [klaroReady, setKlaroReady] = useState(false);
   const [hasAnalyticsConsent, setHasAnalyticsConsent] = useState(false);
-  const serviceName = "vercel-analytics";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Assign global config once
     window.klaroConfig = klaroConfig;
 
-    const initKlaro = () => {
+    // Only inject Klaro once
+    if (!document.querySelector('script[src*="klaro-no-css"]')) {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
+      script.async = true;
+      script.onload = () => {
+        const manager = window.klaro?.getManager?.();
+        if (manager) {
+          setKlaroReady(true);
+
+          // Check initial consent
+          const consent = manager.getConsent("analytics");
+          setHasAnalyticsConsent(consent);
+
+          // Listen for live changes
+          window.klaro?.on?.(
+            "consentChanged",
+            (consent: boolean, service: { name: string }) => {
+              if (service.name === "analytics") setHasAnalyticsConsent(consent);
+            }
+          );
+
+          // Show banner if no cookie
+          if (!document.cookie.includes(klaroConfig.cookieName)) {
+            window.klaro?.show?.();
+          }
+        }
+      };
+      document.body.appendChild(script);
+    } else {
+      // Klaro script already exists, check manager
       const manager = window.klaro?.getManager?.();
-      if (!manager) return false;
-
-      // Force banner if cookie missing (useful for incognito/testing)
-      const cookieMissing = !document.cookie.includes(klaroConfig.cookieName);
-      if (cookieMissing) {
-        window.klaro?.show?.();
+      if (manager) {
+        setKlaroReady(true);
+        const consent = manager.getConsent("analytics");
+        setHasAnalyticsConsent(consent);
       }
-
-      // Initial consent
-      setHasAnalyticsConsent(manager.getConsent(serviceName));
-      setKlaroReady(true);
-
-      // Listen for live changes
-      window.klaro?.on?.("consentChanged", (consent: boolean, service: { name: string }) => {
-        if (service.name === serviceName) setHasAnalyticsConsent(consent);
-      });
-
-      return true;
-    };
-
-    // Check if Klaro script already loaded
-    const existingScript = document.querySelector(
-      'script[src*="klaro-no-css"]'
-    ) as HTMLScriptElement | null;
-
-    if (existingScript) {
-      initKlaro();
-      return;
     }
+  }, []);
 
-    // Inject Klaro script dynamically
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js";
-    script.async = true;
-    script.onload = () => {
-      initKlaro();
-    };
-    document.body.appendChild(script);
-  }, [pathname]);
+  // Render analytics only after Klaro is ready and user consented
+  return (
+    <>
+      {/* Where Klaro injects UI */}
+      <div id="klaro" />
 
-  // Only render Vercel Analytics if Klaro ready AND user consented
-  if (!klaroReady || !hasAnalyticsConsent) return null;
-
-  // Prevent double injection
-  if (!window.__vercelAnalyticsLoaded) {
-    window.__vercelAnalyticsLoaded = true;
-    return (
-      <>
-        <Analytics />
-        <SpeedInsights />
-      </>
-    );
-  }
-
-  return null;
+      {klaroReady && hasAnalyticsConsent && (
+        <>
+          <Analytics />
+          <SpeedInsights />
+        </>
+      )}
+    </>
+  );
 }

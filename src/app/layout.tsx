@@ -95,8 +95,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Layout>{children}</Layout>
         </ThemeProvider>
 
-        {/* GDPR + Vercel Analytics */}
-        <GDPRConsent />
+        {/* Single GDPR + Analytics system */}
+  <GDPRConsent />
 
         {/* Where Klaro injects the banner UI */}
         <div id="klaro" suppressHydrationWarning />
