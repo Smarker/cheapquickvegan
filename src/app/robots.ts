@@ -14,7 +14,6 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         "/private/",
         "/_next/data/", // Next.js data JSON files
-        "/*.ico$", // favicon or icon files
       ]
     },
     sitemap: `${siteUrl}/sitemap.xml`,
