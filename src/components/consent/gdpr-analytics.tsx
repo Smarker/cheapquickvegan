@@ -3,7 +3,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
-import { useConsent } from "./ConsentContext";
+import { useConsent } from "./consent-context";
 
 // Dynamically import analytics modules
 const Analytics = dynamic(
