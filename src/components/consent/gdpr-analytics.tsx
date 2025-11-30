@@ -17,7 +17,6 @@ const SpeedInsights = dynamic(
 export default function GDPRAnalytics() {
   const { consent } = useConsent();
 
-  console.log(process.env.NEXT_PUBLIC_ENV)
   const isPreview = process.env.NEXT_PUBLIC_ENV === "preview";
 
   const showAnalytics = consent["vercel-analytics"] ?? false;
