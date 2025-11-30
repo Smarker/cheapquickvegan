@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { useEffect, useState } from "react";
 
 export default function VercelConsentGate() {
   const [ready, setReady] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
+
+  // this MUST match the name you put in klaro-config.js
   const serviceName = "analytics";
 
   useEffect(() => {
@@ -16,43 +16,45 @@ export default function VercelConsentGate() {
 
     function tryInitialize() {
       const klaro = window.klaro;
-      if (!klaro) return; // Not loaded yet
+      if (!klaro) return;
 
       const manager = klaro.getManager?.();
       if (!manager) return;
 
-      // Klaro is ready
       clearInterval(interval);
       setReady(true);
 
-      // Initial consent
+      // Initial Klaro consent state
       const initialConsent = manager.getConsent(serviceName);
       setHasConsent(initialConsent);
 
-      // Listen for live changes
-      klaro.on?.(
-        "consentChanged",
-        (consent: boolean, service: { name: string }) => {
-          if (service?.name === serviceName) {
-            setHasConsent(consent);
-          }
+      klaro.on?.("consentChanged", (consent, service) => {
+        if (service?.name === serviceName) {
+          setHasConsent(consent);
         }
-      );
+      });
     }
 
-    // Poll every 100ms until Klaro exists and is initialized
     interval = setInterval(tryInitialize, 100);
-
     return () => clearInterval(interval);
   }, []);
 
-  // Don’t render analytics until consent + klaro manager exists
-  if (!ready || !hasConsent) return null;
+  // Load Vercel Analytics *only* when user opted in
+  useEffect(() => {
+    if (!ready || !hasConsent) return;
 
-  return (
-    <>
-      <Analytics />
-      <SpeedInsights />
-    </>
-  );
+    // Prevent double-loading
+    if (window.__vercelAnalyticsLoaded) return;
+
+    const script = document.createElement("script");
+    script.src = "/_vercel/insights/script.js"; // official endpoint
+    script.defer = true;
+    script.onload = () => {
+      window.__vercelAnalyticsLoaded = true;
+    };
+
+    document.head.appendChild(script);
+  }, [ready, hasConsent]);
+
+  return null;
 }

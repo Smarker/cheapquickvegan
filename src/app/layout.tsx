@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -5,20 +6,32 @@ import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import VercelConsentGate from "@/components/consent/vercel-consent-gate";
 import KlaroLoader from "@/components/consent/klaro-loader";
+import KlaroInjection from "@/components/consent/klaro-injection";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
+// ------------------------------------------
+// METADATA — clean, safe, no duplicates
+// ------------------------------------------
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
     template: `%s | CheapQuickVegan`,
   },
-  description: "Cheap, quick, and delicious vegan recipes with minimal ingredients. Easy meals, budget-friendly cooking, and plant-based staples anyone can make.",
+  description:
+    "Cheap, quick, and delicious vegan recipes with minimal ingredients. Easy meals, budget-friendly cooking, and plant-based staples anyone can make.",
   alternates: {
-    canonical: siteUrl,
+    canonical: siteUrl
+  },
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.jpg",
   },
   openGraph: {
     title: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
@@ -39,7 +52,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
-    description: "Cheap, quick, and delicious vegan recipes with minimal ingredients",
+    description:
+      "Cheap, quick, and delicious vegan recipes with minimal ingredients",
     images: [`${siteUrl}/opengraph-image.png`],
   },
   robots: {
@@ -53,14 +67,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.jpg",
-  },
-  manifest: `/site.webmanifest`,
 };
 
+// Theme color based on dark/light mode
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
@@ -68,18 +77,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// ------------------------------------------
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Essential resources - always load */}
-        <link rel="manifest" href="/site.webmanifest" />
-        <link rel="icon" href="/favicon.ico" />
-        {/* Klaro CSS */}
+        {/* Klaro CSS (safe to load in head, no hydration issues) */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro.min.css"
@@ -91,14 +95,14 @@ export default function RootLayout({
           <Layout>{children}</Layout>
         </ThemeProvider>
 
-        {/* Load Klaro after hydration (client-only) */}
+        {/* Loads Klaro script client-side only, never during SSR */}
         <KlaroLoader />
 
-        {/* Reads Klaro consent state and triggers Vercel Analytics */}
-        <VercelConsentGate />
+        {/* Where Klaro injects its modal and UI */}
+        <KlaroInjection />
 
-        {/* Where Klaro injects UI */}
-        <div id="klaro" suppressHydrationWarning />
+        {/* Vercel Analytics firing based on consent */}
+        <VercelConsentGate />
 
         {/* Schema.org structured data */}
         <script

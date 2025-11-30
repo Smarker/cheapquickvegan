@@ -35,6 +35,7 @@ declare global {
   interface Window {
     klaro?: Klaro;
     klaroConfig?: typeof import('../../../klaro-config').default;
+    __vercelAnalyticsLoaded?: boolean;
   }
 }
 
