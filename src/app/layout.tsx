@@ -25,7 +25,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl
   },
-  manifest: "/site.webmanifest",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
@@ -88,6 +87,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {/* Essential manifest */}
         <link rel="manifest" href="/site.webmanifest" />
+        {/* Permissions Policy: allow Stripe Payment Request API */}
+        <meta httpEquiv="Permissions-Policy" content="payment=(self)" />
       </head>
 
       <body className={inter.className}>
