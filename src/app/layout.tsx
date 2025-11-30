@@ -80,15 +80,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Essential manifest */}
+        <link rel="manifest" href="/site.webmanifest" />
+        {/* Permissions Policy: allow Stripe Payment Request API */}
+        <meta httpEquiv="Permissions-Policy" content="payment=(self)" />
         {/* Klaro CSS */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro.min.css"
         />
-        {/* Essential manifest */}
-        <link rel="manifest" href="/site.webmanifest" />
-        {/* Permissions Policy: allow Stripe Payment Request API */}
-        <meta httpEquiv="Permissions-Policy" content="payment=(self)" />
       </head>
 
       <body className={inter.className}>
