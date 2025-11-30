@@ -1,10 +1,26 @@
+"use client";
+
+import React from "react";
 import { useConsent } from "./consent-context";
 
-export default function CookieSettingsButton({ className }: { className?: string }) {
-  const { showConsentSettings } = useConsent();
+interface CookieSettingsButtonProps {
+  className?: string;
+}
+
+export default function CookieSettingsButton({ className }: CookieSettingsButtonProps) {
+  const { consent, showConsentSettings } = useConsent();
+
+  const handleClick = () => {
+    console.log("[CookieSettingsButton] Opening Klaro settings...");
+    showConsentSettings();
+  };
 
   return (
-    <button onClick={showConsentSettings} className={className}>
+    <button
+      type="button"
+      onClick={handleClick}
+      className={className}
+    >
       Cookie settings
     </button>
   );

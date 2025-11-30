@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import klaroConfig from "../../../klaro-config";
 
 interface ConsentContextValue {
-  hasAnalyticsConsent: boolean;
+  consent: Record<string, boolean>; // per service consent
   showConsentSettings: () => void;
 }
 
@@ -12,7 +12,7 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(undefined)
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
   const [klaroReady, setKlaroReady] = useState(false);
-  const [hasAnalyticsConsent, setHasAnalyticsConsent] = useState(false);
+  const [consent, setConsent] = useState<Record<string, boolean>>({});
 
   const showConsentSettings = () => {
     if (typeof window !== "undefined" && window.klaro?.show) {
@@ -32,14 +32,20 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       if (!manager) return;
 
       setKlaroReady(true);
-      setHasAnalyticsConsent(manager.getConsent("vercel-analytics"));
 
-      window.klaro?.on?.("consentChanged", (consent, service) => {
-        if (service.name === "vercel-analytics") {
-          setHasAnalyticsConsent(consent);
-        }
+      // Initialize consent for all services
+      const initialConsent: Record<string, boolean> = {};
+      klaroConfig.services.forEach((service) => {
+        initialConsent[service.name] = manager.getConsent(service.name);
+      });
+      setConsent(initialConsent);
+
+      // Listen for changes
+      window.klaro?.on?.("consentChanged", (newConsent, service) => {
+        setConsent((prev) => ({ ...prev, [service.name]: newConsent }));
       });
 
+      // Show banner if no cookie yet
       if (!document.cookie.includes(klaroConfig.cookieName)) {
         window.klaro?.show?.();
       }
@@ -56,9 +62,8 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ✅ Always render the provider
   return (
-    <ConsentContext.Provider value={{ hasAnalyticsConsent, showConsentSettings }}>
+    <ConsentContext.Provider value={{ consent, showConsentSettings }}>
       {children}
     </ConsentContext.Provider>
   );

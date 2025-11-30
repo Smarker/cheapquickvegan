@@ -1,11 +1,9 @@
-// components/consent/GDPRAnalytics.tsx
 "use client";
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useConsent } from "./consent-context";
 
-// Dynamically import analytics modules
 const Analytics = dynamic(
   () => import("@vercel/analytics/next").then(mod => mod.Analytics),
   { ssr: false }
@@ -16,26 +14,22 @@ const SpeedInsights = dynamic(
 );
 
 export default function GDPRAnalytics() {
-  const { hasAnalyticsConsent } = useConsent();
+  const { consent } = useConsent();
 
   useEffect(() => {
-    console.log("[GDPRAnalytics] Component mounted.");
-  }, []);
+    console.log("[GDPRAnalytics] consent object changed:", consent);
+  }, [consent]);
 
-  useEffect(() => {
-    console.log("[GDPRAnalytics] hasAnalyticsConsent changed:", hasAnalyticsConsent);
-  }, [hasAnalyticsConsent]);
+  const showAnalytics = consent["vercel-analytics"];
+  const showSpeed = consent["vercel-speed"];
 
-  if (!hasAnalyticsConsent) {
-    console.log("[GDPRAnalytics] No consent yet, not mounting analytics.");
-    return null;
-  }
+  console.log("[GDPRAnalytics] Rendering Analytics:", showAnalytics);
+  console.log("[GDPRAnalytics] Rendering SpeedInsights:", showSpeed);
 
-  console.log("[GDPRAnalytics] Consent granted, mounting analytics components.");
   return (
     <>
-      <Analytics />
-      <SpeedInsights />
+      {showAnalytics && <Analytics />}
+      {showSpeed && <SpeedInsights />}
     </>
   );
 }
