@@ -28,7 +28,7 @@ export default function GDPRConsent() {
           setKlaroReady(true);
 
           // Check initial consent
-          const consent = manager.getConsent("analytics");
+          const consent = manager.getConsent("vercel-analytics");
           setHasAnalyticsConsent(consent);
 
           // Listen for live changes
