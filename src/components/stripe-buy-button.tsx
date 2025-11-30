@@ -7,10 +7,20 @@ interface StripeBuyButtonProps {
 
 export default function StripeBuyButton({ buyButtonId }: StripeBuyButtonProps) {
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://js.stripe.com/v3/buy-button.js';
-    script.async = true;
-    document.body.appendChild(script);
+    const handle = () => {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/buy-button.js';
+      script.async = true;
+      document.body.appendChild(script);
+    };
+
+    // Wait until window is fully loaded
+    if (document.readyState === 'complete') {
+      handle();
+    } else {
+      window.addEventListener('load', handle);
+      return () => window.removeEventListener('load', handle);
+    }
   }, []);
 
   return (
@@ -22,3 +32,4 @@ export default function StripeBuyButton({ buyButtonId }: StripeBuyButtonProps) {
     </div>
   );
 }
+

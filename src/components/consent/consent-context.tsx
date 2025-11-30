@@ -40,7 +40,6 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
         initialConsent[service.name] = !!manager.getConsent(service.name);
       });
       setConsent(initialConsent);
-      console.log("[ConsentProvider] Initial consent:", initialConsent);
 
       // Fetch the full consent state after any change, instead of only updating the single service:
       window.klaro?.on?.("consentChanged", () => {
@@ -52,13 +51,11 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
             updatedConsent[s.name] = manager.getConsent(s.name);
         });
 
-        console.log("[GDPR] Updated full consent:", updatedConsent);
         setConsent(updatedConsent);
       });
 
       // Show banner if no cookie yet
       if (!document.cookie.includes(klaroConfig.cookieName)) {
-        console.log("[ConsentProvider] No Klaro cookie, showing banner...");
         window.klaro?.show?.();
       }
     };
