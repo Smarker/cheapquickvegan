@@ -1,22 +1,17 @@
+// components/consent/ConsentContext.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import klaroConfig from "../../../klaro-config";
 
-// Dynamic imports of named exports
-const Analytics = dynamic(
-  () => import("@vercel/analytics/next").then(mod => mod.Analytics),
-  { ssr: false }
-);
+interface ConsentContextValue {
+  hasAnalyticsConsent: boolean;
+  showConsentSettings: () => void;
+}
 
-const SpeedInsights = dynamic(
-  () => import("@vercel/speed-insights/next").then(mod => mod.SpeedInsights),
-  { ssr: false }
-);
+const ConsentContext = createContext<ConsentContextValue | undefined>(undefined);
 
-export default function GDPRConsent() {
-  const [klaroReady, setKlaroReady] = useState(false);
+export function ConsentProvider({ children }: { children: ReactNode }) {
   const [hasAnalyticsConsent, setHasAnalyticsConsent] = useState(false);
 
   useEffect(() => {
@@ -28,19 +23,14 @@ export default function GDPRConsent() {
       const manager = window.klaro?.getManager?.();
       if (!manager) return;
 
-      setKlaroReady(true);
-
-      // Set initial consent
       setHasAnalyticsConsent(manager.getConsent("vercel-analytics"));
 
-      // Listen for live changes
       window.klaro?.on?.("consentChanged", (consent, service) => {
         if (service.name === "vercel-analytics") {
           setHasAnalyticsConsent(consent);
         }
       });
 
-      // Show banner if no cookie yet
       if (!document.cookie.includes(klaroConfig.cookieName)) {
         window.klaro?.show?.();
       }
@@ -57,18 +47,21 @@ export default function GDPRConsent() {
     }
   }, []);
 
-  return (
-    <>
-      {/* Where Klaro injects UI */}
-      <div id="klaro" suppressHydrationWarning />
+  const showConsentSettings = () => {
+    if (typeof window !== "undefined" && window.klaro?.show) {
+      window.klaro.show();
+    }
+  };
 
-      {/* Render analytics only if Klaro is ready and user consented */}
-      {klaroReady && hasAnalyticsConsent && (
-        <>
-          <Analytics />
-          <SpeedInsights />
-        </>
-      )}
-    </>
+  return (
+    <ConsentContext.Provider value={{ hasAnalyticsConsent, showConsentSettings }}>
+      {children}
+    </ConsentContext.Provider>
   );
 }
+
+export const useConsent = () => {
+  const context = useContext(ConsentContext);
+  if (!context) throw new Error("useConsent must be used within a ConsentProvider");
+  return context;
+};

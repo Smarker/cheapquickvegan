@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
-import GDPRConsent from "@/components/consent/gdpr-consent";
+import { ConsentProvider } from "@/components/consent/consent-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -87,11 +87,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className={inter.className}>
         <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-          <Layout>{children}</Layout>
+          <ConsentProvider>
+            <Layout>{children}</Layout>
+          </ConsentProvider>
         </ThemeProvider>
 
         {/* Single GDPR + Analytics system */}
-        <GDPRConsent />
+        {/* <GDPRConsent /> */}
 
         {/* Where Klaro injects the banner UI
         <div id="klaro" suppressHydrationWarning /> */}
