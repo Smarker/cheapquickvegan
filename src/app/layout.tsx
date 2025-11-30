@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl
   },
-  manifest: "/site.webmanifest",
+//  manifest: "/site.webmanifest",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
