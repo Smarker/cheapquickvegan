@@ -4,9 +4,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
-import VercelConsentGate from "@/components/consent/vercel-consent-gate";
-import KlaroLoader from "@/components/consent/klaro-loader";
-import KlaroInjection from "@/components/consent/klaro-injection";
 import GDPRConsent from "@/components/consent/gdpr-consent";
 
 const inter = Inter({ subsets: ["latin"] });
