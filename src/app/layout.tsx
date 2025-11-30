@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import VercelConsentGate from "@/components/consent/vercel-consent-gate";
 import KlaroLoader from "@/components/consent/klaro-loader";
 import KlaroInjection from "@/components/consent/klaro-injection";
+import GDPRConsent from "@/components/consent/gdpr-consent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -83,11 +84,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Klaro CSS (safe to load in head, no hydration issues) */}
+        {/* Klaro CSS */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro.min.css"
         />
+        {/* Essential manifest */}
+        <link rel="manifest" href="/site.webmanifest" />
       </head>
 
       <body className={inter.className}>
@@ -95,14 +98,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Layout>{children}</Layout>
         </ThemeProvider>
 
-        {/* Loads Klaro script client-side only, never during SSR */}
-        <KlaroLoader />
+        {/* GDPR + Vercel Analytics */}
+        <GDPRConsent />
 
-        {/* Where Klaro injects its modal and UI */}
-        <KlaroInjection />
-
-        {/* Vercel Analytics firing based on consent */}
-        <VercelConsentGate />
+        {/* Where Klaro injects the banner UI */}
+        <div id="klaro" suppressHydrationWarning />
 
         {/* Schema.org structured data */}
         <script
