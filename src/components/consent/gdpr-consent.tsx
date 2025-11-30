@@ -23,7 +23,7 @@ export default function GDPRConsent() {
   const pathname = usePathname();
   const [klaroReady, setKlaroReady] = useState(false);
   const [hasAnalyticsConsent, setHasAnalyticsConsent] = useState(false);
-  const serviceName = "analytics";
+  const serviceName = "vercel-analytics";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
