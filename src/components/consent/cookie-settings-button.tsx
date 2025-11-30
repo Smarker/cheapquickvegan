@@ -1,6 +1,6 @@
+// components/consent/CookieSettingsButton.tsx
 "use client";
 
-import React from "react";
 import { useConsent } from "./consent-context";
 
 interface CookieSettingsButtonProps {
@@ -8,10 +8,10 @@ interface CookieSettingsButtonProps {
 }
 
 export default function CookieSettingsButton({ className }: CookieSettingsButtonProps) {
-  const { consent, showConsentSettings } = useConsent();
+  const { showConsentSettings, consent } = useConsent();
 
   const handleClick = () => {
-    console.log("[CookieSettingsButton] Opening Klaro settings...");
+    console.log("[CookieSettingsButton] Opening Klaro consent settings...");
     showConsentSettings();
   };
 
@@ -21,7 +21,7 @@ export default function CookieSettingsButton({ className }: CookieSettingsButton
       onClick={handleClick}
       className={className}
     >
-      Cookie settings
+      Cookie Settings
     </button>
   );
 }

@@ -1,35 +1,47 @@
+// components/consent/GDPRAnalytics.tsx
 "use client";
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useConsent } from "./consent-context";
 
+// Dynamically import analytics modules
 const Analytics = dynamic(
-  () => import("@vercel/analytics/next").then(mod => mod.Analytics),
+  () => import("@vercel/analytics/next").then((mod) => mod.Analytics),
   { ssr: false }
 );
 const SpeedInsights = dynamic(
-  () => import("@vercel/speed-insights/next").then(mod => mod.SpeedInsights),
+  () => import("@vercel/speed-insights/next").then((mod) => mod.SpeedInsights),
   { ssr: false }
 );
 
 export default function GDPRAnalytics() {
   const { consent } = useConsent();
 
+  const showAnalytics = consent["vercel-analytics"] ?? false;
+  const showSpeed = consent["vercel-speed"] ?? false;
+
   useEffect(() => {
-    console.log("[GDPRAnalytics] consent object changed:", consent);
+    console.log("[GDPRAnalytics] Current consent:", consent);
   }, [consent]);
-
-  const showAnalytics = consent["vercel-analytics"];
-  const showSpeed = consent["vercel-speed"];
-
-  console.log("[GDPRAnalytics] Rendering Analytics:", showAnalytics);
-  console.log("[GDPRAnalytics] Rendering SpeedInsights:", showSpeed);
 
   return (
     <>
-      {showAnalytics && <Analytics />}
-      {showSpeed && <SpeedInsights />}
+      {showAnalytics && (
+        <>
+          {console.log("[GDPRAnalytics] Rendering Analytics: true")}
+          <Analytics />
+        </>
+      )}
+      {!showAnalytics && console.log("[GDPRAnalytics] Rendering Analytics: false")}
+
+      {showSpeed && (
+        <>
+          {console.log("[GDPRAnalytics] Rendering SpeedInsights: true")}
+          <SpeedInsights />
+        </>
+      )}
+      {!showSpeed && console.log("[GDPRAnalytics] Rendering SpeedInsights: false")}
     </>
   );
 }

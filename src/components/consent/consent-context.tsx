@@ -1,10 +1,11 @@
+// components/consent/consent-context.tsx
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import klaroConfig from "../../../klaro-config";
 
 interface ConsentContextValue {
-  consent: Record<string, boolean>; // per service consent
+  consent: Record<string, boolean>; // per-service consent
   showConsentSettings: () => void;
 }
 
@@ -33,20 +34,23 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
 
       setKlaroReady(true);
 
-      // Initialize consent for all services
+      // Initialize consent for all services with explicit booleans
       const initialConsent: Record<string, boolean> = {};
       klaroConfig.services.forEach((service) => {
-        initialConsent[service.name] = manager.getConsent(service.name);
+        initialConsent[service.name] = !!manager.getConsent(service.name);
       });
       setConsent(initialConsent);
+      console.log("[ConsentProvider] Initial consent:", initialConsent);
 
-      // Listen for changes
+      // Listen for consent changes per service
       window.klaro?.on?.("consentChanged", (newConsent, service) => {
-        setConsent((prev) => ({ ...prev, [service.name]: newConsent }));
+        console.log("[ConsentProvider] consentChanged:", service.name, newConsent);
+        setConsent((prev) => ({ ...prev, [service.name]: !!newConsent }));
       });
 
       // Show banner if no cookie yet
       if (!document.cookie.includes(klaroConfig.cookieName)) {
+        console.log("[ConsentProvider] No Klaro cookie, showing banner...");
         window.klaro?.show?.();
       }
     };
