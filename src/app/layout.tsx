@@ -5,6 +5,7 @@ import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/consent-context";
+import ClientAnalyticsWrapper from "@/components/consent/client-analytics-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
           <ConsentProvider>
             <Layout>{children}</Layout>
+            <ClientAnalyticsWrapper />
           </ConsentProvider>
         </ThemeProvider>
 
