@@ -90,12 +90,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </ConsentProvider>
         </ThemeProvider>
 
-        {/* Single GDPR + Analytics system */}
-        {/* <GDPRConsent /> */}
-
-        {/* Where Klaro injects the banner UI
-        <div id="klaro" suppressHydrationWarning /> */}
-
         {/* Schema.org structured data */}
         <script
           type="application/ld+json"

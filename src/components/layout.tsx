@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle"; // Assuming this path is correct
 import { Menu, X } from "lucide-react";
 import CookieSettingsButton from "./consent/cookie-settings-button";
+import { ConsentProvider } from "./consent/consent-context";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -162,6 +163,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       {/* Footer */}
+      <ConsentProvider>
       <footer className="bg-secondary text-secondary-foreground shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4">
           <p className="text-center text-secondary-foreground">
@@ -219,6 +221,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </footer>
+      </ConsentProvider>
     </div>
   );
 }
