@@ -5,8 +5,7 @@ import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/consent-context";
-import ClientAnalyticsWrapper from "@/components/consent/client-analytics-wrapper";
-import GDPRShell from "@/components/consent/gdpr-shell";
+import GDPRAnalytics from "@/components/consent/gdpr-analytics";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -87,7 +86,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className={inter.className}>
         <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-            <Layout><GDPRShell>{children}</GDPRShell></Layout>
+          {/* ✅ ConsentProvider wraps the entire app */}
+          <ConsentProvider>
+            <Layout>
+              {children}
+
+              {/* Analytics only mounts if user consented */}
+              <GDPRAnalytics />
+            </Layout>
+          </ConsentProvider>
         </ThemeProvider>
 
         {/* Schema.org structured data */}
