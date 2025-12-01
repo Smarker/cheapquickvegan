@@ -92,10 +92,10 @@ export default async function PostPage({ params }: PostPageProps) {
       .map((id) => recipes.find((p) => p.id === id))
       .filter(Boolean)
       .slice(0, 3); // limit to 3
-  } else if (post.category) {
+  } else if (post.categories) {
     // fallback: random 3 recipes from same category, excluding current post
     const sameCategory = recipes.filter(
-      (p) => p.category === post.category && p.id !== post.id
+      (p) => p.categories[0] === post.categories[0] && p.id !== post.id
     );
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random()).slice(0, 3);
   }
@@ -115,7 +115,7 @@ export default async function PostPage({ params }: PostPageProps) {
       name: post.author || "Guest Author",
     },
     datePublished: new Date(post.date).toISOString(),
-    recipeCategory: post.category || undefined,
+    recipeCategory: post.categories[0] || undefined,
     keywords: post.tags?.join(", ") || undefined,
     recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")), // remove leading dashes
     recipeInstructions: instructions
@@ -155,7 +155,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </h1>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {post.category && <Badge variant="secondary">{post.category}</Badge>}
+            {post.categories && <Badge variant="secondary">{post.categories[0]}</Badge>}
             {post.tags &&
               post.tags.map((tag) => (
                 <Badge key={tag} variant="outline">

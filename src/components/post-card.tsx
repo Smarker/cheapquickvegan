@@ -40,13 +40,13 @@ export default function PostCard({ post }: PostCardProps) {
         ) : (
           <div className="absolute inset-0 bg-muted/80" />
         )}
-        {post.category && (
+        {post.categories && post.categories[0] && (
           <div className="absolute top-4 left-4 z-20">
             <Badge
               variant="secondary"
               className="backdrop-blur-sm bg-background/80 shadow-sm"
             >
-              {post.category}
+              {post.categories[0]}
             </Badge>
           </div>
         )}

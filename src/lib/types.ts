@@ -11,5 +11,6 @@ export interface Post {
   tags?: string[];
   author?: string;
   date: string;
+  categories: string[];
   relatedRecipes: string[]; // note: relation IDs
 }

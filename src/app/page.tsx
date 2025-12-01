@@ -5,17 +5,13 @@ import { getPostsFromCache, Post } from "@/lib/notion";
 
 export default function HomePage() {
   const allPosts: Post[] = getPostsFromCache();
-
-  // Get unique categories
-  const categories = Array.from(
-    new Set(allPosts.map((p) => p.category).filter(Boolean))
-  );
+  const categories = ['Meal', 'Breakfast', 'Dessert', 'Side', 'Snack']
 
   // Map first image for each category
   const categoryImages: Record<string, string> = {};
   for (const post of allPosts) {
-    if (post.category && !categoryImages[post.category]) {
-      categoryImages[post.category] = post.coverImage || "/images/placeholder.jpg";
+    if (post.categories && !categoryImages[post.categories[0]]) {
+      categoryImages[post.categories[0]] = post.coverImage || "/images/placeholder.jpg";
     }
   }
 
@@ -24,7 +20,7 @@ export default function HomePage() {
 
       {/* HEADER: photo left, text right */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16">
-        
+
         {/* Photo */}
         <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
           <Image

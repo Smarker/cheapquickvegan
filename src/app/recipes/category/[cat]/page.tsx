@@ -11,7 +11,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const { cat } = await params;
 
   const allPosts: Post[] = getPostsFromCache().filter(
-    (p) => p.category?.toLowerCase() === cat.toLowerCase()
+    (p) => p.categories?.some(
+      (c) => c.toLowerCase() === cat.toLowerCase()
+    )
   );
 
   const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
