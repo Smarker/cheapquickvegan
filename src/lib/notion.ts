@@ -24,7 +24,6 @@ export interface Post {
   content: string;
   author?: string;
   tags?: string[];
-  category: string;
   relatedRecipes: string[];
   categories: string[];
 }
@@ -48,11 +47,6 @@ export function getPostsFromCache(): Post[] {
     }
   }
   return [];
-}
-
-export function getPostsByCategory(category: string) {
-  const posts = getPostsFromCache();
-  return posts.filter((p) => p.category?.toLowerCase() === category.toLowerCase());
 }
 
 export async function fetchPublishedPosts() {
@@ -121,7 +115,6 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       content: contentString,
       author: properties.Author?.people[0]?.name,
       tags: properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
-      category: properties.Category?.select?.name,
       categories: properties.Categories?.multi_select?.map((cat: any) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r: { id: any; }) => r.id) || [],
     };
