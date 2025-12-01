@@ -42,7 +42,7 @@ export async function generateMetadata(
       type: "article",
       url: `${siteUrl}/recipes/${post.slug}`,
       publishedTime: new Date(post.date).toISOString(),
-      authors: [],
+      authors: ["Stephanie Marker"],
       tags: post.tags,
       images: [
         {
@@ -112,7 +112,7 @@ export default async function PostPage({ params }: PostPageProps) {
       : `${siteUrl}/opengraph-image.png`,
     author: {
       "@type": "Person",
-      name: post.author || "Guest Author",
+      name: "Stephanie Marker",
     },
     datePublished: new Date(post.date).toISOString(),
     recipeCategory: post.categories[0] || undefined,

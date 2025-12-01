@@ -22,7 +22,6 @@ export interface Post {
   description: string;
   date: string;
   content: string;
-  author?: string;
   tags?: string[];
   relatedRecipes: string[];
   categories: string[];
@@ -113,7 +112,6 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       date:
         properties["Published Date"]?.date?.start || new Date().toISOString(),
       content: contentString,
-      author: properties.Author?.people[0]?.name,
       tags: properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
       categories: properties.Categories?.multi_select?.map((cat: any) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r: { id: any; }) => r.id) || [],

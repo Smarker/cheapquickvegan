@@ -8,7 +8,6 @@ export interface Post {
   alt: string;
   content: string;
   tags?: string[];
-  author?: string;
   date: string;
   categories: string[];
   relatedRecipes: string[]; // note: relation IDs
