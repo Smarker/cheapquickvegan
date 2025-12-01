@@ -18,8 +18,8 @@ export default function PrivacyPolicy() {
             <li><a href="#your-rights" className="text-primary hover:underline break-words">6. Your Rights</a></li>
             <li><a href="#childrens-privacy" className="text-primary hover:underline break-words">7. Children's Privacy</a></li>
             <li><a href="#changes-to-this-privacy-policy" className="text-primary hover:underline break-words">8. Changes to This Privacy Policy</a></li>
-            <li><a href="#gdpr-compliance" className="text-primary hover:underline break-words">10. GDPR Compliance</a></li>
-            <li><a href="#contact-us" className="text-primary hover:underline break-words">9. Contact Us</a></li>
+            <li><a href="#gdpr-compliance" className="text-primary hover:underline break-words">9. GDPR Compliance</a></li>
+            <li><a href="#contact-us" className="text-primary hover:underline break-words">10. Contact Us</a></li>
           </ul>
         </nav>
       </div>
