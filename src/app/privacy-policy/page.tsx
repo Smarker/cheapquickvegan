@@ -18,6 +18,7 @@ export default function PrivacyPolicy() {
             <li><a href="#your-rights" className="text-primary hover:underline break-words">6. Your Rights</a></li>
             <li><a href="#childrens-privacy" className="text-primary hover:underline break-words">7. Children's Privacy</a></li>
             <li><a href="#changes-to-this-privacy-policy" className="text-primary hover:underline break-words">8. Changes to This Privacy Policy</a></li>
+            <li><a href="#gdpr-compliance" className="text-primary hover:underline break-words">10. GDPR Compliance</a></li>
             <li><a href="#contact-us" className="text-primary hover:underline break-words">9. Contact Us</a></li>
           </ul>
         </nav>
@@ -109,6 +110,25 @@ export default function PrivacyPolicy() {
         <h2 className="text-2xl font-semibold mb-3">8. Changes to This Privacy Policy</h2>
         <p className="break-words">
           We may update this Privacy Policy from time to time. The “Effective Date” at the top will indicate the latest version. We encourage you to review this page periodically for any changes.
+        </p>
+      </section>
+
+      <section id="gdpr-compliance" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
+        <h2 className="text-2xl font-semibold mb-3">10. GDPR Compliance</h2>
+        <p className="break-words">
+          If you are visiting from the European Union, we comply with the General Data Protection Regulation (GDPR). This means:
+        </p>
+        <ul className="list-disc ml-4 sm:ml-6 space-y-1 break-words">
+          <li>We obtain your consent before using non-essential cookies and tracking technologies.</li>
+          <li>You have the right to access, correct, or delete your personal data.</li>
+          <li>You can withdraw consent for tracking cookies at any time through our cookie settings in the site's footer or browser settings.</li>
+          <li>We do not share your personal data with third parties for their independent marketing purposes without your consent.</li>
+        </ul>
+        <p className="mt-2 break-words">
+          To exercise your GDPR rights, please contact us at{" "}
+          <a href="mailto:cheapquickvegan@gmail.com" className="text-primary hover:underline break-words">
+            cheapquickvegan@gmail.com
+          </a>.
         </p>
       </section>
 
