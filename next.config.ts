@@ -3,13 +3,23 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      "www.notion.so",
-      "notion.so", // notion hosted images
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.notion.so",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "notion.so",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   env: {
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL, // your Vercel URL
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
   experimental: {
