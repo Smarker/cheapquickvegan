@@ -1,13 +1,9 @@
-// pages/posts/[slug].tsx
-import { GetServerSideProps } from "next";
+// app/posts/[slug]/page.tsx
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic"; // ensures server-side rendering
 
 export default function LegacyPost() {
-  // This page will never render anything
-  return null;
+  return new Response("Gone", { status: 410 });
 }
-
-export const getServerSideProps: GetServerSideProps = async ({ res }) => {
-  // Tell Google the page is gone permanently
-  res.statusCode = 410;
-  return { props: {} };
-};
