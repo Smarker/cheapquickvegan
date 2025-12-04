@@ -1,9 +1,8 @@
 // app/posts/[slug]/page.tsx
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic"; // ensures server-side rendering
-
-export default function LegacyPost() {
-  return new Response("Gone", { status: 410 });
+export default function LegacyPostPage() {
+  // This will tell Next.js to render a 404 page
+  notFound();
+  return null;
 }
