@@ -232,17 +232,19 @@ function parseRecipeContent(markdown: string): RecipeContent {
   let recipeYield: string | undefined;
 
   for (const line of lines) {
-    if (/^##\s*Recipe Details/i.test(line)) section = "details";
+    if (/^##\s*Recipe Details/i.test(line)) {
+      section = "details";
+    }
     else if (/^##\s*Ingredients/i.test(line)) section = "ingredients";
     else if (/^##\s*Instructions/i.test(line)) section = "instructions";
     else if (/^##\s*/.test(line)) section = null;
     else if (section === "ingredients" && line) ingredients.push(line);
     else if (section === "instructions" && line) instructions.push(line);
     else if (section === "details" && line) {
-      const prepMatch = line.match(/^Prep Time:\s*(.*)$/i);
-      const cookMatch = line.match(/^Cook Time:\s*(.*)$/i);
-      const totalMatch = line.match(/^Total Time:\s*(.*)$/i);
-      const yieldMatch = line.match(/^Yield:\s*(.*)$/i);
+      const prepMatch = line.match(/\*\*?Prep Time:\*\*?\s*(.*)/i);
+      const cookMatch  = line.match(/\*\*?Cook Time:\*\*?\s*(.*)/i);
+      const totalMatch = line.match(/\*\*?Total Time:\*\*?\s*(.*)/i);
+      const yieldMatch = line.match(/\*\*?Yield:\*\*?\s*(.*)/i);
 
       if (prepMatch) prepTime = convertToISO8601(prepMatch[1]);
       if (cookMatch) cookTime = convertToISO8601(cookMatch[1]);
