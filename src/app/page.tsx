@@ -5,22 +5,33 @@ import { getPostsFromCache, Post } from "@/lib/notion";
 
 export default function HomePage() {
   const allPosts: Post[] = getPostsFromCache();
-  const categories = ['Meal', 'Breakfast', 'Dessert', 'Side', 'Snack']
+  const categories = ["Meal", "Breakfast", "Dessert", "Side", "Snack"];
 
   // Map first image for each category
   const categoryImages: Record<string, string> = {};
   for (const post of allPosts) {
     if (post.categories && !categoryImages[post.categories[0]]) {
-      categoryImages[post.categories[0]] = post.coverImage || "/images/placeholder.jpg";
+      categoryImages[post.categories[0]] =
+        post.coverImage || "/images/placeholder.jpg";
     }
   }
+
+  const featuredSlugs = [
+    "vegan-breakfast-tacos-dinner",
+    "high-protein-vegan-blueberry-smoothie",
+    "quick-vegan-bagel-burger",
+    "quick-vegan-air-fryer-calzone",
+  ];
+
+  const featuredRecipes = allPosts.filter((p) =>
+    featuredSlugs.includes(p.slug)
+  );
 
   return (
     <div className="w-full px-4 sm:px-6 py-12">
 
-      {/* HEADER: photo left, text right */}
+      {/* HEADER */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16">
-
         {/* Photo */}
         <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
           <Image
@@ -47,18 +58,52 @@ export default function HomePage() {
         </div>
       </div>
 
-    <h2 className="text-3xl sm:text-4xl font-bold mb-8">Recipe Categories</h2>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
+      {/* FEATURED RECIPES */}
+      <h2 className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
+        Featured Recipes
+      </h2>
+
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16">
+        {featuredRecipes.map((featuredRecipe) => (
+          <Link
+            key={featuredRecipe.slug}
+            href={`/recipes/${featuredRecipe.slug}`}
+            className="block group"
+          >
+            <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
+                <Image
+                  src={featuredRecipe.coverImage || "/images/placeholder.jpg"}
+                  alt={featuredRecipe.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
+                  className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                />
+              </div>
+
+              <div className="p-2">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
+                  {featuredRecipe.title}
+                </h3>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* RECIPE CATEGORIES */}
+      <h2 className="text-3xl sm:text-4xl font-bold mb-8">Recipe Categories</h2>
+
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
         {categories.map((cat) => (
           <Link
             key={cat}
             href={`/recipes/category/${cat.toLowerCase()}`}
             className="block group"
           >
-            {/* Category Card */}
             <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
-              {/* Smaller Preview Image */}
               <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <Image
                   src={categoryImages[cat] || "/images/placeholder.jpg"}
@@ -69,7 +114,6 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Category Title */}
               <div className="p-2">
                 <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -79,6 +123,7 @@ export default function HomePage() {
           </Link>
         ))}
       </div>
+
     </div>
   );
 }
