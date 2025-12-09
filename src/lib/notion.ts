@@ -7,11 +7,34 @@ if (!process.env.VERCEL && !process.env.NOTION_TOKEN) {
 
 import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
-import { PageObjectResponse } from "@notionhq/client/";
+import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import fs from "fs";
 
-export const notion = new Client({ auth: process.env.NOTION_TOKEN, notionVersion: '2022-06-28'});
+export const notion = new Client({ auth: process.env.NOTION_TOKEN, notionVersion: '2025-09-03'});
 export const n2m = new NotionToMarkdown({ notionClient: notion });
+
+// Cache the data source ID to avoid repeated lookups
+let cachedDataSourceId: string | null = null;
+
+async function getDataSourceId(): Promise<string> {
+  if (cachedDataSourceId) {
+    return cachedDataSourceId;
+  }
+
+  const database = await notion.databases.retrieve({
+    database_id: process.env.NOTION_DATABASE_ID!,
+  });
+
+  // Extract data source ID from the database response
+  const dataSources = (database as any).data_sources;
+  if (!dataSources || dataSources.length === 0) {
+    throw new Error("No data sources found in database");
+  }
+
+  const dataSourceId: string = dataSources[0].id;
+  cachedDataSourceId = dataSourceId;
+  return dataSourceId;
+}
 
 export interface Post {
   id: string;
@@ -28,10 +51,11 @@ export interface Post {
 }
 
 export async function getDatabaseStructure() {
-  const database = await notion.databases.retrieve({
-    database_id: process.env.NOTION_DATABASE_ID!,
+  const dataSourceId = await getDataSourceId();
+  const dataSource = await notion.dataSources.retrieve({
+    data_source_id: dataSourceId,
   });
-  return database;
+  return dataSource;
 }
 
 export function getPostsFromCache(): Post[] {
@@ -50,9 +74,10 @@ export function getPostsFromCache(): Post[] {
 
 export async function fetchPublishedPosts() {
   // This function is now intended to be used only by the caching script.
-  // @ts-ignore - bypass TypeScript error with v4 SDK types
-  const recipes = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
+  const dataSourceId = await getDataSourceId();
+
+  const recipes = await notion.dataSources.query({
+    data_source_id: dataSourceId,
     filter: {
       and: [
         {
