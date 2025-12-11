@@ -11,7 +11,7 @@ interface RecipeSearchBarProps {
 
 export function RecipeSearchBar({ value, onChange }: RecipeSearchBarProps) {
   return (
-    <div className="hidden md:block relative max-w-md">
+    <div className="hidden md:block relative w-96">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"

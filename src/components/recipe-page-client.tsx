@@ -21,12 +21,13 @@ export default function RecipePageClient({ recipes }: RecipePageClientProps) {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-24 md:pb-8">
-      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-6 md:mb-8">
-        All Recipes
-      </h1>
-
-      <div className="hidden md:block mb-8">
-        <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          All Recipes
+        </h1>
+        <div className="hidden md:block">
+          <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
+        </div>
       </div>
 
       {/* Mobile bottom search bar */}
