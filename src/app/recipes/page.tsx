@@ -31,7 +31,34 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: siteUrl,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Recipes",
+      item: `${siteUrl}/recipes`,
+    },
+  ],
+};
+
 export default function RecipesPage() {
   const recipes: Post[] = getPostsFromCache();
-  return <RecipePageClient recipes={recipes} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <RecipePageClient recipes={recipes} />
+    </>
+  );
 }

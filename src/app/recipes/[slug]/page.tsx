@@ -114,11 +114,47 @@ export default async function PostPage({ params }: PostPageProps) {
     mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}/recipes/${post.slug}` },
   };
 
+  const category = post.categories[0];
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Recipes",
+        item: `${siteUrl}/recipes`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: category.charAt(0).toUpperCase() + category.slice(1),
+        item: `${siteUrl}/recipes/category/${category.toLowerCase()}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: post.title,
+        item: `${siteUrl}/recipes/${post.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <div className="max-w-3xl mx-auto">

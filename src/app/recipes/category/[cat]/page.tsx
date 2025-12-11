@@ -59,6 +59,40 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   );
 
   const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
-  return <CategoryPageClient recipes={allPosts} category={displayCategory} />;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Recipes",
+        item: `${siteUrl}/recipes`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: displayCategory,
+        item: `${siteUrl}/recipes/category/${cat.toLowerCase()}`,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <CategoryPageClient recipes={allPosts} category={displayCategory} />
+    </>
+  );
 }
