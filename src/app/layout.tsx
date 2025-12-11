@@ -114,6 +114,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "CheapQuickVegan",
+              url: siteUrl,
+              logo: `${siteUrl}/logo.png`,
+              description:
+                "Cheap, quick, and delicious vegan recipes with minimal ingredients. Easy meals, budget-friendly cooking, and plant-based staples anyone can make.",
+              founder: {
+                "@type": "Person",
+                name: "Stephanie Marker",
+              },
+              sameAs: [
+                "https://instagram.com/cheapquickvegan",
+                "https://www.facebook.com/profile.php?id=61584092626079",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                email: "cheapquickvegan@gmail.com",
+                contactType: "customer service",
+              },
+            }),
+          }}
+        />
       </body>
     </html>
   );
