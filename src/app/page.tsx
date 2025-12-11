@@ -31,30 +31,32 @@ export default function HomePage() {
     <div className="w-full px-4 sm:px-6 py-12">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16">
-        {/* Photo */}
-        <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
-          <Image
-            src="/images/stephanie.jpg"
-            alt="Stephanie"
-            fill
-            sizes="(max-width: 640px) 120px, (max-width: 1024px) 150px, 200px"
-            className="rounded-full object-cover"
-          />
-        </div>
+      <div className="flex justify-center mb-16">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          {/* Photo */}
+          <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
+            <Image
+              src="/images/stephanie.jpg"
+              alt="Stephanie"
+              fill
+              sizes="(max-width: 640px) 120px, (max-width: 1024px) 150px, 200px"
+              className="rounded-full object-cover"
+            />
+          </div>
 
-        {/* Text */}
-        <div className="flex flex-col justify-center max-w-3xl w-full text-left">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">
-            Welcome to CheapQuickVegan
-          </h1>
+          {/* Text */}
+          <div className="flex flex-col justify-center max-w-3xl text-left">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3 text-center md:text-left">
+              Welcome to CheapQuickVegan
+            </h1>
 
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
-            amazing vegan meals to fuel an active lifestyle. Here, you can find
-            quick, flavorful, no-fluff plant-based recipes. Each recipe comes with
-            tips & substitutions to make it easy and tasty.
-          </p>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
+              amazing vegan meals to fuel an active lifestyle. Here, you can find
+              quick, flavorful, no-fluff plant-based recipes. Each recipe comes with
+              tips & substitutions to make it easy and tasty.
+            </p>
+          </div>
         </div>
       </div>
 
