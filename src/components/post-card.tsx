@@ -28,7 +28,7 @@ export default function PostCard({ post }: PostCardProps) {
         className="absolute inset-0 z-10"
         aria-label={post.title}
       />
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-lg">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-lg">
         {post.coverImage ? (
           <Image
             src={post.coverImage}

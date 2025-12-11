@@ -160,7 +160,7 @@ export default async function PostPage({ params }: PostPageProps) {
       <div className="max-w-3xl mx-auto">
         {/* --- Main Recipe Image --- */}
         {post.coverImage && (
-          <div className="relative w-full max-h-[400px] sm:max-h-[350px] md:max-h-[300px] overflow-hidden mb-4 sm:mb-6 md:mb-8">
+          <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-6 md:mb-8">
             <NotionImage
               src={post.coverImage}
               alt={post.alt || post.title}
