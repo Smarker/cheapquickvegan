@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { RecipeSearchBar } from "./recipe-search-bar";
+import { RecipeSearchBar, MobileSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
 
 interface CategoryPageClientProps {
@@ -22,12 +22,15 @@ export default function CategoryPageClient({ recipes, category }: CategoryPageCl
   const filteredRecipes = filterRecipes(recipes, searchQuery);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6">{category}s</h1>
+    <div className="w-full max-w-6xl mx-auto px-4 pb-24 md:pb-8">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 md:mb-8">{category}s</h1>
 
-      <div className="mb-8">
+      <div className="hidden md:block mb-8">
         <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
       </div>
+
+      {/* Mobile bottom search bar */}
+      <MobileSearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {filteredRecipes.length === 0 ? (
         <p className="text-muted-foreground">

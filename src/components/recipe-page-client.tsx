@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import PostCard from "./post-card";
-import { RecipeSearchBar } from "./recipe-search-bar";
+import { RecipeSearchBar, MobileSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
 
 interface RecipePageClientProps {
@@ -20,14 +20,17 @@ export default function RecipePageClient({ recipes }: RecipePageClientProps) {
   const filteredRecipes = filterRecipes(recipes, searchQuery);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-6">
+    <div className="w-full max-w-6xl mx-auto px-4 pb-24 md:pb-8">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-6 md:mb-8">
         All Recipes
       </h1>
 
-      <div className="mb-8">
+      <div className="hidden md:block mb-8">
         <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
       </div>
+
+      {/* Mobile bottom search bar */}
+      <MobileSearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {filteredRecipes.length === 0 ? (
         <p className="text-muted-foreground">
