@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { RecipeSearchBar, MobileSearchBar } from "./recipe-search-bar";
+import { RecipeSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
 
 interface CategoryPageClientProps {
@@ -19,19 +19,21 @@ function filterRecipes(recipes: Post[], query: string): Post[] {
 
 export default function CategoryPageClient({ recipes, category }: CategoryPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const filteredRecipes = filterRecipes(recipes, searchQuery);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pb-24 md:pb-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold">{category}s</h1>
-        <div className="hidden md:block">
-          <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
+    <div className="w-full max-w-6xl mx-auto px-4">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <h1 className={`text-3xl sm:text-4xl font-bold ${isSearchExpanded ? 'hidden md:block' : ''}`}>
+          {category}s
+        </h1>
+        <RecipeSearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onExpandChange={setIsSearchExpanded}
+        />
       </div>
-
-      {/* Mobile bottom search bar */}
-      <MobileSearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {filteredRecipes.length === 0 ? (
         <p className="text-muted-foreground">

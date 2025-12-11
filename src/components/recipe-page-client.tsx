@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import PostCard from "./post-card";
-import { RecipeSearchBar, MobileSearchBar } from "./recipe-search-bar";
+import { RecipeSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
 
 interface RecipePageClientProps {
@@ -17,21 +17,21 @@ function filterRecipes(recipes: Post[], query: string): Post[] {
 
 export default function RecipePageClient({ recipes }: RecipePageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const filteredRecipes = filterRecipes(recipes, searchQuery);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pb-24 md:pb-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+    <div className="w-full max-w-6xl mx-auto px-4">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight text-foreground ${isSearchExpanded ? 'hidden md:block' : ''}`}>
           All Recipes
         </h1>
-        <div className="hidden md:block">
-          <RecipeSearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
+        <RecipeSearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onExpandChange={setIsSearchExpanded}
+        />
       </div>
-
-      {/* Mobile bottom search bar */}
-      <MobileSearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {filteredRecipes.length === 0 ? (
         <p className="text-muted-foreground">
