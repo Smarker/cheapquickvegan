@@ -30,6 +30,18 @@ export default function Layout({ children }: LayoutProps) {
 
   const isActive = (href: string) => pathname === href;
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  // Disable browser's native scroll restoration and handle it ourselves
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+  }, []);
+
   // Desktop magic line
   useEffect(() => {
     if (!desktopNavRef.current) return;
@@ -157,7 +169,7 @@ export default function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Page content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {children}
       </main>
 
