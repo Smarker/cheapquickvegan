@@ -1,5 +1,5 @@
 import { getRecipesFromCache } from "@/lib/notion";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -77,8 +77,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   if (recipe.relatedRecipes?.length) {
     relatedRecipes = recipe.relatedRecipes
-      .map((id) => recipes.find((r) => r.id === id))
-      .filter((r): r is Recipe => Boolean(r))
+      .map((id: string) => recipes.find((r: Recipe) => r.id === id))
+      .filter((r: Recipe | undefined): r is Recipe => Boolean(r))
       .slice(0, 3);
   } else if (recipe.categories) {
     const sameCategory = recipes.filter(
@@ -184,7 +184,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             <div className="flex flex-wrap gap-2 mb-4">
               {recipe.categories && <Badge variant="secondary">{recipe.categories[0]}</Badge>}
               {recipe.recipeCuisine && <Badge variant="default">{recipe.recipeCuisine}</Badge>}
-              {recipe.tags?.map((tag) => (
+              {recipe.tags?.map((tag: string) => (
                 <Badge key={tag} variant="outline">{tag}</Badge>
               ))}
             </div>

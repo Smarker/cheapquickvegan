@@ -4,7 +4,7 @@ import { useState } from "react";
 import RecipeCard from "./recipe-card";
 import RecipeCardCompact from "./recipe-card-compact";
 import { RecipeSearchBar } from "./recipe-search-bar";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 import { filterRecipes } from "@/lib/utils";
 
 type CardVariant = "detailed" | "compact";

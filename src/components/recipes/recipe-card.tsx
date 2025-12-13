@@ -8,7 +8,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { ArrowUpRight } from "lucide-react";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 
 interface RecipeCardProps {
   recipe: Recipe;

@@ -1,4 +1,3 @@
-// src/lib/types.ts
 export interface Recipe {
   id: string;
   title: string;

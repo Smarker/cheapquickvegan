@@ -1,7 +1,7 @@
 "use client";
 
 import RecipeListPage from "./recipe-list-page";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 
 interface RecipePageClientProps {
   recipes: Recipe[];

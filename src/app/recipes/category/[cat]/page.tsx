@@ -1,8 +1,8 @@
 // app/recipes/category/[cat]/page.tsx
 import { getRecipesFromCache } from "@/lib/notion";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 import { Metadata } from "next";
-import CategoryPageClient from "@/components/category-page-client";
+import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
 
 interface CategoryPageProps {
@@ -55,7 +55,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const recipes: Recipe[] = getRecipesFromCache().filter(
     (r) => r.categories?.some(
-      (c) => c.toLowerCase() === cat.toLowerCase()
+      (c: string) => c.toLowerCase() === cat.toLowerCase()
     )
   );
 

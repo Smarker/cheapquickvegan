@@ -1,5 +1,5 @@
 import { getRecipesFromCache } from "@/lib/notion";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 import { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/constants";
 

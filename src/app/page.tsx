@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getRecipesFromCache } from "@/lib/notion";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 
 export default function HomePage() {
   const allRecipes: Recipe[] = getRecipesFromCache();

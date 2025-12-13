@@ -1,7 +1,7 @@
 // app/recipes/page.tsx
-import RecipePageClient from "@/components/recipe-page-client";
+import RecipePageClient from "@/components/recipes/recipe-page-client";
 import { getRecipesFromCache } from "@/lib/notion";
-import { Recipe } from "@/lib/types";
+import { Recipe } from "@/types/recipe";
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 

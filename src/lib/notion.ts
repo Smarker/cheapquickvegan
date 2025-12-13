@@ -9,7 +9,7 @@ import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 import { PageObjectResponse, GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
 import fs from "fs";
-import { Recipe } from "./types";
+import { Recipe } from "@/types/recipe";
 
 // Extended database response type for data sources (not in official SDK types)
 type DatabaseWithDataSources = GetDatabaseResponse & {
