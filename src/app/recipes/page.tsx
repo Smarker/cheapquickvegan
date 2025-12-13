@@ -1,6 +1,7 @@
 // app/recipes/page.tsx
 import RecipePageClient from "@/components/recipe-page-client";
-import { getPostsFromCache, Post } from "@/lib/notion";
+import { getRecipesFromCache } from "@/lib/notion";
+import { Recipe } from "@/lib/types";
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 
@@ -50,7 +51,7 @@ const breadcrumbJsonLd = {
 };
 
 export default function RecipesPage() {
-  const recipes: Post[] = getPostsFromCache();
+  const recipes: Recipe[] = getRecipesFromCache();
   return (
     <>
       <script

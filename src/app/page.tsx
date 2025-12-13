@@ -1,18 +1,19 @@
 // app/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { getPostsFromCache, Post } from "@/lib/notion";
+import { getRecipesFromCache } from "@/lib/notion";
+import { Recipe } from "@/lib/types";
 
 export default function HomePage() {
-  const allPosts: Post[] = getPostsFromCache();
+  const allRecipes: Recipe[] = getRecipesFromCache();
   const categories = ["Meal", "Breakfast", "Dessert", "Side", "Snack"];
 
   // Map first image for each category
   const categoryImages: Record<string, string> = {};
-  for (const post of allPosts) {
-    if (post.categories && !categoryImages[post.categories[0]]) {
-      categoryImages[post.categories[0]] =
-        post.coverImage || "/images/placeholder.jpg";
+  for (const recipe of allRecipes) {
+    if (recipe.categories && !categoryImages[recipe.categories[0]]) {
+      categoryImages[recipe.categories[0]] =
+        recipe.coverImage || "/images/placeholder.jpg";
     }
   }
 
@@ -23,8 +24,8 @@ export default function HomePage() {
     "quick-vegan-air-fryer-calzone",
   ];
 
-  const featuredRecipes = allPosts.filter((p) =>
-    featuredSlugs.includes(p.slug)
+  const featuredRecipes = allRecipes.filter((r) =>
+    featuredSlugs.includes(r.slug)
   );
 
   return (

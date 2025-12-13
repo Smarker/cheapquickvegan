@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import PostCard from "./post-card";
+import RecipeCard from "./recipe-card";
 import { RecipeSearchBar } from "./recipe-search-bar";
-import { Post } from "@/lib/types";
+import { Recipe } from "@/lib/types";
 import { filterRecipes } from "@/lib/utils";
 
 interface RecipePageClientProps {
-  recipes: Post[];
+  recipes: Recipe[];
 }
 
 export default function RecipePageClient({ recipes }: RecipePageClientProps) {
@@ -35,7 +35,7 @@ export default function RecipePageClient({ recipes }: RecipePageClientProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
           {filteredRecipes.map((recipe) => (
-            <PostCard key={recipe.id} post={recipe} />
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>
       )}

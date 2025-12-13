@@ -9,6 +9,7 @@ import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 import { PageObjectResponse, GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
 import fs from "fs";
+import { Recipe } from "./types";
 
 // Extended database response type for data sources (not in official SDK types)
 type DatabaseWithDataSources = GetDatabaseResponse & {
@@ -62,21 +63,6 @@ async function getDataSourceId(): Promise<string> {
   return dataSourceId;
 }
 
-export interface Post {
-  id: string;
-  title: string;
-  alt: string;
-  slug: string;
-  coverImage: string;
-  description: string;
-  date: string;
-  lastUpdated: string;
-  content: string;
-  tags?: string[];
-  relatedRecipes: string[];
-  categories: string[];
-  recipeCuisine: string;
-}
 
 export async function getDatabaseStructure() {
   const dataSourceId = await getDataSourceId();
@@ -86,7 +72,7 @@ export async function getDatabaseStructure() {
   return dataSource;
 }
 
-export function getPostsFromCache(): Post[] {
+export function getRecipesFromCache(): Recipe[] {
   const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
@@ -127,13 +113,13 @@ export async function fetchPublishedPosts() {
   return recipes.results as PageObjectResponse[];
 }
 
-export async function getPost(slug: string): Promise<Post | null> {
-  const recipes = getPostsFromCache();
-  const post = recipes.find((p) => p.slug === slug);
-  return post || null;
+export async function getRecipe(slug: string): Promise<Recipe | null> {
+  const recipes = getRecipesFromCache();
+  const recipe = recipes.find((r) => r.slug === slug);
+  return recipe || null;
 }
 
-export async function getPostFromNotion(pageId: string): Promise<Post | null> {
+export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null> {
   try {
     const page = (await notion.pages.retrieve({
       page_id: pageId,
@@ -151,7 +137,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
 
     const properties = page.properties as unknown as RecipePageProperties;
     const publishedDate = properties["Published Date"]?.date?.start || new Date().toISOString();
-    const post: Post = {
+    const recipe: Recipe = {
       id: page.id,
       title: properties.Title.title[0]?.plain_text || "Untitled",
       alt: properties.Alt.rich_text[0]?.plain_text || "",
@@ -172,9 +158,9 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
     };
 
-    return post;
+    return recipe;
   } catch (error) {
-    console.error("Error getting post:", error);
+    console.error("Error getting recipe:", error);
     return null;
   }
 }

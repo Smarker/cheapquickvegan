@@ -1,16 +1,16 @@
 // src/lib/types.ts
-export interface Post {
+export interface Recipe {
   id: string;
   title: string;
   slug: string;
   description: string;
-  coverImage?: string;
+  coverImage: string;
   alt: string;
   content: string;
   tags?: string[];
   date: string;
-  lastUpdated?: string;
+  lastUpdated: string;
   categories: string[];
-  relatedRecipes: string[]; // note: relation IDs
+  relatedRecipes: string[];
   recipeCuisine: string;
 }

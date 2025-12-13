@@ -4,11 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { RecipeSearchBar } from "./recipe-search-bar";
-import { Post } from "@/lib/types";
+import { Recipe } from "@/lib/types";
 import { filterRecipes } from "@/lib/utils";
 
 interface CategoryPageClientProps {
-  recipes: Post[];
+  recipes: Recipe[];
   category: string;
 }
 
@@ -36,13 +36,13 @@ export default function CategoryPageClient({ recipes, category }: CategoryPageCl
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredRecipes.map((post) => (
-            <Link key={post.id} href={`/recipes/${post.slug}`} className="group relative block">
+          {filteredRecipes.map((recipe) => (
+            <Link key={recipe.id} href={`/recipes/${recipe.slug}`} className="group relative block">
               <div className="bg-white dark:bg-neutral-800 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg overflow-hidden relative">
                 <div className="relative w-full aspect-[5/4] overflow-hidden">
                   <Image
-                    src={post.coverImage || "/images/placeholder.jpg"}
-                    alt={post.alt || post.title}
+                    src={recipe.coverImage || "/images/placeholder.jpg"}
+                    alt={recipe.alt || recipe.title}
                     fill
                     sizes="
                       (max-width: 640px) 100vw,
@@ -53,12 +53,12 @@ export default function CategoryPageClient({ recipes, category }: CategoryPageCl
                     className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white p-3 text-center text-xs sm:text-sm">
-                    {(post.description?.split(".")[0] || "Click to view recipe") + "."}
+                    {(recipe.description?.split(".")[0] || "Click to view recipe") + "."}
                   </div>
                 </div>
                 <div className="p-2">
                   <h3 className="text-sm sm:text-base font-medium line-clamp-3 bg-gradient-to-t from-white/90 dark:from-neutral-800/80 px-2 py-1">
-                    {post.title}
+                    {recipe.title}
                   </h3>
                 </div>
               </div>

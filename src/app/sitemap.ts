@@ -1,11 +1,12 @@
-import { getPostsFromCache, Post } from "@/lib/notion";
+import { getRecipesFromCache } from "@/lib/notion";
+import { Recipe } from "@/lib/types";
 import { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const recipes = getPostsFromCache();
-  const postUrls = recipes.map((post: Post) => ({
-    url: `${SITE_URL}/recipes/${post.slug}`,
+  const recipes = getRecipesFromCache();
+  const recipeUrls = recipes.map((recipe: Recipe) => ({
+    url: `${SITE_URL}/recipes/${recipe.slug}`,
     lastModified: new Date(), // new Date(post.date),
     changeFrequency: "weekly" as const,
     priority: 0.8,
@@ -48,6 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...staticUrls,
     ...categoryUrls,
-    ...postUrls,
+    ...recipeUrls,
   ];
 }

@@ -1,4 +1,5 @@
-import { getPostsFromCache, Post } from "@/lib/notion";
+import { getRecipesFromCache } from "@/lib/notion";
+import { Recipe } from "@/lib/types";
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -11,77 +12,77 @@ import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { parseRecipeContent } from "@/lib/recipe-parser";
 
-interface PostPageProps {
+interface RecipePageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata(
-  { params }: PostPageProps,
+  { params }: RecipePageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const recipes = getPostsFromCache();
-  const post = recipes.find((p) => p.slug === slug);
+  const recipes = getRecipesFromCache();
+  const recipe = recipes.find((r) => r.slug === slug);
 
-  if (!post) {
+  if (!recipe) {
     return {
-      title: "Post Not Found",
+      title: "Recipe Not Found",
     };
   }
 
   return {
-    title: post.title,
-    description: post.description,
-    alternates: { canonical: `${SITE_URL}/recipes/${post.slug}` },
+    title: recipe.title,
+    description: recipe.description,
+    alternates: { canonical: `${SITE_URL}/recipes/${recipe.slug}` },
     openGraph: {
-      title: post.title,
-      description: post.description,
+      title: recipe.title,
+      description: recipe.description,
       type: "article",
-      url: `${SITE_URL}/recipes/${post.slug}`,
-      publishedTime: new Date(post.date).toISOString(),
-      modifiedTime: new Date(post.lastUpdated || post.date).toISOString(),
+      url: `${SITE_URL}/recipes/${recipe.slug}`,
+      publishedTime: new Date(recipe.date).toISOString(),
+      modifiedTime: new Date(recipe.lastUpdated || recipe.date).toISOString(),
       authors: ["Stephanie Marker"],
-      tags: post.tags,
+      tags: recipe.tags,
       images: [
         {
-          url: post.coverImage || `${SITE_URL}/opengraph-image.png`,
+          url: recipe.coverImage || `${SITE_URL}/opengraph-image.png`,
           width: 1200,
           height: 630,
-          alt: post.alt || post.title,
+          alt: recipe.alt || recipe.title,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
-      description: post.description,
-      images: [{ url: post.coverImage || `${SITE_URL}/opengraph-image.png`, alt: post.alt || post.title }],
+      title: recipe.title,
+      description: recipe.description,
+      images: [{ url: recipe.coverImage || `${SITE_URL}/opengraph-image.png`, alt: recipe.alt || recipe.title }],
     },
   };
 }
 
-export default async function PostPage({ params }: PostPageProps) {
+export default async function RecipePage({ params }: RecipePageProps) {
   const { slug } = await params;
-  const recipes = getPostsFromCache();
-  const post = recipes.find((p) => p.slug === slug);
+  const recipes = getRecipesFromCache();
+  const recipe = recipes.find((r) => r.slug === slug);
 
-  if (!post) notFound();
+  if (!recipe) notFound();
 
-  const { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield } = post.content
-    ? parseRecipeContent(post.content)
+  const { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield } = recipe.content
+    ? parseRecipeContent(recipe.content)
     : { ingredients: [], instructions: [] };
 
   // --- RELATED RECIPES LOGIC ---
-  let relatedRecipes: Post[] = [];
+  let relatedRecipes: Recipe[] = [];
 
-  if (post.relatedRecipes?.length) {
-    relatedRecipes = post.relatedRecipes
-      .map((id) => recipes.find((p) => p.id === id))
-      .filter((p): p is Post => Boolean(p))
+  if (recipe.relatedRecipes?.length) {
+    relatedRecipes = recipe.relatedRecipes
+      .map((id) => recipes.find((r) => r.id === id))
+      .filter((r): r is Recipe => Boolean(r))
       .slice(0, 3);
-  } else if (post.categories) {
+  } else if (recipe.categories) {
     const sameCategory = recipes.filter(
-      (p) => p.categories[0] === post.categories[0] && p.id !== post.id
+      (r) => r.categories[0] === recipe.categories[0] && r.id !== recipe.id
     );
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random()).slice(0, 3);
   }
@@ -89,19 +90,19 @@ export default async function PostPage({ params }: PostPageProps) {
   const recipeJsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
-    name: post.title,
-    description: post.description,
-    image: post.coverImage
-      ? post.coverImage.startsWith("http")
-        ? post.coverImage
-        : `${SITE_URL}${post.coverImage}`
+    name: recipe.title,
+    description: recipe.description,
+    image: recipe.coverImage
+      ? recipe.coverImage.startsWith("http")
+        ? recipe.coverImage
+        : `${SITE_URL}${recipe.coverImage}`
       : `${SITE_URL}/opengraph-image.png`,
     author: { "@type": "Person", name: "Stephanie Marker" },
-    datePublished: new Date(post.date).toISOString(),
-    dateModified: new Date(post.lastUpdated || post.date).toISOString(),
-    recipeCategory: post.categories?.[0] || undefined,
-    recipeCuisine: post.recipeCuisine || undefined,
-    keywords: post.tags?.join(", ") || undefined,
+    datePublished: new Date(recipe.date).toISOString(),
+    dateModified: new Date(recipe.lastUpdated || recipe.date).toISOString(),
+    recipeCategory: recipe.categories?.[0] || undefined,
+    recipeCuisine: recipe.recipeCuisine || undefined,
+    keywords: recipe.tags?.join(", ") || undefined,
     recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")),
     recipeInstructions: instructions
       .filter((step) => step.trim() && step.trim() !== "---")
@@ -110,10 +111,10 @@ export default async function PostPage({ params }: PostPageProps) {
     cookTime,
     totalTime,
     recipeYield,
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${post.slug}` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
-  const category = post.categories[0];
+  const category = recipe.categories[0];
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -139,8 +140,8 @@ export default async function PostPage({ params }: PostPageProps) {
       {
         "@type": "ListItem",
         position: 4,
-        name: post.title,
-        item: `${SITE_URL}/recipes/${post.slug}`,
+        name: recipe.title,
+        item: `${SITE_URL}/recipes/${recipe.slug}`,
       },
     ],
   };
@@ -158,11 +159,11 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <div className="max-w-3xl mx-auto">
         {/* --- Main Recipe Image --- */}
-        {post.coverImage && (
+        {recipe.coverImage && (
           <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-6 md:mb-8">
             <NotionImage
-              src={post.coverImage}
-              alt={post.alt || post.title}
+              src={recipe.coverImage}
+              alt={recipe.alt || recipe.title}
               className="object-cover w-full h-full"
             />
           </div>
@@ -172,18 +173,18 @@ export default async function PostPage({ params }: PostPageProps) {
         <article className="prose dark:prose-invert">
           <header className="mb-8">
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground mb-2 sm:mb-4 text-sm">
-              <span><span className="font-medium">Published:</span> <time dateTime={new Date(post.date).toISOString()}>{format(new Date(post.date), "MMMM d, yyyy")}</time></span>
-              <span><span className="font-medium">Updated:</span> <time dateTime={new Date(post.lastUpdated || post.date).toISOString()}>{format(new Date(post.lastUpdated || post.date), "MMMM d, yyyy")}</time></span>
+              <span><span className="font-medium">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time></span>
+              <span><span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated || recipe.date).toISOString()}>{format(new Date(recipe.lastUpdated || recipe.date), "MMMM d, yyyy")}</time></span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-              {post.title}
+              {recipe.title}
             </h1>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              {post.categories && <Badge variant="secondary">{post.categories[0]}</Badge>}
-              {post.recipeCuisine && <Badge variant="default">{post.recipeCuisine}</Badge>}
-              {post.tags?.map((tag) => (
+              {recipe.categories && <Badge variant="secondary">{recipe.categories[0]}</Badge>}
+              {recipe.recipeCuisine && <Badge variant="default">{recipe.recipeCuisine}</Badge>}
+              {recipe.tags?.map((tag) => (
                 <Badge key={tag} variant="outline">{tag}</Badge>
               ))}
             </div>
@@ -197,7 +198,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   <div className="relative w-full aspect-[16/9] sm:aspect-[3/2] md:aspect-[4/3] mb-4">
                     <NotionImage
                       src={src}
-                      alt={alt ?? post.title}
+                      alt={alt ?? recipe.title}
                       className="object-cover w-full h-full"
                       {...props}
                     />
@@ -208,7 +209,7 @@ export default async function PostPage({ params }: PostPageProps) {
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
           >
-            {post.content}
+            {recipe.content}
           </ReactMarkdown>
 
           {/* --- Related Recipes --- */}

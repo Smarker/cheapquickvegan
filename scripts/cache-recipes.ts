@@ -1,29 +1,29 @@
-import { fetchPublishedPosts, getPostFromNotion } from '../src/lib/notion';
+import { fetchPublishedPosts, getRecipeFromNotion } from '../src/lib/notion';
 import fs from 'fs';
 import path from 'path';
 
-async function cachePosts() {
+async function cacheRecipes() {
   try {
     console.log('Fetching recipes from Notion...');
-    const recipes = await fetchPublishedPosts();
+    const pages = await fetchPublishedPosts();
 
-    const allPosts = [];
+    const allRecipes = [];
 
-    for (const post of recipes) {
-      const postDetails = await getPostFromNotion(post.id);
-      if (postDetails) {
-        allPosts.push(postDetails);
+    for (const page of pages) {
+      const recipe = await getRecipeFromNotion(page.id);
+      if (recipe) {
+        allRecipes.push(recipe);
       }
     }
 
     const cachePath = path.join(process.cwd(), 'recipes-cache.json');
-    fs.writeFileSync(cachePath, JSON.stringify(allPosts, null, 2));
+    fs.writeFileSync(cachePath, JSON.stringify(allRecipes, null, 2));
 
-    console.log(`Successfully cached ${allPosts.length} recipes.`);
+    console.log(`Successfully cached ${allRecipes.length} recipes.`);
   } catch (error) {
     console.error('Error caching recipes:', error);
     process.exit(1);
   }
 }
 
-cachePosts();
+cacheRecipes();
