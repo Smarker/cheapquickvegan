@@ -6,14 +6,12 @@ import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/consent-context";
 import GDPRAnalytics from "@/components/consent/gdpr-analytics";
+import { SITE_URL } from "@/config/constants";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
     template: `%s | CheapQuickVegan`,
@@ -21,7 +19,7 @@ export const metadata: Metadata = {
   description:
     "Cheap, quick, and delicious vegan recipes with minimal ingredients. Easy meals, budget-friendly cooking, and plant-based staples anyone can make.",
   alternates: {
-    canonical: siteUrl
+    canonical: SITE_URL
   },
   manifest: "/site.webmanifest",
   icons: {
@@ -32,11 +30,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
     description: "Cheap, quick, and delicious vegan recipes with minimal ingredients",
-    url: siteUrl,
+    url: SITE_URL,
     siteName: "CheapQuickVegan",
     images: [
       {
-        url: `${siteUrl}/opengraph-image.png`,
+        url: `${SITE_URL}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: "CheapQuickVegan cover image",
@@ -50,7 +48,7 @@ export const metadata: Metadata = {
     title: "CheapQuickVegan - Easy, Fast and Budget Friendly Vegan Recipes",
     description:
       "Cheap, quick, and delicious vegan recipes with minimal ingredients",
-    images: [`${siteUrl}/opengraph-image.png`],
+    images: [`${SITE_URL}/opengraph-image.png`],
   },
   robots: {
     index: true,
@@ -105,10 +103,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "CheapQuickVegan",
-              url: siteUrl,
+              url: SITE_URL,
               potentialAction: {
                 "@type": "SearchAction",
-                target: `${siteUrl}/search?q={search_term_string}`,
+                target: `${SITE_URL}/search?q={search_term_string}`,
                 "query-input": "required name=search_term_string",
               },
             }),
@@ -121,8 +119,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "CheapQuickVegan",
-              url: siteUrl,
-              logo: `${siteUrl}/logo.png`,
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.png`,
               description:
                 "Cheap, quick, and delicious vegan recipes with minimal ingredients. Easy meals, budget-friendly cooking, and plant-based staples anyone can make.",
               founder: {

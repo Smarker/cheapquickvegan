@@ -2,6 +2,7 @@
 import { getPostsFromCache, Post } from "@/lib/notion";
 import { Metadata } from "next";
 import CategoryPageClient from "@/components/category-page-client";
+import { SITE_URL } from "@/config/constants";
 
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
@@ -18,22 +19,21 @@ const categoryDescriptions: Record<string, string> = {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { cat } = await params;
   const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
   const description = categoryDescriptions[cat.toLowerCase()] ||
     `Browse our collection of vegan ${cat} recipes. Cheap, quick, and delicious.`;
 
   return {
     title: `${displayCategory} Recipes`,
     description,
-    alternates: { canonical: `${siteUrl}/recipes/category/${cat}` },
+    alternates: { canonical: `${SITE_URL}/recipes/category/${cat}` },
     openGraph: {
       title: `${displayCategory} Recipes | Cheap Quick Vegan`,
       description,
       type: "website",
-      url: `${siteUrl}/recipes/category/${cat}`,
+      url: `${SITE_URL}/recipes/category/${cat}`,
       images: [
         {
-          url: `${siteUrl}/opengraph-image.png`,
+          url: `${SITE_URL}/opengraph-image.png`,
           width: 1200,
           height: 630,
           alt: `${displayCategory} vegan recipes`,
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       card: "summary_large_image",
       title: `${displayCategory} Recipes | Cheap Quick Vegan`,
       description,
-      images: [`${siteUrl}/opengraph-image.png`],
+      images: [`${SITE_URL}/opengraph-image.png`],
     },
   };
 }
@@ -59,7 +59,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   );
 
   const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -69,19 +68,19 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: siteUrl,
+        item: SITE_URL,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Recipes",
-        item: `${siteUrl}/recipes`,
+        item: `${SITE_URL}/recipes`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: displayCategory,
-        item: `${siteUrl}/recipes/category/${cat.toLowerCase()}`,
+        item: `${SITE_URL}/recipes/category/${cat.toLowerCase()}`,
       },
     ],
   };

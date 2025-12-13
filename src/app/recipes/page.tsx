@@ -2,21 +2,20 @@
 import RecipePageClient from "@/components/recipe-page-client";
 import { getPostsFromCache, Post } from "@/lib/notion";
 import { Metadata } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
+import { SITE_URL } from "@/config/constants";
 
 export const metadata: Metadata = {
   title: "All Recipes",
   description: "Browse all our vegan recipes. Cheap, quick, and delicious plant-based meals for every occasion.",
-  alternates: { canonical: `${siteUrl}/recipes` },
+  alternates: { canonical: `${SITE_URL}/recipes` },
   openGraph: {
     title: "All Recipes | Cheap Quick Vegan",
     description: "Browse all our vegan recipes. Cheap, quick, and delicious plant-based meals for every occasion.",
     type: "website",
-    url: `${siteUrl}/recipes`,
+    url: `${SITE_URL}/recipes`,
     images: [
       {
-        url: `${siteUrl}/opengraph-image.png`,
+        url: `${SITE_URL}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: "Cheap Quick Vegan Recipes",
@@ -27,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "All Recipes | Cheap Quick Vegan",
     description: "Browse all our vegan recipes. Cheap, quick, and delicious plant-based meals for every occasion.",
-    images: [`${siteUrl}/opengraph-image.png`],
+    images: [`${SITE_URL}/opengraph-image.png`],
   },
 };
 
@@ -39,13 +38,13 @@ const breadcrumbJsonLd = {
       "@type": "ListItem",
       position: 1,
       name: "Home",
-      item: siteUrl,
+      item: SITE_URL,
     },
     {
       "@type": "ListItem",
       position: 2,
       name: "Recipes",
-      item: `${siteUrl}/recipes`,
+      item: `${SITE_URL}/recipes`,
     },
   ],
 };

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
+import { SITE_URL } from "@/config/constants";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -27,24 +28,22 @@ export async function generateMetadata(
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
-
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: `${siteUrl}/recipes/${post.slug}` },
+    alternates: { canonical: `${SITE_URL}/recipes/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
-      url: `${siteUrl}/recipes/${post.slug}`,
+      url: `${SITE_URL}/recipes/${post.slug}`,
       publishedTime: new Date(post.date).toISOString(),
       modifiedTime: new Date(post.lastUpdated || post.date).toISOString(),
       authors: ["Stephanie Marker"],
       tags: post.tags,
       images: [
         {
-          url: post.coverImage || `${siteUrl}/opengraph-image.png`,
+          url: post.coverImage || `${SITE_URL}/opengraph-image.png`,
           width: 1200,
           height: 630,
           alt: post.alt || post.title,
@@ -55,7 +54,7 @@ export async function generateMetadata(
       card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: [{ url: post.coverImage || `${siteUrl}/opengraph-image.png`, alt: post.alt || post.title }],
+      images: [{ url: post.coverImage || `${SITE_URL}/opengraph-image.png`, alt: post.alt || post.title }],
     },
   };
 }
@@ -66,8 +65,6 @@ export default async function PostPage({ params }: PostPageProps) {
   const post = recipes.find((p) => p.slug === slug);
 
   if (!post) notFound();
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
 
   const { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield } = post.content
     ? parseRecipeContent(post.content)
@@ -96,8 +93,8 @@ export default async function PostPage({ params }: PostPageProps) {
     image: post.coverImage
       ? post.coverImage.startsWith("http")
         ? post.coverImage
-        : `${siteUrl}${post.coverImage}`
-      : `${siteUrl}/opengraph-image.png`,
+        : `${SITE_URL}${post.coverImage}`
+      : `${SITE_URL}/opengraph-image.png`,
     author: { "@type": "Person", name: "Stephanie Marker" },
     datePublished: new Date(post.date).toISOString(),
     dateModified: new Date(post.lastUpdated || post.date).toISOString(),
@@ -112,7 +109,7 @@ export default async function PostPage({ params }: PostPageProps) {
     cookTime,
     totalTime,
     recipeYield,
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}/recipes/${post.slug}` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${post.slug}` },
   };
 
   const category = post.categories[0];
@@ -124,25 +121,25 @@ export default async function PostPage({ params }: PostPageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: siteUrl,
+        item: SITE_URL,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Recipes",
-        item: `${siteUrl}/recipes`,
+        item: `${SITE_URL}/recipes`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: category.charAt(0).toUpperCase() + category.slice(1),
-        item: `${siteUrl}/recipes/category/${category.toLowerCase()}`,
+        item: `${SITE_URL}/recipes/category/${category.toLowerCase()}`,
       },
       {
         "@type": "ListItem",
         position: 4,
         name: post.title,
-        item: `${siteUrl}/recipes/${post.slug}`,
+        item: `${SITE_URL}/recipes/${post.slug}`,
       },
     ],
   };

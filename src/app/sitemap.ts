@@ -1,12 +1,11 @@
 import { getPostsFromCache, Post } from "@/lib/notion";
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/config/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.cheapquickvegan.com";
-
   const recipes = getPostsFromCache();
   const postUrls = recipes.map((post: Post) => ({
-    url: `${siteUrl}/recipes/${post.slug}`,
+    url: `${SITE_URL}/recipes/${post.slug}`,
     lastModified: new Date(), // new Date(post.date),
     changeFrequency: "weekly" as const,
     priority: 0.8,
@@ -25,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   const staticUrls = staticPages.map((page) => ({
-    url: `${siteUrl}${page.path}`,
+    url: `${SITE_URL}${page.path}`,
     lastModified: new Date(),
     changeFrequency: page.changeFrequency,
     priority: page.priority,
@@ -34,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Category pages
   const categories = ["meal", "breakfast", "dessert", "side", "snack"];
   const categoryUrls = categories.map((cat) => ({
-    url: `${siteUrl}/recipes/category/${cat}`,
+    url: `${SITE_URL}/recipes/category/${cat}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.7,
@@ -42,7 +41,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
-      url: siteUrl,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 1,

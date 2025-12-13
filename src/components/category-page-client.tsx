@@ -5,16 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { RecipeSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
+import { filterRecipes } from "@/lib/utils";
 
 interface CategoryPageClientProps {
   recipes: Post[];
   category: string;
-}
-
-function filterRecipes(recipes: Post[], query: string): Post[] {
-  if (!query) return recipes;
-  const q = query.toLowerCase();
-  return recipes.filter((recipe) => recipe.title.toLowerCase().includes(q));
 }
 
 export default function CategoryPageClient({ recipes, category }: CategoryPageClientProps) {

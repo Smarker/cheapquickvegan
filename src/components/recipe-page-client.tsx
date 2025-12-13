@@ -4,15 +4,10 @@ import { useState } from "react";
 import PostCard from "./post-card";
 import { RecipeSearchBar } from "./recipe-search-bar";
 import { Post } from "@/lib/types";
+import { filterRecipes } from "@/lib/utils";
 
 interface RecipePageClientProps {
   recipes: Post[];
-}
-
-function filterRecipes(recipes: Post[], query: string): Post[] {
-  if (!query) return recipes;
-  const q = query.toLowerCase();
-  return recipes.filter((recipe) => recipe.title.toLowerCase().includes(q));
 }
 
 export default function RecipePageClient({ recipes }: RecipePageClientProps) {
