@@ -9,6 +9,7 @@ export interface Post {
   content: string;
   tags?: string[];
   date: string;
+  lastUpdated?: string;
   categories: string[];
   relatedRecipes: string[]; // note: relation IDs
   recipeCuisine: string;

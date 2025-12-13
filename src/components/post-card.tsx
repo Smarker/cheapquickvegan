@@ -1,16 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
-import { getWordCount } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { calculateReadingTime } from "@/lib/utils";
 import {
   Card,
-  CardContent,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Clock, Calendar, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Post } from "@/lib/types";
 
 interface PostCardProps {
@@ -18,9 +15,6 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const wordCount = post.content ? getWordCount(post.content) : 0;
-  const readingTime = calculateReadingTime(wordCount);
-
   return (
     <Card className="group relative pt-0 overflow-hidden hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full">
       <Link
@@ -52,15 +46,8 @@ export default function PostCard({ post }: PostCardProps) {
         )}
       </div>
       <CardHeader className="space-y-2">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            <span>{format(new Date(post.date), "MMM d, yyyy")}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" />
-            <span>{readingTime}</span>
-          </div>
+        <div className="text-sm text-muted-foreground">
+          <span className="font-medium">Published:</span> {format(new Date(post.date), "MMM d, yyyy")}
         </div>
         <div className="group-hover:pr-8 transition-all duration-300">
           <h1 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">

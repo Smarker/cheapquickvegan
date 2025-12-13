@@ -44,6 +44,7 @@ export interface Post {
   coverImage: string;
   description: string;
   date: string;
+  lastUpdated: string;
   content: string;
   tags?: string[];
   relatedRecipes: string[];
@@ -123,6 +124,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       firstParagraph.slice(0, 160) + (firstParagraph.length > 160 ? "..." : "");
 
     const properties = page.properties as any;
+    const publishedDate = properties["Published Date"]?.date?.start || new Date().toISOString();
     const post: Post = {
       id: page.id,
       title: properties.Title.title[0]?.plain_text || "Untitled",
@@ -135,8 +137,8 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
         "untitled",
       coverImage: `/images/${properties['Featured Image']?.url}.jpg`,
       description,
-      date:
-        properties["Published Date"]?.date?.start || new Date().toISOString(),
+      date: publishedDate,
+      lastUpdated: properties["Last Updated"]?.date?.start || publishedDate,
       content: contentString,
       tags: properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
       categories: properties.Categories?.multi_select?.map((cat: any) => cat.name) || [],

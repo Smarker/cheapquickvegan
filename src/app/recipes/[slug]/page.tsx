@@ -5,7 +5,6 @@ import { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import { ResolvingMetadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { calculateReadingTime, getWordCount } from "@/lib/utils";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
@@ -40,6 +39,7 @@ export async function generateMetadata(
       type: "article",
       url: `${siteUrl}/recipes/${post.slug}`,
       publishedTime: new Date(post.date).toISOString(),
+      modifiedTime: new Date(post.lastUpdated || post.date).toISOString(),
       authors: ["Stephanie Marker"],
       tags: post.tags,
       images: [
@@ -64,7 +64,6 @@ export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const recipes = getPostsFromCache();
   const post = recipes.find((p) => p.slug === slug);
-  const wordCount = post?.content ? getWordCount(post.content) : 0;
 
   if (!post) notFound();
 
@@ -101,6 +100,7 @@ export default async function PostPage({ params }: PostPageProps) {
       : `${siteUrl}/opengraph-image.png`,
     author: { "@type": "Person", name: "Stephanie Marker" },
     datePublished: new Date(post.date).toISOString(),
+    dateModified: new Date(post.lastUpdated || post.date).toISOString(),
     recipeCategory: post.categories?.[0] || undefined,
     recipeCuisine: post.recipeCuisine || undefined,
     keywords: post.tags?.join(", ") || undefined,
@@ -173,10 +173,9 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* --- Prose Content --- */}
         <article className="prose dark:prose-invert">
           <header className="mb-8">
-            <div className="flex flex-wrap gap-2 text-muted-foreground mb-2 sm:mb-4 text-sm">
-              <time>{format(new Date(post.date), "MMMM d, yyyy")}</time>
-              <span>{calculateReadingTime(wordCount)}</span>
-              <span>{wordCount} words</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground mb-2 sm:mb-4 text-sm">
+              <span><span className="font-medium">Published:</span> <time dateTime={new Date(post.date).toISOString()}>{format(new Date(post.date), "MMMM d, yyyy")}</time></span>
+              <span><span className="font-medium">Updated:</span> <time dateTime={new Date(post.lastUpdated || post.date).toISOString()}>{format(new Date(post.lastUpdated || post.date), "MMMM d, yyyy")}</time></span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
