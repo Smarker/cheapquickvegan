@@ -102,6 +102,7 @@ export default async function PostPage({ params }: PostPageProps) {
     author: { "@type": "Person", name: "Stephanie Marker" },
     datePublished: new Date(post.date).toISOString(),
     recipeCategory: post.categories?.[0] || undefined,
+    recipeCuisine: post.recipeCuisine || undefined,
     keywords: post.tags?.join(", ") || undefined,
     recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")),
     recipeInstructions: instructions
@@ -184,6 +185,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
             <div className="flex flex-wrap gap-2 mb-4">
               {post.categories && <Badge variant="secondary">{post.categories[0]}</Badge>}
+              {post.recipeCuisine && <Badge variant="default">{post.recipeCuisine}</Badge>}
               {post.tags?.map((tag) => (
                 <Badge key={tag} variant="outline">{tag}</Badge>
               ))}

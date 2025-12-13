@@ -70,10 +70,15 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
         <p className="text-muted-foreground line-clamp-2">{post.description}</p>
       </CardHeader>
-      {post.tags && post.tags.length > 0 && (
+      {(post.recipeCuisine || (post.tags && post.tags.length > 0)) && (
         <CardFooter>
           <div className="flex gap-2 flex-wrap">
-            {post.tags.map((tag) => (
+            {post.recipeCuisine && (
+              <Badge variant="default">
+                {post.recipeCuisine}
+              </Badge>
+            )}
+            {post.tags?.map((tag) => (
               <Badge key={tag} variant="outline" className="bg-background/80">
                 {tag}
               </Badge>
