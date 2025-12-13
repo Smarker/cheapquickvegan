@@ -7,8 +7,34 @@ if (!process.env.VERCEL && !process.env.NOTION_TOKEN) {
 
 import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
-import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { PageObjectResponse, GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
 import fs from "fs";
+
+// Extended database response type for data sources (not in official SDK types)
+type DatabaseWithDataSources = GetDatabaseResponse & {
+  data_sources?: Array<{ id: string }>;
+};
+
+// Notion property value types
+interface NotionSelectOption {
+  name: string;
+}
+
+interface NotionRichText {
+  plain_text: string;
+}
+
+interface RecipePageProperties {
+  Title: { title: NotionRichText[] };
+  Alt: { rich_text: NotionRichText[] };
+  "Featured Image"?: { url: string };
+  "Published Date"?: { date?: { start: string } };
+  "Last Updated"?: { date?: { start: string } };
+  Tags?: { multi_select: NotionSelectOption[] };
+  Categories?: { multi_select: NotionSelectOption[] };
+  "Related Recipes"?: { relation: Array<{ id: string }> };
+  "Recipe Cuisine"?: { select?: NotionSelectOption };
+}
 
 export const notion = new Client({ auth: process.env.NOTION_TOKEN, notionVersion: '2025-09-03'});
 export const n2m = new NotionToMarkdown({ notionClient: notion });
@@ -23,10 +49,10 @@ async function getDataSourceId(): Promise<string> {
 
   const database = await notion.databases.retrieve({
     database_id: process.env.NOTION_DATABASE_ID!,
-  });
+  }) as DatabaseWithDataSources;
 
   // Extract data source ID from the database response
-  const dataSources = (database as any).data_sources;
+  const dataSources = database.data_sources;
   if (!dataSources || dataSources.length === 0) {
     throw new Error("No data sources found in database");
   }
@@ -123,7 +149,7 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
     const description =
       firstParagraph.slice(0, 160) + (firstParagraph.length > 160 ? "..." : "");
 
-    const properties = page.properties as any;
+    const properties = page.properties as unknown as RecipePageProperties;
     const publishedDate = properties["Published Date"]?.date?.start || new Date().toISOString();
     const post: Post = {
       id: page.id,
@@ -140,9 +166,9 @@ export async function getPostFromNotion(pageId: string): Promise<Post | null> {
       date: publishedDate,
       lastUpdated: properties["Last Updated"]?.date?.start || publishedDate,
       content: contentString,
-      tags: properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
-      categories: properties.Categories?.multi_select?.map((cat: any) => cat.name) || [],
-      relatedRecipes: properties["Related Recipes"]?.relation?.map((r: { id: any; }) => r.id) || [],
+      tags: properties.Tags?.multi_select?.map((tag) => tag.name) || [],
+      categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
+      relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
     };
 
