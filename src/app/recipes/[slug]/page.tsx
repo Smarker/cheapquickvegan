@@ -174,7 +174,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
           <header className="mb-8">
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground mb-2 sm:mb-4 text-sm">
               <span><span className="font-medium">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time></span>
-              <span><span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated || recipe.date).toISOString()}>{format(new Date(recipe.lastUpdated || recipe.date), "MMMM d, yyyy")}</time></span>
+              {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
+                <span><span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time></span>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
