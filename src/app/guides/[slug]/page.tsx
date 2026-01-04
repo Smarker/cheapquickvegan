@@ -203,8 +203,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
                 <div className="flex flex-wrap gap-2">
                   {guide.categories && <Badge variant="secondary">{guide.categories[0]}</Badge>}
-                  {guide.city && <Badge variant="default">{guide.city}</Badge>}
-                  {guide.country && <Badge variant="outline">{guide.country}</Badge>}
+                  <Badge variant="default">{guide.city}</Badge>
+                  <Badge variant="outline">{guide.country}</Badge>
                 </div>
               </header>
 

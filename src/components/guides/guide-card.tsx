@@ -64,22 +64,16 @@ export default function GuideCard({ guide }: GuideCardProps) {
         </div>
         <p className="text-muted-foreground line-clamp-3">{guide.description}</p>
       </CardHeader>
-      {guide.city || guide.country && (
-        <CardFooter>
-          <div className="flex gap-2 flex-wrap">
-            {guide.city && (
-              <Badge variant="default">
-                {guide.city}
-              </Badge>
-            )}
-            {guide.country && (
-              <Badge variant="outline" className="bg-background/80">
-                {guide.country}
-              </Badge>
-            )}
-          </div>
-        </CardFooter>
-      )}
+      <CardFooter>
+        <div className="flex gap-2 flex-wrap">
+          <Badge variant="default">
+            {guide.city}
+          </Badge>
+          <Badge variant="outline" className="bg-background/80">
+            {guide.country}
+          </Badge>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

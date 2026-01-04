@@ -46,8 +46,8 @@ interface GuidePageProperties {
   "Last Updated"?: { date?: { start: string } };
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Guides"?: { relation: Array<{ id: string }> };
-  City?: { select?: NotionSelectOption };
-  Country?: { select?: NotionSelectOption };
+  City: { select: NotionSelectOption };
+  Country: { select: NotionSelectOption };
   "Map Embed URL"?: { url?: string };
 }
 
@@ -296,8 +296,8 @@ export async function getGuideFromNotion(pageId: string): Promise<Guide | null> 
       content: contentString,
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedGuides: properties["Related Guides"]?.relation?.map((r) => r.id) || [],
-      city: properties.City?.select?.name || undefined,
-      country: properties.Country?.select?.name || undefined,
+      city: properties.City.select.name,
+      country: properties.Country.select.name,
       readingTime: calculateReadingTime(contentString),
       mapEmbedUrl: properties["Map Embed URL"]?.url || undefined,
     };
