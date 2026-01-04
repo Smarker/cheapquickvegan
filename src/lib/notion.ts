@@ -296,8 +296,8 @@ export async function getGuideFromNotion(pageId: string): Promise<Guide | null> 
       content: contentString,
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedGuides: properties["Related Guides"]?.relation?.map((r) => r.id) || [],
-      city: properties.City.select.name,
-      country: properties.Country.select.name,
+      city: properties.City.select?.name,
+      country: properties.Country.select?.name,
       readingTime: calculateReadingTime(contentString),
       mapEmbedUrl: properties["Map Embed URL"]?.url || undefined,
     };
