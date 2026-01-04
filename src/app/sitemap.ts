@@ -1,5 +1,6 @@
-import { getRecipesFromCache } from "@/lib/notion";
+import { getRecipesFromCache, getGuidesFromCache } from "@/lib/notion";
 import { Recipe } from "@/types/recipe";
+import { Guide } from "@/types/guide";
 import { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/constants";
 
@@ -12,9 +13,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  const guides = getGuidesFromCache();
+  const guideUrls = guides.map((guide: Guide) => ({
+    url: `${SITE_URL}/guides/${guide.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   // Static pages
   const staticPages = [
     { path: "/recipes", changeFrequency: "daily" as const, priority: 0.9 },
+    { path: "/guides", changeFrequency: "weekly" as const, priority: 0.9 },
     { path: "/about", changeFrequency: "monthly" as const, priority: 0.6 },
     { path: "/contact", changeFrequency: "monthly" as const, priority: 0.5 },
     { path: "/shop", changeFrequency: "weekly" as const, priority: 0.7 },
@@ -31,10 +41,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.priority,
   }));
 
-  // Category pages
-  const categories = ["meal", "breakfast", "dessert", "side", "snack"];
-  const categoryUrls = categories.map((cat) => ({
+  // Recipe category pages
+  const recipeCategories = ["breakfast", "meal", "dessert", "side", "snack"];
+  const recipeCategoryUrls = recipeCategories.map((cat) => ({
     url: `${SITE_URL}/recipes/category/${cat}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  // Guide category pages
+  const guideCategories = ["travel", "vegan-food", "how-to"];
+  const guideCategoryUrls = guideCategories.map((cat) => ({
+    url: `${SITE_URL}/guides/category/${cat}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.7,
@@ -48,7 +67,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     ...staticUrls,
-    ...categoryUrls,
+    ...recipeCategoryUrls,
+    ...guideCategoryUrls,
     ...recipeUrls,
+    ...guideUrls,
   ];
 }
