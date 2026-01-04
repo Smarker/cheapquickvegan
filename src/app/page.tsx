@@ -1,8 +1,9 @@
 // app/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { getRecipesFromCache } from "@/lib/notion";
+import { getGuidesFromCache, getRecipesFromCache } from "@/lib/notion";
 import { Recipe } from "@/types/recipe";
+import { Guide } from "@/types/guide";
 
 export default function HomePage() {
   const allRecipes: Recipe[] = getRecipesFromCache();
@@ -26,6 +27,16 @@ export default function HomePage() {
 
   const featuredRecipes = allRecipes.filter((r) =>
     featuredSlugs.includes(r.slug)
+  );
+
+  const allGuides: Guide[] = getGuidesFromCache();
+
+  const featuredGuideSlugs = [
+    "cusco-peru-vegan-food",
+  ];
+
+  const featuredGuides = allGuides.filter((r) =>
+    featuredGuideSlugs.includes(r.slug)
   );
 
   return (
@@ -59,6 +70,38 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* RECIPE CATEGORIES */}
+      <h2 className="text-3xl sm:text-4xl font-bold mb-8">Recipe Categories</h2>
+
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
+        {categories.map((cat) => (
+          <Link
+            key={cat}
+            href={`/recipes/category/${cat.toLowerCase()}`}
+            className="block group"
+          >
+            <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
+                <Image
+                  src={categoryImages[cat] || "/images/placeholder.jpg"}
+                  alt={cat}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
+                  className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                />
+              </div>
+
+              <div className="p-2">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </h3>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* FEATURED RECIPES */}
@@ -95,22 +138,24 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* RECIPE CATEGORIES */}
-      <h2 className="text-3xl sm:text-4xl font-bold mb-8">Recipe Categories</h2>
+      {/* FEATURED GUIDES */}
+      <h2 className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
+        Featured Guides
+      </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
-        {categories.map((cat) => (
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16 justify-center">
+        {featuredGuides.map((featuredGuide) => (
           <Link
-            key={cat}
-            href={`/recipes/category/${cat.toLowerCase()}`}
-            className="block group"
+            key={featuredGuide.slug}
+            href={`/guides/${featuredGuide.slug}`}
+            className="block group max-w-xs"
           >
             <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
               <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <Image
-                  src={categoryImages[cat] || "/images/placeholder.jpg"}
-                  alt={cat}
+                  src={featuredGuide.coverImage || "/images/placeholder.jpg"}
+                  alt={featuredGuide.title}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -119,7 +164,7 @@ export default function HomePage() {
 
               <div className="p-2">
                 <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {featuredGuide.title}
                 </h3>
               </div>
             </div>
