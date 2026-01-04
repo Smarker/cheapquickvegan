@@ -64,6 +64,46 @@ export async function generateMetadata(
   };
 }
 
+// Function to generate FAQ JSON-LD from Notion-rendered markdown/content
+function generateFaqJsonLd(faqContent: string) {
+  const lines = faqContent
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  const mainEntity: Array<{
+    "@type": string;
+    name: string;
+    acceptedAnswer: { "@type": string; text: string }
+  }> = [];
+
+  let currentQuestion: string | null = null;
+
+  lines.forEach(line => {
+    if (line.startsWith("**Q:")) {
+      currentQuestion = line.replace("**Q:", "").replace("**", "").trim();
+    } else if (line.startsWith("**A:") && currentQuestion) {
+      const answerText = line.replace("**A:", "").replace("**", "").trim();
+      mainEntity.push({
+        "@type": "Question",
+        name: currentQuestion,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: answerText,
+        },
+      });
+      currentQuestion = null;
+    }
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity,
+  };
+}
+
+
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;
   const guides = getGuidesFromCache();
@@ -157,6 +197,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
     ],
   };
 
+  const faqJsonLd = processedContent ? generateFaqJsonLd(processedContent) : null;
+
   return (
     <>
       <script
@@ -166,6 +208,10 @@ export default async function GuidePage({ params }: GuidePageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <div className="max-w-7xl mx-auto px-4">
