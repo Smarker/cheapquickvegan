@@ -33,6 +33,7 @@ export default function HomePage() {
 
   const featuredGuideSlugs = [
     "cusco-peru-vegan-food",
+    "ollantaytambo-vegan-food-travel-guide"
   ];
 
   const featuredGuides = allGuides.filter((r) =>
