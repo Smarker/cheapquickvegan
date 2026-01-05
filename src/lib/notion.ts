@@ -286,7 +286,7 @@ export async function getGuideFromNotion(pageId: string): Promise<Guide | null> 
       .replace(/^-+|-+$/g, "") || "untitled";
     const guide: Guide = {
       id: page.id,
-      title: properties.Title.title[0]?.plain_text || "Untitled",
+      title: properties.Title.title.map((t) => t.plain_text).join("") || "Untitled",
       alt: properties.Alt.rich_text[0]?.plain_text || "",
       slug,
       coverImage: `/images/${slug}.jpg`,

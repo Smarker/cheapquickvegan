@@ -144,16 +144,16 @@ export default function HomePage() {
         Featured Guides
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16 justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
         {featuredGuides.map((featuredGuide) => (
           <Link
             key={featuredGuide.slug}
             href={`/guides/${featuredGuide.slug}`}
-            className="block group max-w-xs"
+            className="block group"
           >
             <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
+              <div className="relative w-full aspect-[2/1] overflow-hidden">
                 <Image
                   src={featuredGuide.coverImage || "/images/placeholder.jpg"}
                   alt={featuredGuide.title}
@@ -163,8 +163,8 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="p-2">
-                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
+              <div className="p-3">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center line-clamp-2 min-h-[3rem]">
                   {featuredGuide.title}
                 </h3>
               </div>
