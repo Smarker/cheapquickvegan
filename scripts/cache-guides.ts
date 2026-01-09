@@ -26,8 +26,9 @@ function generateFilename(url: string): string {
   // Get extension from original filename
   const ext = path.extname(originalFilename) || '.jpg';
 
-  // Create a short hash of the full URL to ensure uniqueness
-  const hash = crypto.createHash('md5').update(url).digest('hex').slice(0, 12);
+  // Create a short hash of just the path (not query params) to ensure uniqueness
+  // This prevents duplicate downloads when Notion's signed URL params change
+  const hash = crypto.createHash('md5').update(urlObj.pathname).digest('hex').slice(0, 12);
 
   // Clean the original filename (without extension) for readability
   const baseName = path.basename(originalFilename, ext)
