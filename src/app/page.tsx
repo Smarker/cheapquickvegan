@@ -19,10 +19,10 @@ export default function HomePage() {
   }
 
   const featuredSlugs = [
-    "vegan-breakfast-tacos-dinner",
-    "high-protein-vegan-blueberry-smoothie",
-    "quick-vegan-bagel-burger",
-    "quick-vegan-air-fryer-calzone",
+    "fresh-vegan-no-cook-gazpacho",
+    "vegan-tahini-maple-halva",
+    "maesri-paste-weeknight-curry",
+    "crispy-vegan-maple-baklava",
   ];
 
   const featuredRecipes = allRecipes.filter((r) =>
