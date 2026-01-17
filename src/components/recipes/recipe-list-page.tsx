@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import RecipeCard from "./recipe-card";
 import RecipeCardCompact from "./recipe-card-compact";
 import { RecipeSearchBar } from "./recipe-search-bar";
 import { Recipe } from "@/types/recipe";
 import { filterRecipes } from "@/lib/utils";
+import { useFavorites } from "@/contexts/favorites-context";
 
 type CardVariant = "detailed" | "compact";
 
@@ -27,7 +28,19 @@ export default function RecipeListPage({
 }: RecipeListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const filteredRecipes = filterRecipes(recipes, searchQuery);
+  const { isFavorite } = useFavorites();
+
+  const filteredRecipes = useMemo(() => {
+    const filtered = filterRecipes(recipes, searchQuery);
+    // Sort favorited recipes first
+    return filtered.sort((a, b) => {
+      const aFavorited = isFavorite(a.id);
+      const bFavorited = isFavorite(b.id);
+      if (aFavorited && !bFavorited) return -1;
+      if (!aFavorited && bFavorited) return 1;
+      return 0;
+    });
+  }, [recipes, searchQuery, isFavorite]);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4">

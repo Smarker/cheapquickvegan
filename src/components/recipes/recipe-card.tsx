@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { ArrowUpRight } from "lucide-react";
 import { Recipe } from "@/types/recipe";
+import { FavoriteButton } from "./favorite-button";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -44,6 +45,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             </Badge>
           </div>
         )}
+        <FavoriteButton recipeId={recipe.id} />
       </div>
       <CardHeader className="space-y-2">
         <div className="text-sm text-muted-foreground">

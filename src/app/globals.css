@@ -170,3 +170,13 @@ html {
 .styled-list-ordered {
   @apply space-y-2 text-foreground/80 list-decimal ml-6;
 }
+
+/* Hide scrollbar for mobile carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

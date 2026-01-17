@@ -4,6 +4,8 @@ import Link from "next/link";
 import { getGuidesFromCache, getRecipesFromCache } from "@/lib/notion";
 import { Recipe } from "@/types/recipe";
 import { Guide } from "@/types/guide";
+import { FavoritesSection } from "@/components/favorites/favorites-section";
+import { JumpToFavorites } from "@/components/favorites/jump-to-favorites";
 
 export default function HomePage() {
   const allRecipes: Recipe[] = getRecipesFromCache();
@@ -45,30 +47,35 @@ export default function HomePage() {
 
       {/* HEADER */}
       <div className="flex justify-center mb-16">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          {/* Photo */}
-          <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
-            <Image
-              src="/images/stephanie.jpg"
-              alt="Stephanie"
-              fill
-              sizes="(max-width: 640px) 120px, (max-width: 1024px) 150px, 200px"
-              className="rounded-full object-cover"
-            />
-          </div>
-
-          {/* Text */}
-          <div className="flex flex-col justify-center max-w-3xl text-left">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3 text-center md:text-left">
+        <div className="flex flex-col max-w-4xl w-full">
+          {/* Photo and Title Row */}
+          <div className="flex flex-row items-center justify-center gap-4 md:gap-6 mb-4">
+            <div className="relative w-20 h-20 md:w-32 md:h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
+              <Image
+                src="/images/stephanie.jpg"
+                alt="Stephanie"
+                fill
+                sizes="(max-width: 768px) 80px, 128px"
+                className="rounded-full object-cover"
+              />
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Welcome to CheapQuickVegan
             </h1>
+          </div>
 
+          {/* Paragraph and Button */}
+          <div className="flex flex-col gap-3 items-center">
             <p className="text-lg text-muted-foreground leading-relaxed">
               I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
               amazing vegan meals to fuel an active lifestyle. Here, you can find
-              quick, flavorful, no-fluff plant-based recipes. Each recipe comes with
-              tips & substitutions to make it easy and tasty.
+              quick, flavorful, no-fluff plant-based recipes and{" "}
+              <a href="#featured-guides" className="text-primary hover:underline">
+                vegan travel guides
+              </a>
+              . Each recipe comes with tips & substitutions to make it easy and tasty.
             </p>
+            <JumpToFavorites />
           </div>
         </div>
       </div>
@@ -139,8 +146,11 @@ export default function HomePage() {
         ))}
       </div>
 
+      {/* YOUR FAVORITES */}
+      <FavoritesSection allRecipes={allRecipes} />
+
       {/* FEATURED GUIDES */}
-      <h2 className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
+      <h2 id="featured-guides" className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
         Featured Guides
       </h2>
 

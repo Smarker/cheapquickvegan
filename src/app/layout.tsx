@@ -5,6 +5,7 @@ import "./globals.css";
 import Layout from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/consent-context";
+import { FavoritesProvider } from "@/contexts/favorites-context";
 import GDPRAnalytics from "@/components/consent/gdpr-analytics";
 import { SITE_URL } from "@/config/constants";
 
@@ -86,12 +87,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
           {/* ✅ ConsentProvider wraps the entire app */}
           <ConsentProvider>
-            <Layout>
-              {children}
+            <FavoritesProvider>
+              <Layout>
+                {children}
 
-              {/* Analytics only mounts if user consented */}
-              <GDPRAnalytics />
-            </Layout>
+                {/* Analytics only mounts if user consented */}
+                <GDPRAnalytics />
+              </Layout>
+            </FavoritesProvider>
           </ConsentProvider>
         </ThemeProvider>
 
