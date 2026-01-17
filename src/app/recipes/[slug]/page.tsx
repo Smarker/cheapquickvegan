@@ -11,6 +11,7 @@ import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { parseRecipeContent } from "@/lib/recipe-parser";
+import { FavoriteButton } from "@/components/recipes/favorite-button";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -166,6 +167,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
               alt={recipe.alt || recipe.title}
               className="object-cover w-full h-full"
             />
+            <FavoriteButton recipeId={recipe.id} />
           </div>
         )}
 

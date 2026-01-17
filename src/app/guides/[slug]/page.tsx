@@ -82,8 +82,14 @@ function generateFaqJsonLd(faqContent: string) {
   lines.forEach(line => {
     if (line.startsWith("**Q:")) {
       currentQuestion = line.replace("**Q:", "").replace("**", "").trim();
-    } else if (line.startsWith("**A:") && currentQuestion) {
-      const answerText = line.replace("**A:", "").replace("**", "").trim();
+    } else if (currentQuestion && (line.startsWith("**A:") || line.startsWith("A:"))) {
+      // Handle both **A:** and A: formats
+      let answerText = line;
+      if (line.startsWith("**A:")) {
+        answerText = line.replace("**A:", "").replace("**", "").trim();
+      } else {
+        answerText = line.replace("A:", "").trim();
+      }
       mainEntity.push({
         "@type": "Question",
         name: currentQuestion,
@@ -209,10 +215,12 @@ export default async function GuidePage({ params }: GuidePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      {faqJsonLd && faqJsonLd.mainEntity.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto px-4">
         <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
