@@ -49,7 +49,8 @@ export default async function LegacyPostPage({ params }: { params: { slug: strin
     "vegan-blueberry-maple-smoothie": "high-protein-vegan-blueberry-smoothie",
     "creamy-vegan-saffron-risotto-milanese-style-with-vegan-butter-turmeric": "creamy-vegan-saffron-risotto",
     "high-protein-vegan-tahini-date-balls-no-bake-4-ingredient-energy-bites": "tahini-date-energy-balls",
-    "vegan-gluten-free-carrot-cake-balls-oat-flour-maple-sweetened": "vegan-gf-carrot-cake-balls"
+    "vegan-gluten-free-carrot-cake-balls-oat-flour-maple-sweetened": "vegan-gf-carrot-cake-balls",
+    "vegan-coconut-red-curry": "maesri-paste-weeknight-curry",
   };
 
   const newSlug = slugMap[slug] || slug;
