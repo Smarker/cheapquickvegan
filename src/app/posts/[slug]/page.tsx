@@ -1,5 +1,5 @@
 // app/posts/[slug]/page.tsx
-import { redirect } from "next/navigation";
+import { permanentRedirect, redirect } from "next/navigation";
 
 export default async function LegacyPostPage({ params }: { params: { slug: string } }) {
   const { slug } = await params;
@@ -56,5 +56,5 @@ export default async function LegacyPostPage({ params }: { params: { slug: strin
   const newSlug = slugMap[slug] || slug;
 
   // Permanent redirect to the new recipe URL
-  redirect(`/recipes/${newSlug}`);
+  permanentRedirect(`/recipes/${newSlug}`);
 }
