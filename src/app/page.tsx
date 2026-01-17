@@ -47,35 +47,65 @@ export default function HomePage() {
 
       {/* HEADER */}
       <div className="flex justify-center mb-16">
-        <div className="flex flex-col max-w-4xl w-full">
-          {/* Photo and Title Row */}
-          <div className="flex flex-row items-center justify-center gap-4 md:gap-6 mb-4">
-            <div className="relative w-20 h-20 md:w-32 md:h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
+        <div className="w-full max-w-4xl">
+          {/* Mobile: Photo + Title row, then content below */}
+          <div className="flex flex-col md:hidden">
+            <div className="flex flex-row items-center justify-center gap-4 mb-4">
+              <div className="relative w-20 h-20 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
+                <Image
+                  src="/images/stephanie.jpg"
+                  alt="Stephanie"
+                  fill
+                  sizes="80px"
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                Welcome to CheapQuickVegan
+              </h1>
+            </div>
+            <div className="flex flex-col gap-3 items-center">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
+                amazing vegan meals to fuel an active lifestyle. Here, you can find
+                quick, flavorful, no-fluff plant-based recipes and{" "}
+                <a href="#featured-guides" className="text-primary hover:underline">
+                  vegan travel guides
+                </a>
+                . Each recipe comes with tips & substitutions to make it easy and tasty.
+              </p>
+              <JumpToFavorites />
+            </div>
+          </div>
+
+          {/* Desktop: Photo on left, vertically centered with content on right */}
+          <div className="hidden md:flex flex-row items-center gap-8">
+            <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
               <Image
                 src="/images/stephanie.jpg"
                 alt="Stephanie"
                 fill
-                sizes="(max-width: 768px) 80px, 128px"
+                sizes="128px"
                 className="rounded-full object-cover"
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              Welcome to CheapQuickVegan
-            </h1>
-          </div>
-
-          {/* Paragraph and Button */}
-          <div className="flex flex-col gap-3 items-center">
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
-              amazing vegan meals to fuel an active lifestyle. Here, you can find
-              quick, flavorful, no-fluff plant-based recipes and{" "}
-              <a href="#featured-guides" className="text-primary hover:underline">
-                vegan travel guides
-              </a>
-              . Each recipe comes with tips & substitutions to make it easy and tasty.
-            </p>
-            <JumpToFavorites />
+            <div className="flex flex-col gap-3 flex-1">
+              <h1 className="text-4xl font-bold tracking-tight text-foreground">
+                Welcome to CheapQuickVegan
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
+                amazing vegan meals to fuel an active lifestyle. Here, you can find
+                quick, flavorful, no-fluff plant-based recipes and{" "}
+                <a href="#featured-guides" className="text-primary hover:underline">
+                  vegan travel guides
+                </a>
+                . Each recipe comes with tips & substitutions to make it easy and tasty.
+              </p>
+              <div>
+                <JumpToFavorites />
+              </div>
+            </div>
           </div>
         </div>
       </div>
