@@ -106,8 +106,23 @@ export default async function RecipePage({ params }: RecipePageProps) {
     keywords: recipe.tags?.join(", ") || undefined,
     recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")),
     recipeInstructions: instructions
-      .filter((step) => step.trim() && step.trim() !== "---")
-      .map((step) => ({ "@type": "HowToStep", text: step.replace(/^-+\s*/, "").trim() })),
+      .filter((step) => step.text.trim() && step.text.trim() !== "---")
+      .map((step) => {
+        const howToStep: any = {
+          "@type": "HowToStep",
+          text: step.text,
+          name: step.name,
+          url: `${SITE_URL}/recipes/${recipe.slug}${step.url}`,
+        };
+
+        if (step.image) {
+          howToStep.image = step.image.startsWith('http')
+            ? step.image
+            : `${SITE_URL}${step.image}`;
+        }
+
+        return howToStep;
+      }),
     prepTime,
     cookTime,
     totalTime,

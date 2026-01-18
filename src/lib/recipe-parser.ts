@@ -1,17 +1,83 @@
+import { RecipeInstruction } from "@/types/recipe";
+
 export interface RecipeContent {
   ingredients: string[];
-  instructions: string[];
+  instructions: RecipeInstruction[];
   prepTime?: string;
   cookTime?: string;
   totalTime?: string;
   recipeYield?: string;
 }
 
+/**
+ * Auto-generate step name from instruction text
+ * Extracts first 3-5 words (max 50 chars) and capitalizes first word
+ */
+export function generateStepName(text: string): string {
+  // Remove markdown and list markers
+  const cleanText = text.replace(/^[-*]\s*/, "").trim();
+
+  // Split into words and take first few
+  const words = cleanText.split(/\s+/);
+  let name = "";
+
+  for (let i = 0; i < Math.min(words.length, 5); i++) {
+    const testName = name + (name ? " " : "") + words[i];
+    if (testName.length > 50) break;
+    name = testName;
+  }
+
+  // Capitalize first letter
+  if (name) {
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  return name || "Recipe Step";
+}
+
+/**
+ * Extract manual step name if present in format: **Step Name:** instruction text
+ * Returns { name: string, cleanText: string } or null if not found
+ */
+export function extractManualStepName(text: string): { name: string; cleanText: string } | null {
+  const match = text.match(/^\*\*([^*]+):\*\*\s*(.+)/);
+  if (match) {
+    return {
+      name: match[1].trim(),
+      cleanText: match[2].trim(),
+    };
+  }
+  return null;
+}
+
+/**
+ * Extract step image from markdown syntax or Instagram URLs
+ * Supports:
+ * - Markdown images: ![alt](url)
+ * - Instagram URLs: https://instagram.com/p/...
+ * - Notion images: relative paths like /images/step.jpg
+ */
+export function extractStepImage(text: string): string | undefined {
+  // Check for markdown image syntax
+  const markdownImageMatch = text.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+  if (markdownImageMatch) {
+    return markdownImageMatch[2];
+  }
+
+  // Check for Instagram URLs
+  const instagramMatch = text.match(/(https?:\/\/(?:www\.)?instagram\.com\/p\/[a-zA-Z0-9_-]+)/);
+  if (instagramMatch) {
+    return instagramMatch[1];
+  }
+
+  return undefined;
+}
+
 export function parseRecipeContent(markdown: string): RecipeContent {
   const lines = markdown.split("\n").map((l) => l.trim());
   let section: "ingredients" | "instructions" | "details" | null = null;
   const ingredients: string[] = [];
-  const instructions: string[] = [];
+  const instructionLines: string[] = [];
   let prepTime: string | undefined;
   let cookTime: string | undefined;
   let totalTime: string | undefined;
@@ -25,7 +91,7 @@ export function parseRecipeContent(markdown: string): RecipeContent {
     else if (/^##\s*Instructions/i.test(line)) section = "instructions";
     else if (/^##\s*/.test(line)) section = null;
     else if (section === "ingredients" && line) ingredients.push(line);
-    else if (section === "instructions" && line) instructions.push(line);
+    else if (section === "instructions" && line) instructionLines.push(line);
     else if (section === "details" && line) {
       const prepMatch = line.match(/\*\*?Prep Time:\*\*?\s*(.*)/i);
       const cookMatch  = line.match(/\*\*?Cook Time:\*\*?\s*(.*)/i);
@@ -40,6 +106,35 @@ export function parseRecipeContent(markdown: string): RecipeContent {
   }
 
   if (!totalTime && prepTime && cookTime) totalTime = sumDurations(prepTime, cookTime);
+
+  // Convert instruction lines to RecipeInstruction objects
+  const instructions: RecipeInstruction[] = instructionLines.map((line, index) => {
+    // Remove list markers
+    const cleanedText = line.replace(/^[-*]\s*/, "").trim();
+
+    // Check for manual step name
+    const manualName = extractManualStepName(cleanedText);
+    let stepName: string;
+    let stepText: string;
+
+    if (manualName) {
+      stepName = manualName.name;
+      stepText = manualName.cleanText;
+    } else {
+      stepName = generateStepName(cleanedText);
+      stepText = cleanedText;
+    }
+
+    // Extract image if present
+    const image = extractStepImage(stepText);
+
+    return {
+      text: stepText,
+      name: stepName,
+      url: `#step-${index + 1}`,
+      image,
+    };
+  });
 
   return { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield };
 }
