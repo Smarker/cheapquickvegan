@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { Loader2, X } from 'lucide-react';
+import { RateLimitBanner } from '@/components/ui/rate-limit-banner';
 
 interface ReplyFormProps {
   recipeId: string;
@@ -34,6 +35,7 @@ interface ReplyFormProps {
 
 export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: ReplyFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{ message: string; resetDate?: string } | null>(null);
 
   const form = useForm<ReplyInput>({
     resolver: zodResolver(replySchema),
@@ -48,6 +50,7 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
 
   const onSubmit = async (data: ReplyInput) => {
     setIsSubmitting(true);
+    setRateLimitInfo(null);
 
     try {
       const response = await fetch('/api/comments', {
@@ -61,6 +64,24 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
       const result = await response.json();
 
       if (!response.ok) {
+        // Check for rate limit error
+        if (response.status === 429) {
+          const errorMessage = result.message || result.error || 'Too many comments. Please try again later.';
+
+          // Format the reset date if provided
+          let resetDate: string | undefined;
+          if (result.resetTime) {
+            const resetDateTime = new Date(result.resetTime);
+            resetDate = resetDateTime.toLocaleString();
+          }
+
+          setRateLimitInfo({
+            message: errorMessage,
+            resetDate,
+          });
+          return; // Don't throw error, just show banner
+        }
+
         throw new Error(result.error || 'Failed to submit reply');
       }
 
@@ -91,6 +112,13 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
 
   return (
     <div className="ml-8 mt-4 p-4 border rounded-lg bg-muted/50">
+      {/* Rate limit banner */}
+      {rateLimitInfo && (
+        <RateLimitBanner
+          message={rateLimitInfo.message}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-medium">Reply to Comment</h4>
         {onCancel && (

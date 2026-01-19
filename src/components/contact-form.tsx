@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RateLimitBanner } from "@/components/ui/rate-limit-banner";
 
 export function ContactForm() {
   const [isMounted, setIsMounted] = useState(false);
@@ -27,11 +28,13 @@ export function ContactForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [rateLimitInfo, setRateLimitInfo] = useState<{ message: string; resetDate?: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    setRateLimitInfo(null);
 
     try {
       // Ensure honeypot field is empty (in case browser autofill touched it)
@@ -51,6 +54,19 @@ export function ContactForm() {
       if (response.ok) {
         setSubmitStatus("success");
         setFormState({ name: "", email: "", subject: "", message: "", website: "" });
+      } else if (response.status === 429) {
+        // Rate limit exceeded
+        const data = await response.json();
+        const errorMessage = data.error || "Too many submissions. Please try again later.";
+
+        // Extract reset date from error message (format: "...after MM/DD/YYYY.")
+        const dateMatch = errorMessage.match(/after ([^.]+)\./);
+        const resetDate = dateMatch ? dateMatch[1] : undefined;
+
+        setRateLimitInfo({
+          message: errorMessage,
+          resetDate,
+        });
       } else {
         setSubmitStatus("error");
       }
@@ -63,6 +79,13 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      {/* Rate limit banner */}
+      {rateLimitInfo && (
+        <RateLimitBanner
+          message={rateLimitInfo.message}
+        />
+      )}
+
       {/* Anti-spam field - hidden honeypot */}
       <div style={{ position: 'absolute', left: '-9999px', height: 0, overflow: 'hidden' }} aria-hidden="true">
         <label htmlFor="website_url_field">Leave this field empty</label>

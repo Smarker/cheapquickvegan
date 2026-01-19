@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { RateLimitBanner } from '@/components/ui/rate-limit-banner';
 
 interface CommentFormProps {
   recipeId: string;
@@ -35,6 +36,7 @@ interface CommentFormProps {
 
 export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{ message: string; resetDate?: string } | null>(null);
 
   const form = useForm<CommentInput>({
     resolver: zodResolver(commentSchema),
@@ -49,6 +51,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
 
   const onSubmit = async (data: CommentInput) => {
     setIsSubmitting(true);
+    setRateLimitInfo(null);
 
     try {
       const response = await fetch('/api/comments', {
@@ -62,6 +65,24 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
       const result = await response.json();
 
       if (!response.ok) {
+        // Check for rate limit error
+        if (response.status === 429) {
+          const errorMessage = result.message || result.error || 'Too many comments. Please try again later.';
+
+          // Format the reset date if provided
+          let resetDate: string | undefined;
+          if (result.resetTime) {
+            const resetDateTime = new Date(result.resetTime);
+            resetDate = resetDateTime.toLocaleString();
+          }
+
+          setRateLimitInfo({
+            message: errorMessage,
+            resetDate,
+          });
+          return; // Don't throw error, just show banner
+        }
+
         throw new Error(result.error || 'Failed to submit comment');
       }
 
@@ -102,6 +123,13 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
         <CardTitle>Leave a Comment</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Rate limit banner */}
+        {rateLimitInfo && (
+          <RateLimitBanner
+            message={rateLimitInfo.message}
+          />
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

@@ -13,6 +13,7 @@ import { generateOwnershipToken } from '@/lib/auth/ownership-token';
 import { sanitizeCommentText, sanitizeName, sanitizeEmail, containsSuspiciousContent } from '@/lib/sanitize';
 import { sendNewCommentEmail } from '@/lib/email/notifications';
 import { getRecipesFromCache } from '@/lib/notion';
+import { getAdminConfig } from '@/lib/auth/admin-auth';
 
 /**
  * GET /api/comments?recipeId=xxx
@@ -80,11 +81,16 @@ export async function POST(request: NextRequest) {
     const rateLimit = await checkRateLimit(ipAddress);
 
     if (!rateLimit.isAllowed) {
+      // Get rate limit window configuration to calculate reset time
+      const windowHours = parseInt(await getAdminConfig('rate_limit_window_hours') || '1');
+      const resetTime = new Date(rateLimit.windowStart.getTime() + windowHours * 60 * 60 * 1000);
+
       return NextResponse.json(
         {
           error: 'Rate limit exceeded',
           message: 'You have submitted too many comments. Please try again later.',
           remainingComments: rateLimit.remainingComments,
+          resetTime: resetTime.toISOString(),
         },
         { status: 429 }
       );
