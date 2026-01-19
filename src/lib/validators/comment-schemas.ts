@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 
-// Schema for top-level comments (with required rating)
+// Schema for top-level comments (with optional rating)
 export const commentSchema = z.object({
   name: z
     .string()
@@ -27,7 +27,8 @@ export const commentSchema = z.object({
     .number()
     .int('Rating must be a whole number')
     .min(1, 'Rating must be at least 1 star')
-    .max(5, 'Rating must be at most 5 stars'),
+    .max(5, 'Rating must be at most 5 stars')
+    .optional(),
   recipeId: z
     .string()
     .min(1, 'Recipe ID is required'),

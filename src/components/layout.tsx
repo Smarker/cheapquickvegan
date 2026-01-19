@@ -228,7 +228,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               Disclaimer
             </a>
-              <CookieSettingsButton className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center" />
+            <CookieSettingsButton className="text-secondary-foreground/80 hover:text-secondary-foreground underline text-sm text-center" />
           </div>
         </div>
       </footer>

@@ -35,14 +35,24 @@ export function StarRating({
 }: StarRatingProps) {
   const handleClick = (rating: number) => {
     if (!readonly && onChange) {
-      onChange(rating);
+      // If clicking the same rating, clear it (set to 0)
+      if (rating === value) {
+        onChange(0);
+      } else {
+        onChange(rating);
+      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, rating: number) => {
     if (!readonly && onChange && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      onChange(rating);
+      // If clicking the same rating, clear it (set to 0)
+      if (rating === value) {
+        onChange(0);
+      } else {
+        onChange(rating);
+      }
     }
   };
 
@@ -62,7 +72,7 @@ export function StarRating({
               'transition-colors',
               readonly
                 ? 'cursor-default'
-                : 'cursor-pointer hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded'
+                : 'cursor-pointer hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded'
             )}
             aria-label={`${rating} star${rating !== 1 ? 's' : ''}`}
             tabIndex={readonly ? -1 : 0}

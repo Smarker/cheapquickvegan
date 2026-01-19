@@ -41,7 +41,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
       name: '',
       email: '',
       commentText: '',
-      rating: 5,
+      rating: undefined,
       recipeId,
     },
   });
@@ -78,7 +78,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
         name: '',
         email: data.email, // Keep email for convenience
         commentText: '',
-        rating: 5,
+        rating: undefined,
         recipeId,
       });
 
@@ -98,10 +98,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Leave a Review</CardTitle>
-        <CardDescription>
-          Share your thoughts and rate this recipe. Your review will be visible after approval.
-        </CardDescription>
+        <CardTitle>Leave a Comment</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -111,14 +108,17 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rating *</FormLabel>
+                  <FormLabel>Rating (optional)</FormLabel>
                   <FormControl>
                     <StarRating
-                      value={field.value}
+                      value={field.value || 0}
                       onChange={field.onChange}
                       size="lg"
                     />
                   </FormControl>
+                  <FormDescription>
+                    Leave a rating if you tried the recipe, or skip it to ask a question. Click the same star again to clear your rating.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -137,9 +137,6 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
                       value={field.value || ''}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Leave blank to post as Anonymous
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -171,10 +168,10 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
               name="commentText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Review *</FormLabel>
+                  <FormLabel>Your Comment *</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Tell us what you thought of this recipe..."
+                      placeholder="Share your thoughts, ask a question, or tell us what you thought of this recipe..."
                       className="min-h-[120px] resize-none"
                       maxLength={1000}
                       {...field}
@@ -190,7 +187,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
 
             <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
+              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
             </Button>
           </form>
         </Form>
