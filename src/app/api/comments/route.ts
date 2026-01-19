@@ -106,11 +106,11 @@ export async function POST(request: NextRequest) {
     // Generate ownership token
     const comment = await createComment({
       recipeId: data.recipeId,
-      parentCommentId: isReply ? data.parentCommentId : undefined,
+      parentCommentId: 'parentCommentId' in data ? data.parentCommentId : undefined,
       name: sanitizedName,
       email: sanitizedEmail,
       commentText: sanitizedCommentText,
-      rating: isReply ? null : data.rating,
+      rating: 'rating' in data ? data.rating : null,
       ownershipToken: '', // Will be updated below
       ipAddress,
       userAgent: request.headers.get('user-agent') || '',
