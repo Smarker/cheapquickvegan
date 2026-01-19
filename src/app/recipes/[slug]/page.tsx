@@ -12,6 +12,9 @@ import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { parseRecipeContent } from "@/lib/recipe-parser";
 import { FavoriteButton } from "@/components/recipes/favorite-button";
+import { CommentSection } from "@/components/comments/comment-section";
+import { Separator } from "@/components/ui/separator";
+import { getAggregateRating } from "@/lib/db/comments";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -73,6 +76,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
     ? parseRecipeContent(recipe.content)
     : { ingredients: [], instructions: [] };
 
+  // --- AGGREGATE RATING FOR SEO ---
+  let aggregateRating = { average: 0, count: 0, total: 0 };
+  try {
+    aggregateRating = await getAggregateRating(recipe.id);
+  } catch (error) {
+    // Database not available (e.g., in development)
+    console.warn('Could not fetch aggregate rating:', error);
+  }
+
   // --- RELATED RECIPES LOGIC ---
   let relatedRecipes: Recipe[] = [];
 
@@ -127,6 +139,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
     cookTime,
     totalTime,
     recipeYield,
+    ...(aggregateRating.count > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: aggregateRating.average.toFixed(1),
+        reviewCount: aggregateRating.count,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
@@ -230,6 +251,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
           >
             {recipe.content}
           </ReactMarkdown>
+
+          {/* --- Comment Section --- */}
+          <div className="not-prose my-8 sm:my-12">
+            <Separator className="mb-8" />
+            <CommentSection recipeId={recipe.id} />
+          </div>
 
           {/* --- Related Recipes --- */}
           {relatedRecipes.length > 0 && (
