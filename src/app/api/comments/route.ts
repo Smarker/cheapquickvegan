@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       name: sanitizedName,
       email: sanitizedEmail,
       commentText: sanitizedCommentText,
-      rating: 'rating' in data ? data.rating : null,
+      rating: 'rating' in data ? (data.rating ?? null) : null,
       ownershipToken: '', // Will be updated below
       ipAddress,
       userAgent: request.headers.get('user-agent') || '',
