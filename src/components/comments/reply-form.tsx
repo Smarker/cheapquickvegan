@@ -116,6 +116,7 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
                 <FormControl>
                   <Input
                     placeholder="Your name or leave blank for Anonymous"
+                    autoComplete="name"
                     {...field}
                     value={field.value || ''}
                   />
@@ -135,6 +136,7 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
                   <Input
                     type="email"
                     placeholder="your@email.com"
+                    autoComplete="email"
                     {...field}
                   />
                 </FormControl>
@@ -157,6 +159,7 @@ export function ReplyForm({ recipeId, parentCommentId, onSuccess, onCancel }: Re
                     placeholder="Write your reply..."
                     className="min-h-[100px] resize-none"
                     maxLength={1000}
+                    autoComplete="off"
                     {...field}
                   />
                 </FormControl>

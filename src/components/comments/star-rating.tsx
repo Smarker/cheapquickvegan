@@ -7,16 +7,16 @@
  * Supports both interactive (input) and read-only (display) modes.
  */
 
+import React from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface StarRatingProps {
+interface StarRatingProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value: number;
   onChange?: (value: number) => void;
   readonly?: boolean;
   size?: 'sm' | 'md' | 'lg';
   showValue?: boolean;
-  className?: string;
 }
 
 const sizeMap = {
@@ -25,14 +25,19 @@ const sizeMap = {
   lg: 'h-6 w-6',
 };
 
-export function StarRating({
-  value,
-  onChange,
-  readonly = false,
-  size = 'md',
-  showValue = false,
-  className,
-}: StarRatingProps) {
+export const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
+  (
+    {
+      value,
+      onChange,
+      readonly = false,
+      size = 'md',
+      showValue = false,
+      className,
+      ...props
+    },
+    ref
+  ) => {
   const handleClick = (rating: number) => {
     if (!readonly && onChange) {
       // If clicking the same rating, clear it (set to 0)
@@ -57,7 +62,13 @@ export function StarRating({
   };
 
   return (
-    <div className={cn('flex items-center gap-1', className)}>
+    <div
+      {...props}
+      ref={ref}
+      role="radiogroup"
+      aria-label="Rating"
+      className={cn('flex items-center gap-1', className)}
+    >
       {[1, 2, 3, 4, 5].map((rating) => {
         const isFilled = rating <= value;
 
@@ -65,6 +76,7 @@ export function StarRating({
           <button
             key={rating}
             type="button"
+            role="radio"
             onClick={() => handleClick(rating)}
             onKeyDown={(e) => handleKeyDown(e, rating)}
             disabled={readonly}
@@ -75,6 +87,7 @@ export function StarRating({
                 : 'cursor-pointer hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded'
             )}
             aria-label={`${rating} star${rating !== 1 ? 's' : ''}`}
+            aria-checked={rating === value}
             tabIndex={readonly ? -1 : 0}
           >
             <Star
@@ -95,4 +108,6 @@ export function StarRating({
       )}
     </div>
   );
-}
+});
+
+StarRating.displayName = 'StarRating';

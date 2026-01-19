@@ -23,6 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  useFormField,
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -106,22 +107,24 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
             <FormField
               control={form.control}
               name="rating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rating (optional)</FormLabel>
-                  <FormControl>
+              render={({ field }) => {
+                const { formItemId } = useFormField();
+                return (
+                  <FormItem>
+                    <FormLabel>Rating (optional)</FormLabel>
                     <StarRating
+                      id={formItemId}
                       value={field.value || 0}
                       onChange={field.onChange}
                       size="lg"
                     />
-                  </FormControl>
-                  <FormDescription>
-                    Leave a rating if you tried the recipe, or skip it to ask a question. Click the same star again to clear your rating.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+                    <FormDescription>
+                      Leave a rating if you tried the recipe, or skip it to ask a question. Click the same star again to clear your rating.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -133,6 +136,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
                   <FormControl>
                     <Input
                       placeholder="Your name or leave blank for Anonymous"
+                      autoComplete="name"
                       {...field}
                       value={field.value || ''}
                     />
@@ -152,6 +156,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
                     <Input
                       type="email"
                       placeholder="your@email.com"
+                      autoComplete="email"
                       {...field}
                     />
                   </FormControl>
@@ -174,6 +179,7 @@ export function CommentForm({ recipeId, onSuccess }: CommentFormProps) {
                       placeholder="Share your thoughts, ask a question, or tell us what you thought of this recipe..."
                       className="min-h-[120px] resize-none"
                       maxLength={1000}
+                      autoComplete="off"
                       {...field}
                     />
                   </FormControl>

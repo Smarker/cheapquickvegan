@@ -50,6 +50,8 @@ export function RecipeSearchBar({ value, onChange, onExpandChange }: RecipeSearc
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 ref={inputRef}
+                id="recipe-search-mobile"
+                name="recipe-search"
                 type="text"
                 placeholder="Search recipes..."
                 value={value}
@@ -72,6 +74,8 @@ export function RecipeSearchBar({ value, onChange, onExpandChange }: RecipeSearc
       <div className="hidden md:block relative w-96">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          id="recipe-search-desktop"
+          name="recipe-search"
           type="text"
           placeholder="Search recipes..."
           value={value}
