@@ -12,7 +12,7 @@ export const commentSchema = z.object({
     .string()
     .max(100, 'Name must be 100 characters or less')
     .optional()
-    .transform(val => val?.trim() || null),
+    .transform(val => val?.trim() || undefined),
   email: z
     .string()
     .email('Please enter a valid email address')
@@ -39,7 +39,7 @@ export const replySchema = z.object({
     .string()
     .max(100, 'Name must be 100 characters or less')
     .optional()
-    .transform(val => val?.trim() || null),
+    .transform(val => val?.trim() || undefined),
   email: z
     .string()
     .email('Please enter a valid email address')

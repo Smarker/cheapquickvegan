@@ -42,7 +42,13 @@ export async function verifyModerationToken(
 ): Promise<string | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return (payload as ModerationTokenPayload).commentId;
+
+    // Validate the payload has the expected structure
+    if (typeof payload.commentId === 'string') {
+      return payload.commentId;
+    }
+
+    return null;
   } catch (error) {
     console.error('Moderation token verification failed:', error);
     return null;

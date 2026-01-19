@@ -52,12 +52,25 @@ export async function verifyOwnershipToken(
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
+    // Verify the payload has the expected structure
+    if (
+      typeof payload.commentId !== 'string' ||
+      typeof payload.email !== 'string'
+    ) {
+      return null;
+    }
+
     // Verify the comment ID matches
     if (payload.commentId !== commentId) {
       return null;
     }
 
-    return payload as OwnershipTokenPayload;
+    return {
+      commentId: payload.commentId,
+      email: payload.email,
+      iat: typeof payload.iat === 'number' ? payload.iat : undefined,
+      exp: typeof payload.exp === 'number' ? payload.exp : undefined,
+    };
   } catch (error) {
     // Token is invalid, expired, or malformed
     console.error('Token verification failed:', error);
