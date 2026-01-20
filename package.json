@@ -9,7 +9,15 @@
     "lint": "next lint",
     "cache:all": "pnpm run cache:recipes && pnpm run cache:guides",
     "cache:recipes": "tsx scripts/cache-recipes.ts",
-    "cache:guides": "tsx scripts/cache-guides.ts"
+    "cache:guides": "tsx scripts/cache-guides.ts",
+    "ingredient:add": "tsx scripts/add-ingredient.ts",
+    "ingredient:add-manual": "tsx scripts/add-ingredient-manual.ts",
+    "ingredient:list": "tsx scripts/list-ingredients.ts",
+    "ingredient:search": "tsx scripts/search-ingredients.ts",
+    "ingredient:edit": "tsx scripts/edit-ingredient.ts",
+    "ingredient:export": "tsx scripts/export-ingredients.ts",
+    "ingredient:import": "tsx scripts/import-ingredients.ts",
+    "recipe:calculate": "tsx scripts/calculate-recipe-nutrition.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

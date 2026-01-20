@@ -36,6 +36,24 @@ interface RecipePageProperties {
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
+
+  // Nutrition fields
+  "Serving Size"?: { rich_text: NotionRichText[] };
+  "Servings Per Recipe"?: { number?: number };
+  "Calories"?: { number?: number };
+  "Total Fat"?: { number?: number };
+  "Saturated Fat"?: { number?: number };
+  "Trans Fat"?: { number?: number };
+  "Cholesterol"?: { number?: number };
+  "Sodium"?: { number?: number };
+  "Total Carbohydrates"?: { number?: number };
+  "Dietary Fiber"?: { number?: number };
+  "Total Sugars"?: { number?: number };
+  "Protein"?: { number?: number };
+  "Vitamin D"?: { number?: number };
+  "Calcium"?: { number?: number };
+  "Iron"?: { number?: number };
+  "Potassium"?: { number?: number };
 }
 
 interface GuidePageProperties {
@@ -176,6 +194,29 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       ?.toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || "untitled";
+    // Extract nutrition info if available
+    const hasNutrition = properties["Calories"]?.number !== undefined;
+    const nutrition = hasNutrition
+      ? {
+          servingSize: properties["Serving Size"]?.rich_text[0]?.plain_text,
+          servingsPerRecipe: properties["Servings Per Recipe"]?.number,
+          calories: properties["Calories"]?.number,
+          totalFat: properties["Total Fat"]?.number,
+          saturatedFat: properties["Saturated Fat"]?.number,
+          transFat: properties["Trans Fat"]?.number,
+          cholesterol: properties["Cholesterol"]?.number,
+          sodium: properties["Sodium"]?.number,
+          totalCarbohydrates: properties["Total Carbohydrates"]?.number,
+          dietaryFiber: properties["Dietary Fiber"]?.number,
+          totalSugars: properties["Total Sugars"]?.number,
+          protein: properties["Protein"]?.number,
+          vitaminD: properties["Vitamin D"]?.number,
+          calcium: properties["Calcium"]?.number,
+          iron: properties["Iron"]?.number,
+          potassium: properties["Potassium"]?.number,
+        }
+      : undefined;
+
     const recipe: Recipe = {
       id: page.id,
       title: properties.Title.title[0]?.plain_text || "Untitled",
@@ -190,6 +231,7 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
+      nutrition,
     };
 
     return recipe;

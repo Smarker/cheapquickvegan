@@ -15,6 +15,7 @@ import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
 import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
+import { NutritionFactsLabel } from "@/components/recipes/nutrition-facts-label";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -148,6 +149,22 @@ export default async function RecipePage({ params }: RecipePageProps) {
         worstRating: "1",
       },
     }),
+    ...(recipe.nutrition?.calories && {
+      nutrition: {
+        "@type": "NutritionInformation",
+        servingSize: recipe.nutrition.servingSize || undefined,
+        calories: recipe.nutrition.calories ? `${recipe.nutrition.calories} calories` : undefined,
+        fatContent: recipe.nutrition.totalFat ? `${recipe.nutrition.totalFat}g` : undefined,
+        saturatedFatContent: recipe.nutrition.saturatedFat ? `${recipe.nutrition.saturatedFat}g` : undefined,
+        transFatContent: recipe.nutrition.transFat ? `${recipe.nutrition.transFat}g` : undefined,
+        cholesterolContent: recipe.nutrition.cholesterol ? `${recipe.nutrition.cholesterol}mg` : undefined,
+        sodiumContent: recipe.nutrition.sodium ? `${recipe.nutrition.sodium}mg` : undefined,
+        carbohydrateContent: recipe.nutrition.totalCarbohydrates ? `${recipe.nutrition.totalCarbohydrates}g` : undefined,
+        fiberContent: recipe.nutrition.dietaryFiber ? `${recipe.nutrition.dietaryFiber}g` : undefined,
+        sugarContent: recipe.nutrition.totalSugars ? `${recipe.nutrition.totalSugars}g` : undefined,
+        proteinContent: recipe.nutrition.protein ? `${recipe.nutrition.protein}g` : undefined,
+      },
+    }),
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
@@ -251,6 +268,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
           >
             {recipe.content}
           </ReactMarkdown>
+
+          {/* --- Nutrition Facts --- */}
+          {recipe.nutrition && (
+            <div className="not-prose my-8 sm:my-12">
+              <NutritionFactsLabel nutrition={recipe.nutrition} />
+            </div>
+          )}
 
           {/* --- Comment Section --- */}
           <div className="not-prose my-8 sm:my-12">

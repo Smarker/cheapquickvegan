@@ -1,3 +1,5 @@
+import { NutritionInfo } from './ingredient';
+
 export interface Recipe {
   id: string;
   title: string;
@@ -12,6 +14,7 @@ export interface Recipe {
   categories: string[];
   relatedRecipes: string[];
   recipeCuisine: string;
+  nutrition?: NutritionInfo;
 }
 
 export interface RecipeInstruction {
