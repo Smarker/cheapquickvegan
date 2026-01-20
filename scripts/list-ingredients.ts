@@ -8,6 +8,14 @@
  * Usage: pnpm tsx scripts/list-ingredients.ts
  */
 
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local if not in production
+if (!process.env.VERCEL && !process.env.POSTGRES_URL) {
+  config({ path: path.resolve(process.cwd(), '.env.local') });
+}
+
 import { listAllIngredients, getIngredientCount } from '../src/lib/db/ingredients';
 
 // Colors for terminal output

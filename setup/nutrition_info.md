@@ -37,6 +37,10 @@ vercel env pull .env.local
 
 ### 2. Add Your First Ingredients
 
+1. Sign up for a free USDA API key at https://fdc.nal.usda.gov/api-key-signup.html
+
+2. Add the API key to your .env.local file
+
 Start by adding common vegan ingredients you use frequently to your database.
 
 **Add from USDA Database:**

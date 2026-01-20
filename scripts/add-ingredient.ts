@@ -8,6 +8,14 @@
  * Usage: pnpm tsx scripts/add-ingredient.ts
  */
 
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local if not in production
+if (!process.env.VERCEL && !process.env.POSTGRES_URL) {
+  config({ path: path.resolve(process.cwd(), '.env.local') });
+}
+
 import * as readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 import { searchFoods, getFoodDetails, formatUSDAFood, formatNutritionSummary, parseUSDAToIngredient } from '../src/lib/usda-api';

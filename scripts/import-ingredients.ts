@@ -8,6 +8,12 @@
  * Usage: pnpm tsx scripts/import-ingredients.ts --file ingredients.json
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables from .env.local
+config({ path: resolve(process.cwd(), '.env.local') });
+
 import * as readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 import fs from 'fs';
