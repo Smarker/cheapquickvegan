@@ -5,11 +5,16 @@ import { FavoriteButton } from "./favorite-button";
 
 interface RecipeCardCompactProps {
   recipe: Recipe;
+  fromCategory?: string;
 }
 
-export default function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
+export default function RecipeCardCompact({ recipe, fromCategory }: RecipeCardCompactProps) {
+  const href = fromCategory
+    ? `/recipes/${recipe.slug}?from=${fromCategory.toLowerCase()}`
+    : `/recipes/${recipe.slug}`;
+
   return (
-    <Link href={`/recipes/${recipe.slug}`} className="group relative block">
+    <Link href={href} className="group relative block">
       <div className="bg-white dark:bg-neutral-800 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg overflow-hidden relative">
         <div className="relative w-full aspect-[5/4] overflow-hidden">
           <Image

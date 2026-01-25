@@ -15,9 +15,13 @@ import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
 import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
+import { SocialIcons } from "@/components/recipes/social-icons";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { Clock } from "lucide-react";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 export async function generateMetadata(
@@ -65,8 +69,9 @@ export async function generateMetadata(
   };
 }
 
-export default async function RecipePage({ params }: RecipePageProps) {
+export default async function RecipePage({ params, searchParams }: RecipePageProps) {
   const { slug } = await params;
+  const { from } = await searchParams;
   const recipes = getRecipesFromCache();
   const recipe = recipes.find((r) => r.slug === slug);
 
@@ -151,7 +156,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
-  const category = recipe.categories[0];
+  // Determine which category to show in breadcrumbs
+  // Use 'from' query param if it exists and is valid, otherwise use first category
+  let category = recipe.categories[0];
+  if (from && recipe.categories?.some((c: string) => c.toLowerCase() === from.toLowerCase())) {
+    category = recipe.categories.find((c: string) => c.toLowerCase() === from.toLowerCase()) || recipe.categories[0];
+  }
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -209,12 +220,44 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
         {/* --- Prose Content --- */}
         <article className="prose dark:prose-invert">
-          <header className="mb-8">
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground mb-2 sm:mb-4 text-sm">
-              <span><span className="font-medium">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time></span>
-              {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
-                <span><span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time></span>
-              )}
+          <header className="mb-4">
+            {/* --- Meta Info Bar: Date, Social Icons, and Breadcrumbs --- */}
+            {/* When both Published and Updated dates exist, dates take full width and socials/breadcrumbs wrap to new line */}
+            {/* When only Published date exists, everything stays on one line */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-1.5 text-muted-foreground sm:mb-1.5 text-sm leading-tight">
+              {/* Date info - takes full width when both dates exist */}
+              <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
+                <span className="flex items-center gap-1.5 leading-tight">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="font-medium">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time>
+                </span>
+                {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
+                  <span className="flex items-center gap-1.5 leading-tight">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time>
+                  </span>
+                )}
+              </div>
+
+              {/* Social Icons and Breadcrumbs - wrap to new line when both dates exist */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
+                {/* Social Icons */}
+                <div className="ml-2">
+                  <SocialIcons />
+                </div>
+
+                {/* Breadcrumbs - using the same category determined above */}
+                <Breadcrumbs
+                  items={[
+                    { label: "Home", href: "/" },
+                    { label: "Recipes", href: "/recipes" },
+                    {
+                      label: category.charAt(0).toUpperCase() + category.slice(1),
+                      href: `/recipes/category/${category.toLowerCase()}`,
+                    },
+                  ]}
+                />
+              </div>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
@@ -262,10 +305,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
   <section className="mt-6 sm:mt-12">
     <h2 className="text-2xl font-semibold mb-2 sm:mb-4">Try these similar recipes</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-      {relatedRecipes.map((r) => (
+      {relatedRecipes.map((r) => {
+        // Use the current page's category for related recipe links
+        const relatedHref = `/recipes/${r.slug}?from=${category.toLowerCase()}`;
+        return (
         <a
           key={r.id}
-          href={`/recipes/${r.slug}`}
+          href={relatedHref}
           className="relative block rounded overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
         >
           {/* Set fixed height on mobile/tablet, larger on desktop */}
@@ -281,7 +327,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
             </div>
           </div>
         </a>
-      ))}
+      );
+      })}
     </div>
   </section>
 )}

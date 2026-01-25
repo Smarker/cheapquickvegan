@@ -14,6 +14,7 @@ interface RecipeListPageProps {
   recipes: Recipe[];
   title: string;
   cardVariant?: CardVariant;
+  fromCategory?: string;
 }
 
 const gridClasses: Record<CardVariant, string> = {
@@ -25,6 +26,7 @@ export default function RecipeListPage({
   recipes,
   title,
   cardVariant = "detailed",
+  fromCategory,
 }: RecipeListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -65,9 +67,9 @@ export default function RecipeListPage({
         <div className={`grid ${gridClasses[cardVariant]} w-full`}>
           {filteredRecipes.map((recipe) =>
             cardVariant === "detailed" ? (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard key={recipe.id} recipe={recipe} fromCategory={fromCategory} />
             ) : (
-              <RecipeCardCompact key={recipe.id} recipe={recipe} />
+              <RecipeCardCompact key={recipe.id} recipe={recipe} fromCategory={fromCategory} />
             )
           )}
         </div>

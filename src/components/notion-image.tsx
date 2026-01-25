@@ -30,7 +30,7 @@ export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
           alt={alt || ""}
           width={800}
           height={800}
-          className="rounded-lg w-full h-auto object-cover max-h-[50vh]"
+          className="rounded-lg w-full h-auto object-cover max-h-[600px]"
           sizes="(max-width: 768px) 100vw, 800px"
         />
         {alt && (
@@ -42,10 +42,10 @@ export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
     );
   }
 
-  // Default: fill container mode
+  // Default: fill container mode with max height constraint
   return (
     <div
-      className={`relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden ${className || ""}`}
+      className={`relative w-full aspect-[16/9] max-h-[500px] mb-8 rounded-lg overflow-hidden ${className || ""}`}
     >
       <Image
         src={imgSrc}
