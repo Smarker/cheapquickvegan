@@ -235,14 +235,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
               img: ({ src, alt, ...props }) => {
                 if (!src || typeof src !== "string") return null;
                 return (
-                  <div className="relative w-full aspect-[16/9] sm:aspect-[3/2] md:aspect-[4/3] mb-4">
-                    <NotionImage
-                      src={src}
-                      alt={alt ?? recipe.title}
-                      className="object-cover w-full h-full"
-                      {...props}
-                    />
-                  </div>
+                  <NotionImage
+                    src={src}
+                    alt={alt ?? recipe.title}
+                    className="mt-0 mb-4"
+                    inline={true}
+                    {...props}
+                  />
                 );
               },
             }}

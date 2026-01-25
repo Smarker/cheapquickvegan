@@ -24,18 +24,17 @@ export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
   // Inline mode: natural dimensions, no stretching, safe inside <p> tags
   if (inline) {
     return (
-      <span className="block my-4">
+      <span className={`block ${className || ""}`}>
         <Image
           src={imgSrc}
           alt={alt || ""}
           width={800}
-          height={600}
-          className={`rounded-lg max-w-full h-auto ${className || ""}`}
-          style={{ width: "auto", maxHeight: "500px" }}
+          height={800}
+          className="rounded-lg w-full h-auto object-cover max-h-[50vh]"
           sizes="(max-width: 768px) 100vw, 800px"
         />
         {alt && (
-          <span className="block text-base text-muted-foreground mt-1 font-medium">
+          <span className="block text-base text-muted-foreground mt-0 font-medium">
             {alt}
           </span>
         )}
