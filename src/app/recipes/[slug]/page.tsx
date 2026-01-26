@@ -21,7 +21,6 @@ import { Clock } from "lucide-react";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ from?: string }>;
 }
 
 export async function generateMetadata(
@@ -69,9 +68,8 @@ export async function generateMetadata(
   };
 }
 
-export default async function RecipePage({ params, searchParams }: RecipePageProps) {
+export default async function RecipePage({ params }: RecipePageProps) {
   const { slug } = await params;
-  const { from } = await searchParams;
   const recipes = getRecipesFromCache();
   const recipe = recipes.find((r) => r.slug === slug);
 
@@ -156,42 +154,41 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
-  // Determine which category to show in breadcrumbs
-  // Use 'from' query param if it exists and is valid, otherwise use first category
-  let category = recipe.categories[0];
-  if (from && recipe.categories?.some((c: string) => c.toLowerCase() === from.toLowerCase())) {
-    category = recipe.categories.find((c: string) => c.toLowerCase() === from.toLowerCase()) || recipe.categories[0];
-  }
+  // Use the recipe's primary category (first category) for breadcrumbs
+  const category = recipe.categories[0];
+
+  // Build breadcrumb items with each category as a separate item
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: SITE_URL,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Recipes",
+      item: `${SITE_URL}/recipes`,
+    },
+    ...recipe.categories.map((cat, index) => ({
+      "@type": "ListItem",
+      position: 3 + index,
+      name: cat.charAt(0).toUpperCase() + cat.slice(1),
+      item: `${SITE_URL}/recipes/category/${cat.toLowerCase()}`,
+    })),
+    {
+      "@type": "ListItem",
+      position: 3 + recipe.categories.length,
+      name: recipe.title,
+      item: `${SITE_URL}/recipes/${recipe.slug}`,
+    },
+  ];
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: SITE_URL,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Recipes",
-        item: `${SITE_URL}/recipes`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: category.charAt(0).toUpperCase() + category.slice(1),
-        item: `${SITE_URL}/recipes/category/${category.toLowerCase()}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: recipe.title,
-        item: `${SITE_URL}/recipes/${recipe.slug}`,
-      },
-    ],
+    itemListElement: breadcrumbItems,
   };
 
   return (
@@ -208,7 +205,7 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
       <div className="max-w-3xl mx-auto">
         {/* --- Main Recipe Image --- */}
         {recipe.coverImage && (
-          <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-6 md:mb-8">
+          <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-2">
             <NotionImage
               src={recipe.coverImage}
               alt={recipe.alt || recipe.title}
@@ -220,7 +217,7 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
 
         {/* --- Prose Content --- */}
         <article className="prose dark:prose-invert">
-          <header className="mb-4">
+          <header className="mb-2">
             {/* --- Meta Info Bar: Date, Social Icons, and Breadcrumbs --- */}
             {/* When both Published and Updated dates exist, dates take full width and socials/breadcrumbs wrap to new line */}
             {/* When only Published date exists, everything stays on one line */}
@@ -242,18 +239,20 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
               {/* Social Icons and Breadcrumbs - wrap to new line when both dates exist */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
                 {/* Social Icons */}
-                <div className="ml-2">
+                <div className="sm:ml-2">
                   <SocialIcons />
                 </div>
 
-                {/* Breadcrumbs - using the same category determined above */}
+                {/* Breadcrumbs - categories grouped with / separator */}
                 <Breadcrumbs
                   items={[
                     { label: "Home", href: "/" },
                     { label: "Recipes", href: "/recipes" },
                     {
-                      label: category.charAt(0).toUpperCase() + category.slice(1),
-                      href: `/recipes/category/${category.toLowerCase()}`,
+                      items: recipe.categories.map((cat) => ({
+                        label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                        href: `/recipes/category/${cat.toLowerCase()}`,
+                      })),
                     },
                   ]}
                 />
@@ -305,13 +304,10 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
   <section className="mt-6 sm:mt-12">
     <h2 className="text-2xl font-semibold mb-2 sm:mb-4">Try these similar recipes</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-      {relatedRecipes.map((r) => {
-        // Use the current page's category for related recipe links
-        const relatedHref = `/recipes/${r.slug}?from=${category.toLowerCase()}`;
-        return (
+      {relatedRecipes.map((r) => (
         <a
           key={r.id}
-          href={relatedHref}
+          href={`/recipes/${r.slug}`}
           className="relative block rounded overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
         >
           {/* Set fixed height on mobile/tablet, larger on desktop */}
@@ -327,8 +323,7 @@ export default async function RecipePage({ params, searchParams }: RecipePagePro
             </div>
           </div>
         </a>
-      );
-      })}
+      ))}
     </div>
   </section>
 )}

@@ -16,9 +16,17 @@ interface BreadcrumbItem {
   href?: string;
 }
 
-interface BreadcrumbsProps {
+interface BreadcrumbGroup {
   items: BreadcrumbItem[];
+}
+
+interface BreadcrumbsProps {
+  items: (BreadcrumbItem | BreadcrumbGroup)[];
   className?: string;
+}
+
+function isBreadcrumbGroup(item: BreadcrumbItem | BreadcrumbGroup): item is BreadcrumbGroup {
+  return 'items' in item;
 }
 
 export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
@@ -31,17 +39,41 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
               {index > 0 && (
                 <ChevronsRight className="w-3.5 h-3.5 text-muted-foreground/60 mr-1 inline-block align-baseline" aria-hidden="true" />
               )}
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  className="text-primary font-medium hover:text-primary/80 hover:underline underline-offset-4 transition-all leading-none inline-block py-0 my-0"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="text-muted-foreground font-medium leading-none inline-block py-0 my-0" aria-current="page">
-                  {item.label}
+              {isBreadcrumbGroup(item) ? (
+                // Render grouped items with "/" separator
+                <span className="flex items-baseline gap-1">
+                  {item.items.map((groupItem, groupIndex) => (
+                    <span key={groupIndex} className="flex items-baseline">
+                      {groupIndex > 0 && <span className="text-muted-foreground/60 mx-1">/</span>}
+                      {groupItem.href ? (
+                        <Link
+                          href={groupItem.href}
+                          className="text-primary font-medium hover:text-primary/80 hover:underline underline-offset-4 transition-all leading-none inline-block py-0 my-0"
+                        >
+                          {groupItem.label}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground font-medium leading-none inline-block py-0 my-0">
+                          {groupItem.label}
+                        </span>
+                      )}
+                    </span>
+                  ))}
                 </span>
+              ) : (
+                // Regular single item
+                item.href ? (
+                  <Link
+                    href={item.href}
+                    className="text-primary font-medium hover:text-primary/80 hover:underline underline-offset-4 transition-all leading-none inline-block py-0 my-0"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className="text-muted-foreground font-medium leading-none inline-block py-0 my-0" aria-current="page">
+                    {item.label}
+                  </span>
+                )
               )}
             </li>
           );

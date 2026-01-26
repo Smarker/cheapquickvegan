@@ -9,5 +9,5 @@ interface CategoryPageClientProps {
 }
 
 export default function CategoryPageClient({ recipes, category }: CategoryPageClientProps) {
-  return <RecipeListPage recipes={recipes} title={`${category}s`} cardVariant="compact" fromCategory={category} />;
+  return <RecipeListPage recipes={recipes} title={`${category}s`} cardVariant="compact" />;
 }

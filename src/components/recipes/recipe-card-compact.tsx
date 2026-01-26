@@ -5,13 +5,10 @@ import { FavoriteButton } from "./favorite-button";
 
 interface RecipeCardCompactProps {
   recipe: Recipe;
-  fromCategory?: string;
 }
 
-export default function RecipeCardCompact({ recipe, fromCategory }: RecipeCardCompactProps) {
-  const href = fromCategory
-    ? `/recipes/${recipe.slug}?from=${fromCategory.toLowerCase()}`
-    : `/recipes/${recipe.slug}`;
+export default function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
+  const href = `/recipes/${recipe.slug}`;
 
   return (
     <Link href={href} className="group relative block">
