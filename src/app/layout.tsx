@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/consent-context";
 import { FavoritesProvider } from "@/contexts/favorites-context";
 import GDPRAnalytics from "@/components/consent/gdpr-analytics";
+import { Toaster } from "@/components/ui/sonner";
 import { SITE_URL } from "@/config/constants";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {/* Analytics only mounts if user consented */}
                 <GDPRAnalytics />
               </Layout>
+              <Toaster />
             </FavoritesProvider>
           </ConsentProvider>
         </ThemeProvider>

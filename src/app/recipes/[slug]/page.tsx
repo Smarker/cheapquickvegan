@@ -13,6 +13,7 @@ import { SITE_URL } from "@/config/constants";
 import { parseRecipeContent } from "@/lib/recipe-parser";
 import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
+import { NewsletterCTA } from "@/components/newsletter/newsletter-cta";
 import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
 import { SocialIcons } from "@/components/recipes/social-icons";
@@ -267,6 +268,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
           >
             {recipe.content}
           </ReactMarkdown>
+
+          {/* --- Newsletter CTA --- */}
+          <div className="not-prose my-8 sm:my-12">
+            <NewsletterCTA />
+          </div>
 
           {/* --- Comment Section --- */}
           <div className="not-prose my-8 sm:my-12">
