@@ -4,6 +4,7 @@ import { Recipe } from "@/types/recipe";
 import { Metadata } from "next";
 import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
+import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
@@ -61,37 +62,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: SITE_URL,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Recipes",
-        item: `${SITE_URL}/recipes`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: displayCategory,
-        item: `${SITE_URL}/recipes/category/${cat.toLowerCase()}`,
-      },
-    ],
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", path: "" },
+        { name: "Recipes", path: "/recipes" },
+        { name: displayCategory, path: `/recipes/category/${cat.toLowerCase()}` },
+      ]} />
       <CategoryPageClient recipes={recipes} category={displayCategory} />
     </>
   );

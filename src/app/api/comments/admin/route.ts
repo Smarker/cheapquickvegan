@@ -6,8 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPendingComments } from '@/lib/db/comments';
-import { verifyAdminSession } from '@/lib/auth/admin-auth';
-import { cookies } from 'next/headers';
+import { requireAdminAuth } from '@/lib/auth/admin-auth';
 
 /**
  * GET /api/comments/admin
@@ -15,25 +14,9 @@ import { cookies } from 'next/headers';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin session
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('admin-session')?.value;
-
-    if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No session token' },
-        { status: 401 }
-      );
-    }
-
-    const isAdmin = await verifyAdminSession(sessionToken);
-
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid session' },
-        { status: 401 }
-      );
-    }
+    // Verify admin authentication
+    const authError = await requireAdminAuth();
+    if (authError) return authError;
 
     // Fetch pending comments
     const comments = await getPendingComments();

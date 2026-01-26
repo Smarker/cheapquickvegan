@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import RecipeCard from "./recipe-card";
 import RecipeCardCompact from "./recipe-card-compact";
-import { RecipeSearchBar } from "./recipe-search-bar";
+import { SearchBar } from "@/components/common/search-bar";
 import { Recipe } from "@/types/recipe";
 import { filterRecipes } from "@/lib/utils";
 import { useFavorites } from "@/contexts/favorites-context";
@@ -42,7 +42,14 @@ export default function RecipeListPage({
       items={recipes}
       title={title}
       cardVariant={cardVariant}
-      searchBar={(props) => <RecipeSearchBar {...props} />}
+      searchBar={(props) => (
+        <SearchBar
+          {...props}
+          placeholder="Search recipes..."
+          id="recipe-search"
+          name="recipe-search"
+        />
+      )}
       filterFn={filterRecipes}
       sortFn={sortByFavorites}
       renderDetailedCard={(recipe) => <RecipeCard recipe={recipe} />}

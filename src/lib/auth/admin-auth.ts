@@ -7,6 +7,8 @@
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { sql } from '@vercel/postgres';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key-change-this-in-production'
@@ -99,4 +101,38 @@ export async function verifyAdminSession(token: string): Promise<boolean> {
 export async function hashPassword(password: string): Promise<string> {
   const hash = await bcrypt.hash(password, 10);
   return hash;
+}
+
+/**
+ * Verifies admin authentication for API routes
+ * Returns an error response if authentication fails, or null if authenticated
+ *
+ * @returns NextResponse with error if authentication fails, null if authenticated
+ *
+ * @example
+ * const authError = await requireAdminAuth();
+ * if (authError) return authError;
+ * // Continue with authenticated logic...
+ */
+export async function requireAdminAuth(): Promise<NextResponse | null> {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get('admin-session')?.value;
+
+  if (!sessionToken) {
+    return NextResponse.json(
+      { error: 'Unauthorized - No session token' },
+      { status: 401 }
+    );
+  }
+
+  const isAdmin = await verifyAdminSession(sessionToken);
+
+  if (!isAdmin) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Invalid session' },
+      { status: 401 }
+    );
+  }
+
+  return null;
 }

@@ -15,6 +15,7 @@ import { TableOfContents } from "@/components/guides/table-of-contents";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { MapEmbed } from "@/components/guides/map-embed";
 import { Clock } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -172,37 +173,6 @@ export default async function GuidePage({ params }: GuidePageProps) {
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/guides/${guide.slug}` },
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: SITE_URL,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Guides",
-        item: `${SITE_URL}/guides`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: category.charAt(0).toUpperCase() + category.slice(1),
-        item: `${SITE_URL}/guides/category/${category.toLowerCase()}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: guide.title,
-        item: `${SITE_URL}/guides/${guide.slug}`,
-      },
-    ],
-  };
-
   const faqJsonLd = processedContent ? generateFaqJsonLd(processedContent) : null;
 
   return (
@@ -211,10 +181,12 @@ export default async function GuidePage({ params }: GuidePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", path: "" },
+        { name: "Guides", path: "/guides" },
+        { name: category.charAt(0).toUpperCase() + category.slice(1), path: `/guides/category/${category.toLowerCase()}` },
+        { name: guide.title, path: `/guides/${guide.slug}` },
+      ]} />
       {faqJsonLd && faqJsonLd.mainEntity.length > 0 && (
         <script
           type="application/ld+json"

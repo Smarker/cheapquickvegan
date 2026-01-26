@@ -3,6 +3,7 @@ import { Guide } from "@/types/guide";
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 import GuideListPage from "@/components/guides/guide-list-page";
+import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
 export const metadata: Metadata = {
   title: "All Guides",
@@ -30,33 +31,14 @@ export const metadata: Metadata = {
   },
 };
 
-const breadcrumbJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Home",
-      item: SITE_URL,
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Guides",
-      item: `${SITE_URL}/guides`,
-    },
-  ],
-};
-
 export default function GuidesPage() {
   const guides: Guide[] = getGuidesFromCache();
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", path: "" },
+        { name: "Guides", path: "/guides" },
+      ]} />
       <GuideListPage guides={guides} title="All Guides" cardVariant="detailed" />
     </>
   );

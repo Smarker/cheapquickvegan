@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 import { notFound } from "next/navigation";
 import GuideListPage from "@/components/guides/guide-list-page";
+import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
@@ -71,37 +72,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     return guideCategory === cat.toLowerCase();
   });
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: SITE_URL,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Guides",
-        item: `${SITE_URL}/guides`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: categoryName,
-        item: `${SITE_URL}/guides/category/${cat}`,
-      },
-    ],
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", path: "" },
+        { name: "Guides", path: "/guides" },
+        { name: categoryName, path: `/guides/category/${cat}` },
+      ]} />
       <GuideListPage
         guides={categoryGuides}
         title={`${categoryName} Guides`}

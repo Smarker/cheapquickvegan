@@ -18,6 +18,7 @@ import { getAggregateRating } from "@/lib/db/comments";
 import { SocialIcons } from "@/components/recipes/social-icons";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -159,37 +160,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   // Build breadcrumb items with each category as a separate item
   const breadcrumbItems = [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Home",
-      item: SITE_URL,
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Recipes",
-      item: `${SITE_URL}/recipes`,
-    },
-    ...recipe.categories.map((cat, index) => ({
-      "@type": "ListItem",
-      position: 3 + index,
+    { name: "Home", path: "" },
+    { name: "Recipes", path: "/recipes" },
+    ...recipe.categories.map((cat) => ({
       name: cat.charAt(0).toUpperCase() + cat.slice(1),
-      item: `${SITE_URL}/recipes/category/${cat.toLowerCase()}`,
+      path: `/recipes/category/${cat.toLowerCase()}`,
     })),
-    {
-      "@type": "ListItem",
-      position: 3 + recipe.categories.length,
-      name: recipe.title,
-      item: `${SITE_URL}/recipes/${recipe.slug}`,
-    },
+    { name: recipe.title, path: `/recipes/${recipe.slug}` },
   ];
-
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: breadcrumbItems,
-  };
 
   return (
     <>
@@ -197,10 +175,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
 
       <div className="max-w-3xl mx-auto">
         {/* --- Main Recipe Image --- */}

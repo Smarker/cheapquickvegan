@@ -2,7 +2,7 @@
 
 import GuideCard from "./guide-card";
 import GuideCardCompact from "./guide-card-compact";
-import { GuideSearchBar } from "./guide-search-bar";
+import { SearchBar } from "@/components/common/search-bar";
 import { Guide } from "@/types/guide";
 import { filterGuides } from "@/lib/utils";
 import GenericListPage from "@/components/common/generic-list-page";
@@ -25,7 +25,7 @@ export default function GuideListPage({
       items={guides}
       title={title}
       cardVariant={cardVariant}
-      searchBar={(props) => <GuideSearchBar {...props} />}
+      searchBar={(props) => <SearchBar {...props} placeholder="Search guides..." />}
       filterFn={filterGuides}
       renderDetailedCard={(guide) => <GuideCard guide={guide} />}
       renderCompactCard={(guide) => <GuideCardCompact guide={guide} />}
