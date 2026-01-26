@@ -16,7 +16,7 @@ function ensureImagesDir() {
   }
 }
 
-// Generate a filename from URL - use hash to avoid issues with special characters
+// Generate a filename from URL - clean special characters
 function generateFilename(url: string): string {
   // Extract the original filename from the URL path
   const urlObj = new URL(url);
@@ -26,16 +26,13 @@ function generateFilename(url: string): string {
   // Get extension from original filename
   const ext = path.extname(originalFilename) || '.jpg';
 
-  // Create a short hash of just the path (not query params) to ensure uniqueness
-  // This prevents duplicate downloads when Notion's signed URL params change
-  const hash = crypto.createHash('md5').update(urlObj.pathname).digest('hex').slice(0, 12);
-
   // Clean the original filename (without extension) for readability
   const baseName = path.basename(originalFilename, ext)
     .replace(/[^a-zA-Z0-9-_]/g, '-')
-    .slice(0, 50);
+    .replace(/-+/g, '-') // Replace multiple dashes with single dash
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
 
-  return `${baseName}-${hash}${ext}`;
+  return `${baseName}${ext}`;
 }
 
 // Download an image from URL to local file
