@@ -35,7 +35,8 @@ export default function HomePage() {
 
   const featuredGuideSlugs = [
     "cusco-peru-vegan-food",
-    "ollantaytambo-vegan-food-travel-guide"
+    "ollantaytambo-vegan-food-travel-guide",
+    "aguas-calientes-vegan-food"
   ];
 
   const featuredGuides = allGuides.filter((r) =>
