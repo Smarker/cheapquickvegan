@@ -19,6 +19,7 @@ import { Loader2, Mail, Send } from 'lucide-react';
 export function NewsletterCTA() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
 
   const {
     register,
@@ -37,6 +38,7 @@ export function NewsletterCTA() {
   const onSubmit = async (data: SubscribeInput) => {
     setIsSubmitting(true);
     setIsSuccess(false);
+    setAlreadySubscribed(false);
 
     try {
       const response = await fetch('/api/newsletter/subscribe', {
@@ -52,10 +54,20 @@ export function NewsletterCTA() {
       if (response.ok) {
         setIsSuccess(true);
         reset();
-        toast.success('Check your email!', {
-          description: 'We sent you a confirmation link to verify your subscription.',
-          duration: 6000,
-        });
+
+        // Check if already subscribed
+        if (result.alreadySubscribed) {
+          setAlreadySubscribed(true);
+          toast.info('Already subscribed!', {
+            description: 'This email is already receiving our newsletter.',
+            duration: 5000,
+          });
+        } else {
+          toast.success('Check your email!', {
+            description: 'We sent you a confirmation link to verify your subscription.',
+            duration: 6000,
+          });
+        }
       } else if (response.status === 429) {
         // Rate limit exceeded
         toast.error('Too many attempts', {
@@ -92,13 +104,15 @@ export function NewsletterCTA() {
             Stay Updated with New Recipes
           </h3>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
-            Get vegan recipes delivered to your inbox monthly.
+            Get new recipes delivered monthly to your inbox.
           </p>
 
           {isSuccess ? (
-            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-lg p-4">
-              <p className="text-green-800 dark:text-green-200 font-medium">
-                ✓ Almost there! Check your email to confirm your subscription.
+            <div className={`${alreadySubscribed ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50' : 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50'} rounded-lg p-4`}>
+              <p className={`${alreadySubscribed ? 'text-blue-800 dark:text-blue-200' : 'text-green-800 dark:text-green-200'} font-medium`}>
+                {alreadySubscribed
+                  ? '✓ You\'re already subscribed! You\'ll receive our monthly newsletter.'
+                  : '✓ Almost there! Check your email to confirm your subscription.'}
               </p>
             </div>
           ) : (
@@ -124,7 +138,7 @@ export function NewsletterCTA() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-grow">
+                <div className="flex-grow min-w-0">
                   <Input
                     type="email"
                     placeholder="your@email.com"
@@ -140,13 +154,13 @@ export function NewsletterCTA() {
                   )}
                 </div>
 
-                <div className="flex-grow sm:flex-grow-0">
+                <div className="flex-shrink-0">
                   <Input
                     type="text"
                     placeholder="Name (optional)"
                     {...register('name')}
                     disabled={isSubmitting}
-                    className="w-full sm:w-40"
+                    className="w-full sm:w-36"
                     autoComplete="name"
                   />
                 </div>
@@ -171,7 +185,7 @@ export function NewsletterCTA() {
               </div>
 
               <p className="text-xs text-gray-500 dark:text-gray-500">
-                We respect your privacy. Unsubscribe anytime. No spam, ever.
+                Free to subscribe • Unsubscribe anytime
               </p>
             </form>
           )}

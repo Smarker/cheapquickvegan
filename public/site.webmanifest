@@ -3,7 +3,7 @@
   "short_name": "Vegan Recipes",
   "description": "Easy, affordable vegan recipes you can make fast!",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "orientation": "portrait-primary",

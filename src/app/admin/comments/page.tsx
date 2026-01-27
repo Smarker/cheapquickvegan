@@ -8,13 +8,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { CommentWithRecipe } from '@/types/comment';
 import { CommentModerationCard } from '@/components/comments/comment-moderation-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, LogOut, MessageSquare } from 'lucide-react';
+import { RefreshCw, LogOut, MessageSquare, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminCommentsPage() {
@@ -126,6 +127,12 @@ export default function AdminCommentsPage() {
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/newsletter">
+                <Mail className="h-4 w-4 mr-2" />
+                Newsletter
+              </Link>
             </Button>
             <Button
               onClick={handleLogout}

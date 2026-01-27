@@ -33,8 +33,8 @@ export default function NewsletterConfirmedPage({
 
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           {alreadyConfirmed
-            ? "You've already confirmed your subscription. Keep an eye on your inbox for delicious vegan recipes delivered monthly!"
-            : "Welcome to the Cheap Quick Vegan community! You'll start receiving our monthly newsletter with delicious vegan recipes."}
+            ? "You've already confirmed your subscription. Keep an eye on your inbox for monthly recipe updates!"
+            : "Thanks for subscribing! You'll receive new recipes monthly in your inbox."}
         </p>
 
         <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-lg p-4 mb-6">
@@ -62,16 +62,6 @@ export default function NewsletterConfirmedPage({
             </Link>
           </Button>
         </div>
-
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-6">
-          Didn't mean to subscribe?{' '}
-          <Link
-            href="/api/newsletter/unsubscribe"
-            className="text-[#735d78] hover:underline"
-          >
-            Unsubscribe here
-          </Link>
-        </p>
       </div>
     </div>
   );

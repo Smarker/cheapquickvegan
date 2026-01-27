@@ -52,26 +52,23 @@ export async function GET(request: NextRequest) {
 
     // Check if already unsubscribed
     if (subscription.status === 'unsubscribed') {
-      return NextResponse.json(
-        { message: 'You have already been unsubscribed.' },
-        { status: 200 }
+      return NextResponse.redirect(
+        new URL('/newsletter/unsubscribed?already=true', request.url)
       );
     }
 
     // Check if subscription is active
     if (subscription.status !== 'active') {
-      return NextResponse.json(
-        { error: 'Subscription is not active' },
-        { status: 400 }
+      return NextResponse.redirect(
+        new URL('/newsletter/error?reason=not-active', request.url)
       );
     }
 
     // Unsubscribe
     await unsubscribeEmail(payload.email);
 
-    return NextResponse.json(
-      { message: 'You have been successfully unsubscribed from our newsletter.' },
-      { status: 200 }
+    return NextResponse.redirect(
+      new URL('/newsletter/unsubscribed', request.url)
     );
   } catch (error) {
     console.error('Newsletter unsubscribe error:', error);

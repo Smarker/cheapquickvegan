@@ -41,19 +41,24 @@ export async function POST(request: NextRequest) {
     const forwarded = request.headers.get('x-forwarded-for');
     const clientIp = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1';
 
-    // Check rate limit (3 attempts per 24 hours)
-    const rateLimit = await checkNewsletterRateLimit(clientIp);
+    // Skip rate limiting in development (localhost)
+    const isDevelopment = process.env.NODE_ENV === 'development' || clientIp === '127.0.0.1' || clientIp === '::1';
 
-    if (!rateLimit.isAllowed) {
-      return NextResponse.json(
-        {
-          error: 'Too many subscription attempts',
-          message: `You've reached the maximum number of subscription attempts. Please try again after ${rateLimit.resetTime.toLocaleString()}.`,
-          remainingAttempts: rateLimit.remainingAttempts,
-          resetTime: rateLimit.resetTime.toISOString(),
-        },
-        { status: 429 }
-      );
+    if (!isDevelopment) {
+      // Check rate limit (3 attempts per 24 hours)
+      const rateLimit = await checkNewsletterRateLimit(clientIp);
+
+      if (!rateLimit.isAllowed) {
+        return NextResponse.json(
+          {
+            error: 'Too many subscription attempts',
+            message: `You've reached the maximum number of subscription attempts. Please try again after ${rateLimit.resetTime.toLocaleString()}.`,
+            remainingAttempts: rateLimit.remainingAttempts,
+            resetTime: rateLimit.resetTime.toISOString(),
+          },
+          { status: 429 }
+        );
+      }
     }
 
     // Validate input with Zod
@@ -77,9 +82,12 @@ export async function POST(request: NextRequest) {
 
     if (existingSubscription) {
       if (existingSubscription.status === 'active') {
-        // Already subscribed - return friendly message without revealing existence
+        // Already subscribed - let them know
         return NextResponse.json(
-          { message: 'Success! Please check your email to confirm your subscription.' },
+          {
+            message: 'You\'re already subscribed!',
+            alreadySubscribed: true
+          },
           { status: 200 }
         );
       } else if (existingSubscription.status === 'pending') {
@@ -97,8 +105,10 @@ export async function POST(request: NextRequest) {
           console.error('Failed to send verification email:', error);
         });
 
-        // Increment rate limit
-        await incrementNewsletterRateLimit(clientIp);
+        // Increment rate limit (skip in development)
+        if (!isDevelopment) {
+          await incrementNewsletterRateLimit(clientIp);
+        }
 
         return NextResponse.json(
           { message: 'Success! Please check your email to confirm your subscription.' },
@@ -119,8 +129,10 @@ export async function POST(request: NextRequest) {
           console.error('Failed to send verification email:', error);
         });
 
-        // Increment rate limit
-        await incrementNewsletterRateLimit(clientIp);
+        // Increment rate limit (skip in development)
+        if (!isDevelopment) {
+          await incrementNewsletterRateLimit(clientIp);
+        }
 
         return NextResponse.json(
           { message: 'Success! Please check your email to confirm your subscription.' },
@@ -145,8 +157,10 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send verification email:', error);
     });
 
-    // Increment rate limit counter
-    await incrementNewsletterRateLimit(clientIp);
+    // Increment rate limit counter (skip in development)
+    if (!isDevelopment) {
+      await incrementNewsletterRateLimit(clientIp);
+    }
 
     // Return success (don't reveal if email exists)
     return NextResponse.json(

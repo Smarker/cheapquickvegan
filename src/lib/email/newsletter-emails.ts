@@ -85,6 +85,7 @@ export async function sendVerificationEmail(
 
     await resend.emails.send({
       from: 'Cheap Quick Vegan <noreply@cheapquickvegan.com>',
+      replyTo: 'cheapquickvegan@gmail.com',
       to: email,
       subject,
       html,
@@ -114,7 +115,7 @@ export async function sendWelcomeEmail(
     const unsubscribeToken = await generateUnsubscribeToken(email);
     const unsubscribeUrl = `${siteUrl}/api/newsletter/unsubscribe?token=${unsubscribeToken}`;
 
-    const subject = 'Welcome to Cheap Quick Vegan! 🌱';
+    const subject = "You've Subscribed to CheapQuickVegan!";
 
     const html = `
 <!DOCTYPE html>
@@ -133,7 +134,7 @@ export async function sendWelcomeEmail(
 
     <div style="margin-bottom: 30px;">
       <p style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">
-        Thanks for confirming your subscription! We're excited to share delicious vegan recipes and budget-friendly tips with you every month.
+        Thanks for confirming your subscription! We're excited to share delicious vegan recipes and budget-friendly tips with you each month.
       </p>
     </div>
 
@@ -148,15 +149,15 @@ export async function sendWelcomeEmail(
 
     <div style="background-color: #fff8e1; border-left: 3px solid #ffc107; padding: 15px; margin: 30px 0; border-radius: 4px;">
       <p style="margin: 0; color: #495057; font-size: 14px;">
-        <strong>💡 Pro tip:</strong> Add our email to your contacts so our newsletters don't end up in spam!
+        <strong>💡 Pro tip:</strong> Add our email to your contacts so our newsletters don't end up in promotions!
       </p>
     </div>
 
     <div style="text-align: center; margin-top: 40px;">
       <p style="margin: 0 0 15px 0; color: #6c757d; font-size: 14px;">Stay connected:</p>
       <div style="margin: 0;">
-        <a href="https://instagram.com/cheapquickvegan" style="color: #735d78; text-decoration: none; margin: 0 10px; font-size: 14px;">📷 Instagram</a>
-        <a href="https://pinterest.com/cheapquickvegan" style="color: #735d78; text-decoration: none; margin: 0 10px; font-size: 14px;">📌 Pinterest</a>
+        <a href="https://instagram.com/cheapquickvegan" style="display: inline-block; color: #735d78; text-decoration: none; margin: 0 8px; padding: 8px 16px; border: 1px solid #735d78; border-radius: 6px; font-size: 14px; font-weight: 500;">Instagram</a>
+        <a href="https://www.facebook.com/profile.php?id=61584092626079" style="display: inline-block; color: #735d78; text-decoration: none; margin: 0 8px; padding: 8px 16px; border: 1px solid #735d78; border-radius: 6px; font-size: 14px; font-weight: 500;">Facebook</a>
       </div>
     </div>
 
@@ -177,6 +178,7 @@ export async function sendWelcomeEmail(
 
     await resend.emails.send({
       from: 'Cheap Quick Vegan <noreply@cheapquickvegan.com>',
+      replyTo: 'cheapquickvegan@gmail.com',
       to: email,
       subject,
       html,
