@@ -16,6 +16,7 @@ import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { MapEmbed } from "@/components/guides/map-embed";
 import { Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -64,52 +65,6 @@ export async function generateMetadata(
     },
   };
 }
-
-// Function to generate FAQ JSON-LD from Notion-rendered markdown/content
-function generateFaqJsonLd(faqContent: string) {
-  const lines = faqContent
-    .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean);
-
-  const mainEntity: Array<{
-    "@type": string;
-    name: string;
-    acceptedAnswer: { "@type": string; text: string }
-  }> = [];
-
-  let currentQuestion: string | null = null;
-
-  lines.forEach(line => {
-    if (line.startsWith("**Q:")) {
-      currentQuestion = line.replace("**Q:", "").replace("**", "").trim();
-    } else if (currentQuestion && (line.startsWith("**A:") || line.startsWith("A:"))) {
-      // Handle both **A:** and A: formats
-      let answerText = line;
-      if (line.startsWith("**A:")) {
-        answerText = line.replace("**A:", "").replace("**", "").trim();
-      } else {
-        answerText = line.replace("A:", "").trim();
-      }
-      mainEntity.push({
-        "@type": "Question",
-        name: currentQuestion,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: answerText,
-        },
-      });
-      currentQuestion = null;
-    }
-  });
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity,
-  };
-}
-
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;

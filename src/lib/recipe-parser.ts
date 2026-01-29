@@ -107,12 +107,87 @@ export function parseRecipeContent(markdown: string): RecipeContent {
 
   if (!totalTime && prepTime && cookTime) totalTime = sumDurations(prepTime, cookTime);
 
-  // Convert instruction lines to RecipeInstruction objects
-  const instructions: RecipeInstruction[] = instructionLines.map((line, index) => {
-    // Remove list markers
+  // Parse instructions - support both old bullet format and new labeled/H3 format
+  const instructions: RecipeInstruction[] = parseInstructions(instructionLines);
+
+  return { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield };
+}
+
+/**
+ * Parse instruction lines into RecipeInstruction objects
+ * Supports multiple formats for backwards compatibility and SEO:
+ * 1. H3 headers: ### Step Name (followed by text on next line)
+ * 2. Bold block labels: **Step Name** (followed by text on next line)
+ * 3. Inline bold labels: **Step Name:** text (on same line)
+ * 4. Bullet points: - Step text (auto-generates name)
+ */
+function parseInstructions(lines: string[]): RecipeInstruction[] {
+  const instructions: RecipeInstruction[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Format 1: H3 step header (### Step Name)
+    const h3Match = line.match(/^###\s+(.+)/);
+    if (h3Match) {
+      const stepName = h3Match[1].trim();
+      let stepText = "";
+      i++;
+      // Collect following lines until next header or bullet
+      while (i < lines.length) {
+        const nextLine = lines[i];
+        if (/^###\s+/.test(nextLine) || /^\*\*[^*]+\*\*\s*$/.test(nextLine) || /^[-*]\s+/.test(nextLine)) {
+          break;
+        }
+        stepText += (stepText ? " " : "") + nextLine;
+        i++;
+      }
+
+      if (stepText.trim()) {
+        const image = extractStepImage(stepText);
+        instructions.push({
+          text: stepText.trim(),
+          name: stepName,
+          url: `#step-${instructions.length + 1}`,
+          image,
+        });
+      }
+      continue;
+    }
+
+    // Format 2: Bold block header (**Step Name** on its own line)
+    const boldHeaderMatch = line.match(/^\*\*([^*:]+)\*\*\s*$/);
+    if (boldHeaderMatch) {
+      const stepName = boldHeaderMatch[1].trim();
+      let stepText = "";
+      i++;
+      // Collect following lines until next header or bullet
+      while (i < lines.length) {
+        const nextLine = lines[i];
+        if (/^###\s+/.test(nextLine) || /^\*\*[^*]+\*\*\s*$/.test(nextLine) || /^[-*]\s+/.test(nextLine)) {
+          break;
+        }
+        stepText += (stepText ? " " : "") + nextLine;
+        i++;
+      }
+
+      if (stepText.trim()) {
+        const image = extractStepImage(stepText);
+        instructions.push({
+          text: stepText.trim(),
+          name: stepName,
+          url: `#step-${instructions.length + 1}`,
+          image,
+        });
+      }
+      continue;
+    }
+
+    // Format 3 & 4: Inline label or bullet point
     const cleanedText = line.replace(/^[-*]\s*/, "").trim();
 
-    // Check for manual step name
+    // Check for inline manual step name (**Name:** text)
     const manualName = extractManualStepName(cleanedText);
     let stepName: string;
     let stepText: string;
@@ -125,18 +200,18 @@ export function parseRecipeContent(markdown: string): RecipeContent {
       stepText = cleanedText;
     }
 
-    // Extract image if present
     const image = extractStepImage(stepText);
-
-    return {
+    instructions.push({
       text: stepText,
       name: stepName,
-      url: `#step-${index + 1}`,
+      url: `#step-${instructions.length + 1}`,
       image,
-    };
-  });
+    });
 
-  return { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield };
+    i++;
+  }
+
+  return instructions;
 }
 
 export function convertToISO8601(timeStr: string): string {

@@ -19,6 +19,7 @@ import { SocialIcons } from "@/components/recipes/social-icons";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -155,6 +156,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/recipes/${recipe.slug}` },
   };
 
+  // Generate FAQ schema if content contains FAQs
+  const faqJsonLd = recipe.content ? generateFaqJsonLd(recipe.content) : null;
+
   // Use the recipe's primary category (first category) for breadcrumbs
   const category = recipe.categories[0];
 
@@ -176,6 +180,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
       />
       <BreadcrumbJsonLd items={breadcrumbItems} />
+      {faqJsonLd && faqJsonLd.mainEntity.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       <div className="max-w-3xl mx-auto">
         {/* --- Main Recipe Image --- */}
