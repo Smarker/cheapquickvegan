@@ -89,8 +89,8 @@ export function parseRecipeContent(markdown: string): RecipeContent {
     }
     else if (/^##\s*Ingredients/i.test(line)) section = "ingredients";
     else if (/^##\s*Instructions/i.test(line)) section = "instructions";
-    else if (/^##\s*/.test(line)) section = null;
-    else if (section === "ingredients" && line) ingredients.push(line);
+    else if (/^##[^#]/.test(line)) section = null;
+    else if (section === "ingredients" && line && /^[-*]\s/.test(line)) ingredients.push(line);
     else if (section === "instructions" && line) instructionLines.push(line);
     else if (section === "details" && line) {
       const prepMatch = line.match(/\*\*?Prep Time:\*\*?\s*(.*)/i);
