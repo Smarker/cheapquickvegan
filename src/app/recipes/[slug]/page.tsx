@@ -20,6 +20,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
+import { ContentCarousel } from "@/components/common/content-carousel";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -96,13 +97,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
   if (recipe.relatedRecipes?.length) {
     relatedRecipes = recipe.relatedRecipes
       .map((id: string) => recipes.find((r: Recipe) => r.id === id))
-      .filter((r: Recipe | undefined): r is Recipe => Boolean(r))
-      .slice(0, 3);
+      .filter((r: Recipe | undefined): r is Recipe => Boolean(r));
   } else if (recipe.categories) {
     const sameCategory = recipes.filter(
       (r) => r.categories[0] === recipe.categories[0] && r.id !== recipe.id
     );
-    relatedRecipes = sameCategory.sort(() => 0.5 - Math.random()).slice(0, 3);
+    relatedRecipes = sameCategory.sort(() => 0.5 - Math.random());
   }
 
   const recipeJsonLd = {
@@ -285,37 +285,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
             <CommentSection recipeId={recipe.id} />
           </div>
 
-          {/* --- Related Recipes --- */}
-          {relatedRecipes.length > 0 && (
-  <section className="mt-6 sm:mt-12">
-    <h2 className="text-2xl font-semibold mb-2 sm:mb-4">Try these similar recipes</h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-      {relatedRecipes.map((r) => (
-        <a
-          key={r.id}
-          href={`/recipes/${r.slug}`}
-          className="relative block rounded overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
-        >
-          {/* Set fixed height on mobile/tablet, larger on desktop */}
-          <div className="relative w-full h-56 sm:h-60 md:h-64 lg:h-72 overflow-hidden">
-            <NotionImage
-              src={r.coverImage}
-              alt={r.alt || r.title}
-              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-            <div className="absolute bottom-1 sm:bottom-2 left-2 sm:left-3 right-2 sm:right-3">
-              <h3 className="text-white font-semibold text-lg line-clamp-2">{r.title}</h3>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-  </section>
-)}
-
         </article>
       </div>
+
+      {/* --- Related Recipes --- Full Width */}
+      {relatedRecipes.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 mt-12 mb-12">
+          <h2 className="text-2xl font-semibold mb-4 text-foreground sm:ml-[52px]">Try these similar recipes</h2>
+          <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={4} />
+        </section>
+      )}
     </>
   );
 }
