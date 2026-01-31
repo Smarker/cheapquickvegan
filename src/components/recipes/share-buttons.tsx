@@ -193,7 +193,7 @@ export function ShareButtons({
           disabled={isSharing}
           className={cn(
             "inline-flex items-center justify-center rounded-full bg-muted transition-all duration-200",
-            compact ? "w-6 h-6" : variant === "inline" ? "w-9 h-9" : "w-11 h-11",
+            compact ? "w-7 h-7" : variant === "inline" ? "w-9 h-9" : "w-11 h-11",
             "hover:bg-primary hover:text-primary-foreground",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
             "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -201,7 +201,7 @@ export function ShareButtons({
           aria-label="Share this recipe"
           title="Share this recipe"
         >
-          <Share2 className={cn(compact ? "w-3.5 h-3.5" : variant === "inline" ? "w-4 h-4" : "w-5 h-5")} />
+          <Share2 className={cn(compact ? "w-4 h-4" : variant === "inline" ? "w-4 h-4" : "w-5 h-5")} />
         </button>
       )}
 
@@ -212,14 +212,14 @@ export function ShareButtons({
             onClick={button.onClick}
             className={cn(
               "inline-flex items-center justify-center rounded-full bg-muted transition-all duration-200",
-              compact ? "w-6 h-6" : variant === "inline" ? "w-9 h-9" : "w-11 h-11",
+              compact ? "w-7 h-7" : variant === "inline" ? "w-9 h-9" : "w-11 h-11",
               button.color,
               "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             )}
             aria-label={button.label}
             title={button.label}
           >
-            <button.icon className={cn(compact ? "w-3.5 h-3.5" : variant === "inline" ? "w-4 h-4" : "w-5 h-5")} />
+            <button.icon className={cn(compact ? "w-4 h-4" : variant === "inline" ? "w-4 h-4" : "w-5 h-5")} />
           </button>
 
           {/* Share Count Badge - notification style */}

@@ -109,7 +109,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
 
       {/* Compact Actions Section */}
       {shareData && (
-        <div className="pt-4 border-t px-3 space-y-3">
+        <div className="pt-4 border-t px-4 space-y-3">
           {/* Save */}
           <div className="flex items-center justify-between min-h-[28px]">
             <span className="text-xs font-semibold text-muted-foreground">SAVE RECIPE</span>
@@ -169,21 +169,21 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
                 href={SOCIAL_LINKS.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-[#E4405F] hover:text-white transition-colors duration-200"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted hover:bg-[#E4405F] hover:text-white transition-colors duration-200"
                 aria-label="Follow us on Instagram"
                 title="Follow us on Instagram"
               >
-                <Instagram className="w-3.5 h-3.5" />
+                <Instagram className="w-4 h-4" />
               </a>
               <a
                 href={SOCIAL_LINKS.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-[#1877F2] hover:text-white transition-colors duration-200"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted hover:bg-[#1877F2] hover:text-white transition-colors duration-200"
                 aria-label="Follow us on Facebook"
                 title="Follow us on Facebook"
               >
-                <Facebook className="w-3.5 h-3.5" />
+                <Facebook className="w-4 h-4" />
               </a>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
               <List className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[85vh]">
+          <SheetContent side="bottom" className="max-h-[85vh] px-6">
             <SheetHeader className="pb-4">
               <SheetTitle>Table of Contents</SheetTitle>
             </SheetHeader>
