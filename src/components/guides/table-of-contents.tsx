@@ -143,7 +143,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
               </button>
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center justify-center w-8 h-8 md:w-7 md:h-7 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 lg:hidden"
+                className="inline-flex items-center justify-center w-8 h-8 md:w-7 md:h-7 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 aria-label="Print recipe"
                 title="Print recipe"
               >

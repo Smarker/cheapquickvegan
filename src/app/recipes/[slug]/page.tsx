@@ -22,7 +22,6 @@ import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
-import { PrintRecipeButton } from "@/components/recipes/print-recipe-button";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -348,10 +347,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </section>
       )}
 
-      {/* Cook Mode & Print - Floating Buttons (Desktop only) */}
-      <div className="hidden lg:flex lg:flex-col lg:gap-3 fixed top-32 right-6 z-40">
+      {/* Cook Mode - Floating Button (Desktop only) */}
+      <div className="hidden lg:block fixed top-32 right-6 z-40">
         <CookModeToggle />
-        <PrintRecipeButton />
       </div>
     </>
   );
