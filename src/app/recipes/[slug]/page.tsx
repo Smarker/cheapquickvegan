@@ -218,7 +218,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             {/* --- Meta Info Bar: Date, Breadcrumbs, and Cook Mode --- */}
             {/* When both Published and Updated dates exist, dates take full width and breadcrumbs wrap to new line */}
             {/* When only Published date exists, everything stays on one line */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-0.5 sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
               {/* Date info - takes full width when both dates exist */}
               <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight text-sm ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
                 <span className="flex items-baseline gap-1.5 leading-tight">
@@ -234,7 +234,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
               </div>
 
               {/* Breadcrumbs & Cook Mode - wrap to new line when both dates exist */}
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5 mb-3 sm:mb-0">
                 <Breadcrumbs
                   items={[
                     { label: "Home", href: "/" },
