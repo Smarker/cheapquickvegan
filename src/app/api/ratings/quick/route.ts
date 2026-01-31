@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get IP and User Agent for tracking
-    const ipAddress = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                      request.headers.get('x-real-ip') ||
+                      'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
     // Check if user already rated this recipe (by token or IP)
@@ -138,7 +140,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const ipAddress = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                      request.headers.get('x-real-ip') ||
+                      'unknown';
 
     // Check for existing rating by token or IP
     let query;
