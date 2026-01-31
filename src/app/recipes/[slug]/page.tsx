@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
-import { parseRecipeContent } from "@/lib/recipe-parser";
+import { parseRecipeContent, generateRecipeTOC } from "@/lib/recipe-parser";
 import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,7 @@ import { Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { ContentCarousel } from "@/components/common/content-carousel";
+import { TableOfContents } from "@/components/guides/table-of-contents";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -105,6 +106,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random());
   }
 
+  const { sections, showTOC } = generateRecipeTOC(recipe.content, relatedRecipes.length > 0);
+
   const recipeJsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -188,21 +191,24 @@ export default async function RecipePage({ params }: RecipePageProps) {
         />
       )}
 
-      <div className="max-w-3xl mx-auto">
-        {/* --- Main Recipe Image --- */}
-        {recipe.coverImage && (
-          <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-2">
-            <NotionImage
-              src={recipe.coverImage}
-              alt={recipe.alt || recipe.title}
-              className="object-cover w-full h-full"
-            />
-            <FavoriteButton recipeId={recipe.id} />
-          </div>
-        )}
+      <div className={showTOC ? "max-w-7xl mx-auto px-4" : "max-w-3xl mx-auto"}>
+        <div className={showTOC ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-4" : ""}>
+          {/* Main Content */}
+          <div className={showTOC ? "max-w-3xl" : ""}>
+            {/* --- Main Recipe Image --- */}
+            {recipe.coverImage && (
+              <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-2">
+                <NotionImage
+                  src={recipe.coverImage}
+                  alt={recipe.alt || recipe.title}
+                  className="object-cover w-full h-full"
+                />
+                <FavoriteButton recipeId={recipe.id} />
+              </div>
+            )}
 
-        {/* --- Prose Content --- */}
-        <article className="prose dark:prose-invert">
+            {/* --- Prose Content --- */}
+            <article className="prose dark:prose-invert max-w-none">
           <header className="mb-2">
             {/* --- Meta Info Bar: Date, Social Icons, and Breadcrumbs --- */}
             {/* When both Published and Updated dates exist, dates take full width and socials/breadcrumbs wrap to new line */}
@@ -272,6 +278,22 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   />
                 );
               },
+              h2: ({ children, ...props }) => {
+                const text = String(children);
+                const id = text
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-+|-+$/g, "");
+                return <h2 id={id} {...props}>{children}</h2>;
+              },
+              h3: ({ children, ...props }) => {
+                const text = String(children);
+                const id = text
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-+|-+$/g, "");
+                return <h3 id={id} {...props}>{children}</h3>;
+              },
             }}
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
@@ -280,18 +302,23 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </ReactMarkdown>
 
           {/* --- Comment Section --- */}
-          <div className="not-prose my-8 sm:my-12">
+          <div id="reviews" className="not-prose my-8 sm:my-12">
             <Separator className="mb-8" />
             <CommentSection recipeId={recipe.id} />
           </div>
 
-        </article>
+            </article>
+          </div>
+
+          {/* Table of Contents - Desktop Sidebar */}
+          {showTOC && <TableOfContents sections={sections} />}
+        </div>
       </div>
 
       {/* --- Related Recipes --- Full Width */}
       {relatedRecipes.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 mt-12 mb-12">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground sm:ml-[52px]">Try these similar recipes</h2>
+        <section id="related-recipes" className="max-w-6xl mx-auto px-4 mt-12 mb-12">
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">Try these similar recipes</h2>
           <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={3} />
         </section>
       )}

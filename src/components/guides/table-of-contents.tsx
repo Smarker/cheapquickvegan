@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { GuideSection } from "@/lib/guide-parser";
+import { ContentSection } from "@/types/content";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { List } from "lucide-react";
 
 interface TableOfContentsProps {
-  sections: GuideSection[];
+  sections: ContentSection[];
 }
 
 export function TableOfContents({ sections }: TableOfContentsProps) {
@@ -69,21 +69,24 @@ export function TableOfContents({ sections }: TableOfContentsProps) {
 
   const TOCContent = () => (
     <nav className="space-y-1">
-      {sections.map((section) => (
-        <button
-          key={section.id}
-          onClick={() => handleClick(section.id)}
-          className={cn(
-            "block w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
-            section.level === 3 && "pl-6",
-            activeId === section.id
-              ? "bg-primary/10 text-primary font-medium"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          )}
-        >
-          {section.title}
-        </button>
-      ))}
+      {sections.map((section) => {
+        return (
+          <button
+            key={section.id}
+            onClick={() => handleClick(section.id)}
+            className={cn(
+              "flex items-center gap-2 w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
+              section.level === 3 && "pl-6",
+              activeId === section.id
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {section.icon && <span className="text-base flex-shrink-0">{section.icon}</span>}
+            <span>{section.title}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 

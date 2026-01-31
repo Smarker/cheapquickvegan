@@ -115,9 +115,9 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
 
       {/* Comments List */}
       <div>
-        <h3 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4">
           Reviews ({comments.length})
-        </h3>
+        </h2>
         <Separator className="mb-6" />
         <CommentList
           comments={comments}

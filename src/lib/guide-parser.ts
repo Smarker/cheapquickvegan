@@ -1,11 +1,10 @@
-export interface GuideSection {
-  id: string;
-  title: string;
-  level: number;
-}
+import { ContentSection } from "@/types/content";
+
+// Re-export for backwards compatibility
+export type GuideSection = ContentSection;
 
 export interface GuideContent {
-  sections: GuideSection[];
+  sections: ContentSection[];
 }
 
 /**
@@ -69,7 +68,7 @@ export function extractInstagramEmbeds(content: string): string[] {
 /**
  * Generate table of contents from guide content
  */
-export function generateTOC(markdown: string): GuideSection[] {
+export function generateTOC(markdown: string): ContentSection[] {
   const { sections } = parseGuideContent(markdown);
   return sections;
 }
