@@ -207,7 +207,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="max-h-[85vh] px-6">
-            <SheetHeader className="pb-4">
+            <SheetHeader className="pb-2">
               <SheetTitle>Table of Contents</SheetTitle>
               <SheetDescription className="sr-only">
                 Navigate through the recipe and interact with actions
