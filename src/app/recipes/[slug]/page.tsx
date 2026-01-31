@@ -292,7 +292,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
       {relatedRecipes.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 mt-12 mb-12">
           <h2 className="text-2xl font-semibold mb-4 text-foreground sm:ml-[52px]">Try these similar recipes</h2>
-          <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={4} />
+          <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={3} />
         </section>
       )}
     </>
