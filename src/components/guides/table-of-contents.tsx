@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ContentSection } from "@/types/content";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { List, Instagram, Facebook, Heart } from "lucide-react";
 import { ShareButtons } from "@/components/recipes/share-buttons";
@@ -209,6 +209,9 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
           <SheetContent side="bottom" className="max-h-[85vh] px-6">
             <SheetHeader className="pb-4">
               <SheetTitle>Table of Contents</SheetTitle>
+              <SheetDescription className="sr-only">
+                Navigate through the recipe and interact with actions
+              </SheetDescription>
             </SheetHeader>
             <div className="overflow-y-auto max-h-[calc(85vh-80px)] pb-4">
               <TOCContent />
