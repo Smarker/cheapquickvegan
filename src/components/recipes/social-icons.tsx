@@ -9,6 +9,7 @@ import { SOCIAL_LINKS } from '@/config/social';
 export function SocialIcons() {
   return (
     <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground">Follow:</span>
       <a
         href={SOCIAL_LINKS.instagram}
         target="_blank"

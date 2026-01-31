@@ -15,7 +15,6 @@ import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
 import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
-import { SocialIcons } from "@/components/recipes/social-icons";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
@@ -210,8 +209,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
             {/* --- Prose Content --- */}
             <article className="prose dark:prose-invert max-w-none">
           <header className="mb-2">
-            {/* --- Meta Info Bar: Date, Social Icons, and Breadcrumbs --- */}
-            {/* When both Published and Updated dates exist, dates take full width and socials/breadcrumbs wrap to new line */}
+            {/* --- Meta Info Bar: Date and Breadcrumbs --- */}
+            {/* When both Published and Updated dates exist, dates take full width and breadcrumbs wrap to new line */}
             {/* When only Published date exists, everything stays on one line */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-1.5 text-muted-foreground sm:mb-1.5 text-sm leading-tight">
               {/* Date info - takes full width when both dates exist */}
@@ -228,14 +227,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 )}
               </div>
 
-              {/* Social Icons and Breadcrumbs - wrap to new line when both dates exist */}
+              {/* Breadcrumbs - wrap to new line when both dates exist */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
-                {/* Social Icons */}
-                <div className="sm:ml-2">
-                  <SocialIcons />
-                </div>
-
-                {/* Breadcrumbs - categories grouped with / separator */}
                 <Breadcrumbs
                   items={[
                     { label: "Home", href: "/" },
@@ -311,7 +304,21 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </div>
 
           {/* Table of Contents - Desktop Sidebar */}
-          {showTOC && <TableOfContents sections={sections} />}
+          {showTOC && (
+            <TableOfContents
+              sections={sections}
+              shareData={{
+                recipeId: recipe.id,
+                recipeTitle: recipe.title,
+                recipeDescription: recipe.description,
+                recipeUrl: `${SITE_URL}/recipes/${recipe.slug}`,
+              }}
+              ratingData={{
+                averageRating: aggregateRating.average,
+                reviewCount: aggregateRating.count,
+              }}
+            />
+          )}
         </div>
       </div>
 

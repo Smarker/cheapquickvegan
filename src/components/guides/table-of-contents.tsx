@@ -5,15 +5,32 @@ import { cn } from "@/lib/utils";
 import { ContentSection } from "@/types/content";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { List } from "lucide-react";
+import { List, Instagram, Facebook, Heart } from "lucide-react";
+import { ShareButtons } from "@/components/recipes/share-buttons";
+import { RatingWidget } from "@/components/recipes/rating-widget";
+import { useFavorites } from "@/contexts/favorites-context";
+import { SOCIAL_LINKS } from "@/config/social";
 
 interface TableOfContentsProps {
   sections: ContentSection[];
+  shareData?: {
+    recipeId: string;
+    recipeTitle: string;
+    recipeDescription: string;
+    recipeUrl: string;
+  };
+  ratingData?: {
+    averageRating: number;
+    reviewCount: number;
+  };
 }
 
-export function TableOfContents({ sections }: TableOfContentsProps) {
+export function TableOfContents({ sections, shareData, ratingData }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+  const { toggleFavorite, isFavorite } = useFavorites();
+
+  const favorited = shareData ? isFavorite(shareData.recipeId) : false;
 
   useEffect(() => {
     // Track scroll position and highlight active section
@@ -68,26 +85,111 @@ export function TableOfContents({ sections }: TableOfContentsProps) {
   }
 
   const TOCContent = () => (
-    <nav className="space-y-1">
-      {sections.map((section) => {
-        return (
-          <button
-            key={section.id}
-            onClick={() => handleClick(section.id)}
-            className={cn(
-              "flex items-center gap-2 w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
-              section.level === 3 && "pl-6",
-              activeId === section.id
-                ? "bg-primary/10 text-primary font-medium"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {section.icon && <span className="text-base flex-shrink-0">{section.icon}</span>}
-            <span>{section.title}</span>
-          </button>
-        );
-      })}
-    </nav>
+    <div className="space-y-4">
+      <nav className="space-y-1">
+        {sections.map((section) => {
+          return (
+            <button
+              key={section.id}
+              onClick={() => handleClick(section.id)}
+              className={cn(
+                "flex items-center gap-2 w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
+                section.level === 3 && "pl-6",
+                activeId === section.id
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              {section.icon && <span className="text-base flex-shrink-0">{section.icon}</span>}
+              <span>{section.title}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Compact Actions Section */}
+      {shareData && (
+        <div className="pt-4 border-t px-3 space-y-3">
+          {/* Save */}
+          <div className="flex items-center justify-between min-h-[28px]">
+            <span className="text-xs font-semibold text-muted-foreground">SAVE RECIPE</span>
+            <button
+              onClick={() => toggleFavorite(shareData.recipeId)}
+              className="focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1 hover:scale-110 transition-transform"
+              aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Heart
+                className={cn(
+                  "w-5 h-5 fill-current transition-colors",
+                  favorited ? "text-rose-600" : "text-muted-foreground/80"
+                )}
+                strokeWidth={2}
+                style={{
+                  filter: favorited
+                    ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))'
+                    : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
+                  stroke: 'white',
+                  strokeWidth: '1.5px'
+                }}
+              />
+            </button>
+          </div>
+
+          {/* Rate */}
+          {ratingData && (
+            <div className="flex items-center justify-between min-h-[28px]">
+              <span className="text-xs font-semibold text-muted-foreground">RATE RECIPE</span>
+              <RatingWidget
+                recipeId={shareData.recipeId}
+                averageRating={ratingData.averageRating}
+                reviewCount={ratingData.reviewCount}
+              />
+            </div>
+          )}
+
+          {/* Share */}
+          <div className="flex items-center justify-between min-h-[28px]">
+            <span className="text-xs font-semibold text-muted-foreground">SHARE</span>
+            <ShareButtons
+              recipeId={shareData.recipeId}
+              recipeTitle={shareData.recipeTitle}
+              recipeDescription={shareData.recipeDescription}
+              recipeUrl={shareData.recipeUrl}
+              variant="inline"
+              showLabel={false}
+              compact={true}
+            />
+          </div>
+
+          {/* Follow */}
+          <div className="flex items-center justify-between min-h-[28px]">
+            <span className="text-xs font-semibold text-muted-foreground">FOLLOW FOR MORE</span>
+            <div className="flex items-center gap-1.5">
+              <a
+                href={SOCIAL_LINKS.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-[#E4405F] hover:text-white transition-colors duration-200"
+                aria-label="Follow us on Instagram"
+                title="Follow us on Instagram"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-[#1877F2] hover:text-white transition-colors duration-200"
+                aria-label="Follow us on Facebook"
+                title="Follow us on Facebook"
+              >
+                <Facebook className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -104,11 +206,11 @@ export function TableOfContents({ sections }: TableOfContentsProps) {
               <List className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
-            <SheetHeader>
+          <SheetContent side="bottom" className="max-h-[85vh]">
+            <SheetHeader className="pb-4">
               <SheetTitle>Table of Contents</SheetTitle>
             </SheetHeader>
-            <div className="mt-4">
+            <div className="overflow-y-auto max-h-[calc(85vh-80px)] pb-4">
               <TOCContent />
             </div>
           </SheetContent>
