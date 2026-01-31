@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
+import { RecipeInfo } from "@/components/recipes/recipe-info";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { ContentCarousel } from "@/components/common/content-carousel";
@@ -106,6 +107,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
   }
 
   const { sections, showTOC } = generateRecipeTOC(recipe.content, relatedRecipes.length > 0);
+
+  // Remove Recipe Details section from markdown since we display it in the visual card
+  const cleanedContent = recipe.content.replace(
+    /#{1,3}\s*Recipe Details?\s*\n[\s\S]*?(?=\n#{1,3}\s|\n\n[A-Z]|\Z)/i,
+    ''
+  ).trim();
 
   const recipeJsonLd = {
     "@context": "https://schema.org",
@@ -255,6 +262,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 <Badge key={tag} variant="outline">{tag}</Badge>
               ))}
             </div>
+
+            {/* Recipe Information Section */}
+            <RecipeInfo
+              prepTime={prepTime}
+              cookTime={cookTime}
+              chillTime={chillTime}
+              totalTime={totalTime}
+              recipeYield={recipeYield}
+            />
           </header>
 
           <ReactMarkdown
@@ -291,7 +307,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
           >
-            {recipe.content}
+            {cleanedContent}
           </ReactMarkdown>
 
           {/* --- Comment Section --- */}

@@ -109,14 +109,18 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
 
       {/* Compact Actions Section */}
       {shareData && (
-        <div className="pt-4 border-t px-4 space-y-3">
+        <section
+          role="region"
+          aria-label="Recipe actions"
+          className="pt-4 border-t px-4 space-y-3"
+        >
           {/* Save */}
           <div className="flex items-center justify-between min-h-[28px]">
             <span className="text-xs font-semibold text-muted-foreground">SAVE RECIPE</span>
             <button
               onClick={() => toggleFavorite(shareData.recipeId)}
               className="focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1 hover:scale-110 transition-transform"
-              aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+              aria-label={favorited ? "Remove recipe from favorites" : "Save recipe to favorites"}
             >
               <Heart
                 className={cn(
@@ -187,7 +191,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
               </a>
             </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

@@ -22,6 +22,7 @@ export function RatingWidget({
   const [pendingRating, setPendingRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to reset pending rating
@@ -57,6 +58,7 @@ export function RatingWidget({
   const handleStarClick = (rating: number) => {
     // Show confirmation
     setPendingRating(rating);
+    setAnnouncement(`${rating} star${rating === 1 ? '' : 's'} selected. Press tab to confirm or cancel.`);
   };
 
   const confirmRating = async () => {
@@ -86,9 +88,13 @@ export function RatingWidget({
         setUserRating(pendingRating);
         setPendingRating(null);
         setShowSuccess(true);
+        setAnnouncement(data.action === 'updated' ? 'Rating updated successfully' : 'Rating saved successfully');
 
         // Hide success message after 3 seconds
-        setTimeout(() => setShowSuccess(false), 3000);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setAnnouncement("");
+        }, 3000);
 
         // Trigger callback if provided
         if (onRateClick) {
@@ -122,11 +128,17 @@ export function RatingWidget({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="flex items-center gap-1"
-      onMouseLeave={() => setHoveredRating(null)}
-    >
+    <>
+      {/* Screen reader announcements */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </div>
+
+      <div
+        ref={containerRef}
+        className="flex items-center gap-1"
+        onMouseLeave={() => setHoveredRating(null)}
+      >
       <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -134,8 +146,8 @@ export function RatingWidget({
             onClick={() => handleStarClick(star)}
             onMouseEnter={() => setHoveredRating(star)}
             className="focus:outline-none"
-            aria-label={`Rate ${star} stars`}
-            title={userRating ? "Update your rating" : "Rate this recipe"}
+            aria-label={`Rate this recipe ${star} star${star === 1 ? '' : 's'}`}
+            title={userRating ? `Update to ${star} stars` : `Rate ${star} stars`}
             disabled={isSubmitting}
           >
             <Star
@@ -174,8 +186,8 @@ export function RatingWidget({
               "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1",
               isSubmitting && "opacity-50 cursor-not-allowed"
             )}
-            aria-label="Confirm rating"
-            title="Confirm rating"
+            aria-label={`Submit ${pendingRating}-star rating`}
+            title={`Submit ${pendingRating}-star rating`}
           >
             <Check className="w-3 h-3 text-white" />
           </button>
@@ -187,13 +199,14 @@ export function RatingWidget({
               "focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1",
               isSubmitting && "opacity-50 cursor-not-allowed"
             )}
-            aria-label="Cancel rating"
-            title="Cancel"
+            aria-label="Cancel rating selection"
+            title="Cancel rating selection"
           >
             <X className="w-3 h-3 text-white" />
           </button>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
