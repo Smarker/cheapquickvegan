@@ -77,7 +77,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   if (!recipe) notFound();
 
-  const { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield } = recipe.content
+  const { ingredients, instructions, prepTime, cookTime, chillTime, totalTime, recipeYield } = recipe.content
     ? parseRecipeContent(recipe.content)
     : { ingredients: [], instructions: [] };
 
@@ -142,6 +142,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
       }),
     prepTime,
     cookTime,
+    chillTime,
     totalTime,
     recipeYield,
     ...(aggregateRating.count > 0 && {

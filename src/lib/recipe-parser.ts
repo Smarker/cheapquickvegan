@@ -5,6 +5,7 @@ export interface RecipeContent {
   instructions: RecipeInstruction[];
   prepTime?: string;
   cookTime?: string;
+  chillTime?: string;
   totalTime?: string;
   recipeYield?: string;
 }
@@ -80,6 +81,7 @@ export function parseRecipeContent(markdown: string): RecipeContent {
   const instructionLines: string[] = [];
   let prepTime: string | undefined;
   let cookTime: string | undefined;
+  let chillTime: string | undefined;
   let totalTime: string | undefined;
   let recipeYield: string | undefined;
 
@@ -95,22 +97,30 @@ export function parseRecipeContent(markdown: string): RecipeContent {
     else if (section === "details" && line) {
       const prepMatch = line.match(/\*\*?Prep Time:\*\*?\s*(.*)/i);
       const cookMatch  = line.match(/\*\*?Cook Time:\*\*?\s*(.*)/i);
+      const chillMatch = line.match(/\*\*?Chill Time:\*\*?\s*(.*)/i);
       const totalMatch = line.match(/\*\*?Total Time:\*\*?\s*(.*)/i);
       const yieldMatch = line.match(/\*\*?Yield:\*\*?\s*(.*)/i);
 
       if (prepMatch) prepTime = convertToISO8601(prepMatch[1]);
       if (cookMatch) cookTime = convertToISO8601(cookMatch[1]);
+      if (chillMatch) chillTime = convertToISO8601(chillMatch[1]);
       if (totalMatch) totalTime = convertToISO8601(totalMatch[1]);
       if (yieldMatch) recipeYield = yieldMatch[1];
     }
   }
 
-  if (!totalTime && prepTime && cookTime) totalTime = sumDurations(prepTime, cookTime);
+  // Calculate total time if not provided
+  if (!totalTime) {
+    const times = [prepTime, cookTime, chillTime].filter(Boolean) as string[];
+    if (times.length > 0) {
+      totalTime = times.reduce((acc, time) => sumDurations(acc, time));
+    }
+  }
 
   // Parse instructions - support both old bullet format and new labeled/H3 format
   const instructions: RecipeInstruction[] = parseInstructions(instructionLines);
 
-  return { ingredients, instructions, prepTime, cookTime, totalTime, recipeYield };
+  return { ingredients, instructions, prepTime, cookTime, chillTime, totalTime, recipeYield };
 }
 
 /**
