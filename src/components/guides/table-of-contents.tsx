@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { ContentSection } from "@/types/content";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { List, Instagram, Facebook, Heart } from "lucide-react";
+import { List, Instagram, Facebook, Heart, Printer } from "lucide-react";
 import { ShareButtons } from "@/components/recipes/share-buttons";
 import { RatingWidget } from "@/components/recipes/rating-widget";
 import { useFavorites } from "@/contexts/favorites-context";
@@ -80,32 +80,35 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
     }
   };
 
-  if (sections.length === 0) {
+  // Show TOC if there are sections to navigate OR if there are actions (shareData)
+  if (sections.length === 0 && !shareData) {
     return null;
   }
 
   const TOCContent = () => (
     <div className="space-y-4">
-      <nav className="space-y-1">
-        {sections.map((section) => {
-          return (
-            <button
-              key={section.id}
-              onClick={() => handleClick(section.id)}
-              className={cn(
-                "flex items-center gap-2 w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
-                section.level === 3 && "pl-6",
-                activeId === section.id
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              {section.icon && <span className="text-base flex-shrink-0">{section.icon}</span>}
-              <span>{section.title}</span>
-            </button>
-          );
-        })}
-      </nav>
+      {sections.length > 0 && (
+        <nav className="space-y-1">
+          {sections.map((section) => {
+            return (
+              <button
+                key={section.id}
+                onClick={() => handleClick(section.id)}
+                className={cn(
+                  "flex items-center gap-2 w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
+                  section.level === 3 && "pl-6",
+                  activeId === section.id
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {section.icon && <span className="text-base flex-shrink-0">{section.icon}</span>}
+                <span>{section.title}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* Compact Actions Section */}
       {shareData && (
@@ -114,29 +117,39 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
           aria-label="Recipe actions"
           className="pt-4 border-t px-4 space-y-3"
         >
-          {/* Save */}
+          {/* Save & Print */}
           <div className="flex items-center justify-between min-h-[28px]">
-            <span className="text-xs font-semibold text-muted-foreground">SAVE RECIPE</span>
-            <button
-              onClick={() => toggleFavorite(shareData.recipeId)}
-              className="focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1 hover:scale-110 transition-transform"
-              aria-label={favorited ? "Remove recipe from favorites" : "Save recipe to favorites"}
-            >
-              <Heart
-                className={cn(
-                  "w-6 h-6 md:w-5 md:h-5 fill-current transition-colors",
-                  favorited ? "text-rose-600" : "text-muted-foreground/80"
-                )}
-                strokeWidth={2}
-                style={{
-                  filter: favorited
-                    ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))'
-                    : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
-                  stroke: 'white',
-                  strokeWidth: '1.5px'
-                }}
-              />
-            </button>
+            <span className="text-xs font-semibold text-muted-foreground">SAVE & PRINT</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => toggleFavorite(shareData.recipeId)}
+                className="focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1 hover:scale-110 transition-transform"
+                aria-label={favorited ? "Remove recipe from favorites" : "Save recipe to favorites"}
+              >
+                <Heart
+                  className={cn(
+                    "w-6 h-6 md:w-5 md:h-5 fill-current transition-colors",
+                    favorited ? "text-rose-600" : "text-muted-foreground/80"
+                  )}
+                  strokeWidth={2}
+                  style={{
+                    filter: favorited
+                      ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))'
+                      : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
+                    stroke: 'white',
+                    strokeWidth: '1.5px'
+                  }}
+                />
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center justify-center w-8 h-8 md:w-7 md:h-7 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 lg:hidden"
+                aria-label="Print recipe"
+                title="Print recipe"
+              >
+                <Printer className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Rate */}

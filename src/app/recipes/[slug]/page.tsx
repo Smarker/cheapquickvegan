@@ -11,7 +11,6 @@ import rehypeRaw from "rehype-raw";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { parseRecipeContent, generateRecipeTOC } from "@/lib/recipe-parser";
-import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { CommentSection } from "@/components/comments/comment-section";
 import { Separator } from "@/components/ui/separator";
 import { getAggregateRating } from "@/lib/db/comments";
@@ -22,6 +21,8 @@ import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";
+import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
+import { PrintRecipeButton } from "@/components/recipes/print-recipe-button";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -106,7 +107,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random());
   }
 
-  const { sections, showTOC } = generateRecipeTOC(recipe.content, relatedRecipes.length > 0);
+  const { sections } = generateRecipeTOC(recipe.content, relatedRecipes.length > 0);
 
   // Remove Recipe Details section from markdown since we display it in the visual card
   const cleanedContent = recipe.content.replace(
@@ -197,10 +198,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
         />
       )}
 
-      <div className={showTOC ? "max-w-7xl mx-auto px-4" : "max-w-3xl mx-auto"}>
-        <div className={showTOC ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-4" : ""}>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-4">
           {/* Main Content */}
-          <div className={showTOC ? "max-w-3xl" : ""}>
+          <div className="max-w-3xl">
             {/* --- Main Recipe Image --- */}
             {recipe.coverImage && (
               <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[280px] md:max-h-[320px] overflow-hidden rounded-lg mb-4 sm:mb-2">
@@ -209,33 +210,32 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   alt={recipe.alt || recipe.title}
                   className="object-cover w-full h-full"
                 />
-                <FavoriteButton recipeId={recipe.id} />
               </div>
             )}
 
             {/* --- Prose Content --- */}
             <article className="prose dark:prose-invert max-w-none">
           <header className="mb-2">
-            {/* --- Meta Info Bar: Date and Breadcrumbs --- */}
+            {/* --- Meta Info Bar: Date, Breadcrumbs, and Cook Mode --- */}
             {/* When both Published and Updated dates exist, dates take full width and breadcrumbs wrap to new line */}
             {/* When only Published date exists, everything stays on one line */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-1.5 text-muted-foreground sm:mb-1.5 text-sm leading-tight">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
               {/* Date info - takes full width when both dates exist */}
-              <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
-                <span className="flex items-center gap-1.5 leading-tight">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="font-medium">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time>
+              <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight text-sm ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
+                <span className="flex items-baseline gap-1.5 leading-tight">
+                  <Clock className="w-3.5 h-3.5 translate-y-0.5" />
+                  <span className="font-medium text-sm">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time>
                 </span>
                 {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
-                  <span className="flex items-center gap-1.5 leading-tight">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span className="font-medium">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time>
+                  <span className="flex items-baseline gap-1.5 leading-tight">
+                    <Clock className="w-3.5 h-3.5 translate-y-0.5" />
+                    <span className="font-medium text-sm">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time>
                   </span>
                 )}
               </div>
 
-              {/* Breadcrumbs - wrap to new line when both dates exist */}
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
+              {/* Breadcrumbs & Cook Mode - wrap to new line when both dates exist */}
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5">
                 <Breadcrumbs
                   items={[
                     { label: "Home", href: "/" },
@@ -248,6 +248,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     },
                   ]}
                 />
+                {/* Cook Mode - Mobile inline, compact variant */}
+                <div className="lg:hidden">
+                  <CookModeToggle variant="compact" />
+                </div>
               </div>
             </div>
 
@@ -320,21 +324,19 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </div>
 
           {/* Table of Contents - Desktop Sidebar */}
-          {showTOC && (
-            <TableOfContents
-              sections={sections}
-              shareData={{
-                recipeId: recipe.id,
-                recipeTitle: recipe.title,
-                recipeDescription: recipe.description,
-                recipeUrl: `${SITE_URL}/recipes/${recipe.slug}`,
-              }}
-              ratingData={{
-                averageRating: aggregateRating.average,
-                reviewCount: aggregateRating.count,
-              }}
-            />
-          )}
+          <TableOfContents
+            sections={sections}
+            shareData={{
+              recipeId: recipe.id,
+              recipeTitle: recipe.title,
+              recipeDescription: recipe.description,
+              recipeUrl: `${SITE_URL}/recipes/${recipe.slug}`,
+            }}
+            ratingData={{
+              averageRating: aggregateRating.average,
+              reviewCount: aggregateRating.count,
+            }}
+          />
         </div>
       </div>
 
@@ -345,6 +347,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
           <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={3} />
         </section>
       )}
+
+      {/* Cook Mode & Print - Floating Buttons (Desktop only) */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-3 fixed top-32 right-6 z-40">
+        <CookModeToggle />
+        <PrintRecipeButton />
+      </div>
     </>
   );
 }
