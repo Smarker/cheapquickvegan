@@ -140,7 +140,7 @@ export function RatingWidget({
           >
             <Star
               className={cn(
-                "w-4 h-4 transition-all cursor-pointer hover:scale-110",
+                "w-5 h-5 md:w-4 md:h-4 transition-all cursor-pointer hover:scale-110",
                 // Show pending rating
                 pendingRating !== null
                   ? star <= pendingRating

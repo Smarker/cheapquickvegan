@@ -120,7 +120,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
             >
               <Heart
                 className={cn(
-                  "w-5 h-5 fill-current transition-colors",
+                  "w-6 h-6 md:w-5 md:h-5 fill-current transition-colors",
                   favorited ? "text-rose-600" : "text-muted-foreground/80"
                 )}
                 strokeWidth={2}
@@ -169,7 +169,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
                 href={SOCIAL_LINKS.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted hover:bg-[#E4405F] hover:text-white transition-colors duration-200"
+                className="inline-flex items-center justify-center w-8 h-8 md:w-7 md:h-7 rounded-full bg-muted hover:bg-[#E4405F] hover:text-white transition-colors duration-200"
                 aria-label="Follow us on Instagram"
                 title="Follow us on Instagram"
               >
@@ -179,7 +179,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
                 href={SOCIAL_LINKS.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted hover:bg-[#1877F2] hover:text-white transition-colors duration-200"
+                className="inline-flex items-center justify-center w-8 h-8 md:w-7 md:h-7 rounded-full bg-muted hover:bg-[#1877F2] hover:text-white transition-colors duration-200"
                 aria-label="Follow us on Facebook"
                 title="Follow us on Facebook"
               >
