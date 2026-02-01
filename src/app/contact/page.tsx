@@ -67,24 +67,26 @@ export default function ContactPage() {
             {/* Social Media */}
             <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Connect on Social</h2>
-              <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
                 <a
                   href="https://instagram.com/cheapquickvegan"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 p-4 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 shadow-sm"
+                  aria-label="Follow us on Instagram"
+                  title="Instagram"
                 >
-                  <Instagram size={24} />
-                  <span className="text-base font-medium">Instagram</span>
+                  <Instagram className="w-4 h-4" />
                 </a>
                 <a
                   href="https://www.facebook.com/profile.php?id=61584092626079"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 p-4 rounded-lg bg-blue-600 text-white hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 shadow-sm"
+                  aria-label="Follow us on Facebook"
+                  title="Facebook"
                 >
-                  <Facebook size={24} />
-                  <span className="text-base font-medium">Facebook</span>
+                  <Facebook className="w-4 h-4" />
                 </a>
               </div>
             </div>

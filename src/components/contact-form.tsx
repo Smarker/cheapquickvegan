@@ -154,6 +154,7 @@ export function ContactForm() {
               <SelectItem value="recipe-suggestion">Recipe Suggestion</SelectItem>
               <SelectItem value="collaboration">Collaboration Inquiry</SelectItem>
               <SelectItem value="feedback">General Feedback</SelectItem>
+              <SelectItem value="data-deletion">Data Deletion Request</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
@@ -184,7 +185,7 @@ export function ContactForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 dark:bg-card dark:hover:bg-card/80 dark:border dark:border-border text-white"
+        className="w-full"
       >
         {isSubmitting ? "Sending..." : "Send Message"}
       </Button>
