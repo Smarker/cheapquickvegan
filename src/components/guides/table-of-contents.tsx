@@ -82,10 +82,7 @@ export function TableOfContents({ sections, shareData, ratingData }: TableOfCont
 
   const handlePrint = () => {
     setIsOpen(false);
-    // Small delay to ensure sheet closes before print dialog
-    setTimeout(() => {
-      window.print();
-    }, 300);
+    window.print();
   };
 
   // Show TOC if there are sections to navigate OR if there are actions (shareData)

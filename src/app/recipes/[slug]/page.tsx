@@ -314,7 +314,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </ReactMarkdown>
 
           {/* --- Comment Section --- */}
-          <div id="reviews" className="not-prose my-8 sm:my-12">
+          <div id="reviews" className="not-prose my-8 sm:my-12 print:hidden">
             <Separator className="mb-8" />
             <CommentSection recipeId={recipe.id} />
           </div>
@@ -323,32 +323,34 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </div>
 
           {/* Table of Contents - Desktop Sidebar */}
-          <TableOfContents
-            sections={sections}
-            shareData={{
-              recipeId: recipe.id,
-              recipeTitle: recipe.title,
-              recipeDescription: recipe.description,
-              recipeUrl: `${SITE_URL}/recipes/${recipe.slug}`,
-            }}
-            ratingData={{
-              averageRating: aggregateRating.average,
-              reviewCount: aggregateRating.count,
-            }}
-          />
+          <div className="print:hidden">
+            <TableOfContents
+              sections={sections}
+              shareData={{
+                recipeId: recipe.id,
+                recipeTitle: recipe.title,
+                recipeDescription: recipe.description,
+                recipeUrl: `${SITE_URL}/recipes/${recipe.slug}`,
+              }}
+              ratingData={{
+                averageRating: aggregateRating.average,
+                reviewCount: aggregateRating.count,
+              }}
+            />
+          </div>
         </div>
       </div>
 
       {/* --- Related Recipes --- Full Width */}
       {relatedRecipes.length > 0 && (
-        <section id="related-recipes" className="max-w-6xl mx-auto px-4 mt-12 mb-12">
+        <section id="related-recipes" className="max-w-6xl mx-auto px-4 mt-12 mb-12 print:hidden">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Try these similar recipes</h2>
           <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={3} />
         </section>
       )}
 
       {/* Cook Mode - Floating Button (Desktop only) */}
-      <div className="hidden lg:block fixed top-32 right-6 z-40">
+      <div className="hidden lg:block fixed top-32 right-6 z-40 print:hidden">
         <CookModeToggle />
       </div>
     </>
