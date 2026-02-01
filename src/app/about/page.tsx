@@ -109,7 +109,7 @@ export default function AboutPage() {
         <section className="relative pt-8 pb-2 px-4">
           <div className="max-w-4xl mx-auto">
             {/* Flex container for all screen sizes */}
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start lg:items-center">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start lg:items-center">
               <div className="relative shrink-0 mx-auto">
                 <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64">
                     {/* Decorative Frame */}

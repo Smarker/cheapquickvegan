@@ -165,7 +165,7 @@ export function ContactForm() {
         )}
       </div>
 
-      <div>
+      <div className="flex-1">
         <label htmlFor="message" className="block text-sm font-medium mb-1">
           Message
         </label>
@@ -177,8 +177,8 @@ export function ContactForm() {
           value={formState.message}
           onChange={(e) => setFormState({ ...formState, message: e.target.value })}
           placeholder="Tell me more..."
-          rows={6}
-          className="resize-none"
+          rows={14}
+          className="resize-none min-h-[140px]"
         />
       </div>
 

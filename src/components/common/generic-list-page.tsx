@@ -52,7 +52,10 @@ export default function GenericListPage<T>({
         <h1
           className={`text-3xl sm:text-4xl font-bold tracking-tight text-foreground ${isSearchExpanded ? "hidden md:block" : ""}`}
         >
-          {title}
+          <span className="relative inline-block">
+            <span className="relative z-10">{title}</span>
+            <span className="absolute bottom-1 left-0 right-0 h-3 bg-orange-400/30 -rotate-1"></span>
+          </span>
         </h1>
         <SearchBar
           value={searchQuery}

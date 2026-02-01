@@ -31,7 +31,7 @@ export function JumpToFavorites() {
   return (
     <button
       onClick={scrollToFavorites}
-      className="inline-flex items-center gap-2 text-sm font-medium mt-3 px-4 py-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors backdrop-blur-sm border border-primary/20"
+      className="inline-flex items-center gap-2 text-sm font-medium mt-3 px-4 py-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-300 backdrop-blur-sm border border-primary/20 hover:scale-105 hover:shadow-lg"
     >
       <Heart className="h-4 w-4 fill-current" />
       Jump to Your Favorites

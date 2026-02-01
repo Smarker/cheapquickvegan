@@ -1,7 +1,7 @@
 import { Leaf, Instagram, Facebook, Mail } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { getRecipesFromCache } from "@/lib/notion";
-import { NotionImage } from "@/components/notion-image";
+import { ContactRecipesCarousel } from "@/components/contact-recipes-carousel";
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 
@@ -41,38 +41,59 @@ export default function ContactPage() {
       {/* Content */}
       <div className="relative max-w-4xl mx-auto px-4 py-8 sm:py-12">
 
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="bg-orange-100 dark:bg-card/50 p-3 rounded-full inline-block mb-4">
-            <Leaf className="text-orange-600 dark:text-secondary" style={{ width: 36, height: 36 }} />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">Let's Connect</h1>
-          <p className="text-foreground/70 text-base sm:text-lg max-w-2xl mx-auto px-4">
-            Whether you have questions about a recipe, ideas for new content, or just want to say hi, I'd love to hear from you.
-          </p>
-        </div>
-
         {/* Main content grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
 
-          {/* Contact Form */}
-          <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Send a Message</h2>
-            <ContactForm />
+          {/* Left Column */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Header Box */}
+            <div className="bg-white dark:bg-card p-4 sm:p-5 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-orange-100 dark:bg-card/50 p-2 rounded-full">
+                  <Leaf className="text-orange-600 dark:text-secondary" style={{ width: 28, height: 28 }} />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold">
+                  <span className="relative inline-block">
+                    <span className="relative z-10">Let's Connect</span>
+                    <span className="absolute bottom-1 left-0 right-0 h-3 bg-orange-400/30 -rotate-1"></span>
+                  </span>
+                </h1>
+              </div>
+              <p className="text-foreground/70 text-sm sm:text-base">
+                Whether you have questions about a recipe, ideas for new content, or just want to say hi, I'd love to hear from you.
+              </p>
+            </div>
+
+            {/* Popular Recipes Section */}
+            {featuredRecipes.length > 0 && (
+              <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 uppercase tracking-wider">
+                  <span className="relative inline-block">
+                    <span className="relative z-10">While You're Here...</span>
+                    <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#606C38]/30 -rotate-1"></span>
+                  </span>
+                </h2>
+                <p className="text-foreground/70 mb-4 sm:mb-6 text-sm sm:text-base">Check out some popular recipes:</p>
+                <ContactRecipesCarousel recipes={featuredRecipes} />
+              </div>
+            )}
           </div>
 
-          {/* Sidebar - Social & Info */}
-          <div className="space-y-4 sm:space-y-6">
-
-            {/* Social Media */}
-            <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Connect on Social</h2>
+          {/* Right Column - Contact Form (full height) */}
+          <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border flex flex-col">
+            <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+              <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider">
+                <span className="relative inline-block">
+                  <span className="relative z-10">Send a Message</span>
+                  <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#BC6C25]/30 -rotate-1"></span>
+                </span>
+              </h2>
               <div className="flex items-center gap-3">
                 <a
                   href="https://instagram.com/cheapquickvegan"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 shadow-sm"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-400/60 dark:bg-orange-500/60 hover:bg-[#BC6C25] hover:text-white transition-colors duration-200 shadow-sm"
                   aria-label="Follow us on Instagram"
                   title="Instagram"
                 >
@@ -82,7 +103,7 @@ export default function ContactPage() {
                   href="https://www.facebook.com/profile.php?id=61584092626079"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 shadow-sm"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-400/60 dark:bg-orange-500/60 hover:bg-[#BC6C25] hover:text-white transition-colors duration-200 shadow-sm"
                   aria-label="Follow us on Facebook"
                   title="Facebook"
                 >
@@ -90,57 +111,12 @@ export default function ContactPage() {
                 </a>
               </div>
             </div>
-
-            {/* Email Alternative */}
-            <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3">Prefer Email?</h2>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Mail className="text-orange-600 dark:text-primary" size={20} />
-                <a
-                  href="mailto:cheapquickvegan@gmail.com"
-                  className="text-orange-600 dark:text-primary hover:underline font-medium text-sm sm:text-base break-all"
-                >
-                  cheapquickvegan@gmail.com
-                </a>
-              </div>
-              <p className="text-sm text-foreground/60">
-                I typically respond within 2-3 days. Thanks for your patience!
-              </p>
-            </div>
-
+            <ContactForm />
+            <p className="text-xs text-foreground/60 mt-4">
+              I typically respond within 2-3 days. Thanks for your patience!
+            </p>
           </div>
         </div>
-
-        {/* Popular Recipes Section */}
-        {featuredRecipes.length > 0 && (
-          <div className="bg-white dark:bg-card p-5 sm:p-6 rounded-2xl shadow-lg border border-orange-100 dark:border-border">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">While You're Here...</h2>
-            <p className="text-foreground/70 mb-4 sm:mb-6 text-sm sm:text-base">Check out some popular recipes:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              {featuredRecipes.map((recipe) => (
-                <a
-                  key={recipe.id}
-                  href={`/recipes/${recipe.slug}`}
-                  className="group relative block rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="relative w-full aspect-[4/3] overflow-hidden">
-                    <NotionImage
-                      src={recipe.coverImage}
-                      alt={recipe.alt || recipe.title}
-                      className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-white font-semibold text-sm sm:text-base line-clamp-2">
-                        {recipe.title}
-                      </h3>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
 
       </div>
     </section>

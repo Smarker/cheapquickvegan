@@ -6,10 +6,17 @@ import { Recipe } from "@/types/recipe";
 import { Guide } from "@/types/guide";
 import { FavoritesSection } from "@/components/favorites/favorites-section";
 import { JumpToFavorites } from "@/components/favorites/jump-to-favorites";
+import { Sparkles } from "lucide-react";
 
 export default function HomePage() {
   const allRecipes: Recipe[] = getRecipesFromCache();
-  const categories = ["Meal", "Breakfast", "Dessert", "Side", "Snack"];
+  const categories = [
+    { name: "Meal", description: "Hearty main dishes perfect for lunch or dinner" },
+    { name: "Breakfast", description: "Start your day with delicious plant-based options" },
+    { name: "Dessert", description: "Sweet treats that are completely vegan" },
+    { name: "Side", description: "Perfect accompaniments to round out any meal" },
+    { name: "Snack", description: "Quick bites for when hunger strikes" }
+  ];
 
   // Map first image for each category
   const categoryImages: Record<string, string> = {};
@@ -19,6 +26,8 @@ export default function HomePage() {
         recipe.coverImage || "/images/placeholder.jpg";
     }
   }
+
+  const categoryNames = categories.map(c => c.name);
 
   const featuredSlugs = [
     "fresh-vegan-no-cook-gazpacho",
@@ -44,99 +53,93 @@ export default function HomePage() {
   );
 
   return (
-    <div className="w-full px-4 sm:px-6 py-12">
+    <div className="w-full px-4 sm:px-6 py-4">
 
-      {/* HEADER */}
-      <div className="flex justify-center mb-16">
-        <div className="w-full max-w-4xl">
-          {/* Mobile: Photo + Title row, then content below */}
-          <div className="flex flex-col md:hidden">
-            <div className="flex flex-row items-center justify-center gap-4 mb-4">
-              <div className="relative w-20 h-20 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
-                <Image
-                  src="/images/stephanie.jpg"
-                  alt="Stephanie"
-                  fill
-                  sizes="80px"
-                  className="rounded-full object-cover"
-                />
+      {/* HERO SECTION - Compact */}
+      <section className="relative pb-2 px-4 mb-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-3 lg:gap-14 items-start lg:items-center">
+            <div className="relative shrink-0 mx-auto lg:mx-0">
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 lg:w-40 lg:h-40">
+                {/* Decorative Frame */}
+                <div className="absolute -inset-2 bg-[#BC6C25]/20 rounded-[2rem] blur-xl" />
+                <div className="hidden lg:block absolute -inset-2 border-2 border-[#606C38]/30 dark:border-[#a3b18a]/30 rounded-[1.5rem] rotate-3" />
+
+                {/* Main Image */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="/images/stephanie.jpg"
+                    alt="Stephanie Marker, creator of CheapQuickVegan"
+                    fill
+                    sizes="(max-width: 640px) 112px, (max-width: 1024px) 128px, 160px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                Welcome to CheapQuickVegan
-              </h1>
             </div>
-            <div className="flex flex-col gap-3 items-center">
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
-                amazing vegan meals to fuel an active lifestyle. Here, you can find
-                quick, flavorful, no-fluff plant-based recipes and{" "}
-                <a href="#featured-guides" className="text-primary hover:underline">
-                  vegan travel guides
-                </a>
-                . Each recipe comes with tips & substitutions to make it easy and tasty.
-              </p>
-              <JumpToFavorites />
-            </div>
-          </div>
 
-          {/* Desktop: Photo on left, vertically centered with content on right */}
-          <div className="hidden md:flex flex-row items-center gap-8">
-            <div className="relative w-32 h-32 flex-shrink-0 rounded-full overflow-hidden shadow-xl ring-2 ring-[#fefae0]">
-              <Image
-                src="/images/stephanie.jpg"
-                alt="Stephanie"
-                fill
-                sizes="128px"
-                className="rounded-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col gap-3 flex-1">
-              <h1 className="text-4xl font-bold tracking-tight text-foreground">
-                Welcome to CheapQuickVegan
+            {/* Text Column */}
+            <div className="space-y-1.5 min-w-0 flex-1 text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+                <span className="block text-foreground/90 text-xl sm:text-2xl lg:text-3xl mb-1">Welcome to</span>
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-[#606C38] dark:text-white">CheapQuickVegan</span>
+                  <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#BC6C25]/30 -rotate-1 -z-0"></span>
+                </span>
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+
+              <p className="text-sm sm:text-base text-foreground/70 leading-snug max-w-2xl pt-1">
                 I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
-                amazing vegan meals to fuel an active lifestyle. Here, you can find
-                quick, flavorful, no-fluff plant-based recipes and{" "}
+                amazing vegan meals. Find quick, flavorful plant-based recipes and{" "}
                 <a href="#featured-guides" className="text-primary hover:underline">
                   vegan travel guides
                 </a>
-                . Each recipe comes with tips & substitutions to make it easy and tasty.
+                {" "}with tips & substitutions to make cooking easy.
               </p>
-              <div>
+
+              <div className="pt-0.5">
                 <JumpToFavorites />
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* RECIPE CATEGORIES */}
-      <h2 className="text-3xl sm:text-4xl font-bold mb-8">Recipe Categories</h2>
+      <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+        <span className="relative inline-block">
+          <span className="relative z-10">Recipe Categories</span>
+          <span className="absolute bottom-1 left-0 right-0 h-3 bg-[#606C38]/30 -rotate-1"></span>
+        </span>
+      </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
         {categories.map((cat) => (
           <Link
-            key={cat}
-            href={`/recipes/category/${cat.toLowerCase()}`}
+            key={cat.name}
+            href={`/recipes/category/${cat.name.toLowerCase()}`}
             className="block group"
           >
             <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
               <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <Image
-                  src={categoryImages[cat] || "/images/placeholder.jpg"}
-                  alt={cat}
+                  src={categoryImages[cat.name] || "/images/placeholder.jpg"}
+                  alt={`${cat.name} - ${cat.description}`}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                 />
               </div>
 
-              <div className="p-2">
-                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center">
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              <div className="p-3">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center mb-1">
+                  {cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
                 </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 text-center line-clamp-2">
+                  {cat.description}
+                </p>
               </div>
             </div>
           </Link>
@@ -145,7 +148,10 @@ export default function HomePage() {
 
       {/* FEATURED RECIPES */}
       <h2 className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
-        Featured Recipes
+        <span className="relative inline-block">
+          <span className="relative z-10">Featured Recipes</span>
+          <span className="absolute bottom-1 left-0 right-0 h-3 bg-[#BC6C25]/30 -rotate-1"></span>
+        </span>
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16">
@@ -182,7 +188,10 @@ export default function HomePage() {
 
       {/* FEATURED GUIDES */}
       <h2 id="featured-guides" className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
-        Featured Guides
+        <span className="relative inline-block">
+          <span className="relative z-10">Featured Guides</span>
+          <span className="absolute bottom-1 left-0 right-0 h-3 bg-[#735d78]/30 -rotate-1"></span>
+        </span>
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
