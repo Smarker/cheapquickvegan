@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle"; // Assuming this path is correct
 import { Menu, X } from "lucide-react";
 import CookieSettingsButton from "./consent/cookie-settings-button";
+import { SearchButton } from "@/components/search/search-button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -121,6 +122,9 @@ export default function Layout({ children }: LayoutProps) {
                   />
                 </div>
               </div>
+
+              {/* Search */}
+              <SearchButton />
 
               {/* Mode toggle */}
               <ModeToggle />
