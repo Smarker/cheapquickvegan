@@ -109,10 +109,9 @@ export default function AboutPage() {
         <section className="relative pt-8 pb-2 px-4">
           <div className="max-w-4xl mx-auto">
             {/* Flex container for all screen sizes */}
-            <div className="flex flex-row gap-6 lg:gap-10 items-start lg:items-center">
-              {/* Photo - Left on mobile, Right on desktop */}
-              <div className="relative shrink-0 order-1 lg:order-2">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-56 lg:h-56 xl:w-64 xl:h-64">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start lg:items-center">
+              <div className="relative shrink-0 mx-auto">
+                <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64">
                     {/* Decorative Frame */}
                     <div className="absolute -inset-2 lg:-inset-4 bg-[#BC6C25]/20 rounded-[2rem] blur-xl" />
                     <div className="hidden lg:block absolute -inset-2 border-2 border-[#606C38]/30 dark:border-[#a3b18a]/30 rounded-[1.5rem] rotate-3" />
@@ -130,9 +129,9 @@ export default function AboutPage() {
                     </div>
 
                     {/* Decorative Label - Top Right */}
-                    <div className="absolute -top-4 -right-4 lg:-top-6 lg:-right-6 inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2 bg-[#606C38] dark:bg-[#606C38] rounded-full shadow-lg">
-                      <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
-                      <span className="text-[10px] lg:text-sm font-medium text-white tracking-wide whitespace-nowrap">
+                    <div className="absolute -top-4 sm:-top-5 lg:-top-6 -right-4 sm:-right-5 lg:-right-6 inline-flex items-center gap-2 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-2 bg-[#606C38] dark:bg-[#606C38] rounded-full shadow-lg">
+                      <Sparkles className="w-3 h-3 sm:w-3.5 lg:w-4 sm:h-3.5 lg:h-4 text-white" />
+                      <span className="text-[9px] sm:text-[10px] lg:text-sm font-medium text-white tracking-wide whitespace-nowrap">
                         CREATOR & RECIPE DEVELOPER
                       </span>
                     </div>
@@ -140,7 +139,7 @@ export default function AboutPage() {
                 </div>
 
               {/* Text Column */}
-              <div className="space-y-3 lg:space-y-4 order-2 lg:order-1 min-w-0 flex-1">
+              <div className="space-y-3 lg:space-y-4 min-w-0 flex-1 text-center lg:text-left">
 
                 {/* Main Heading */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.2] tracking-tight">
