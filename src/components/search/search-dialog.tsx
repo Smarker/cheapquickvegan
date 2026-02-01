@@ -81,6 +81,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
+            id="search-input"
+            name="search"
             type="text"
             placeholder="Search recipes and guides..."
             value={searchQuery}
