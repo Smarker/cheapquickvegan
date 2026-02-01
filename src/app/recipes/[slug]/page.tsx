@@ -22,6 +22,7 @@ import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
+import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -214,111 +215,113 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
             {/* --- Prose Content --- */}
             <article className="prose dark:prose-invert max-w-none">
-          <header className="mb-2">
-            {/* --- Meta Info Bar: Date, Breadcrumbs, and Cook Mode --- */}
-            {/* When both Published and Updated dates exist, dates take full width and breadcrumbs wrap to new line */}
-            {/* When only Published date exists, everything stays on one line */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-0.5 sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
-              {/* Date info - takes full width when both dates exist */}
-              <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight text-sm ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
-                <span className="flex items-baseline gap-1.5 leading-tight">
-                  <Clock className="w-3.5 h-3.5 translate-y-0.5" />
-                  <span className="font-medium text-sm">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time>
-                </span>
-                {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
-                  <span className="flex items-baseline gap-1.5 leading-tight">
-                    <Clock className="w-3.5 h-3.5 translate-y-0.5" />
-                    <span className="font-medium text-sm">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time>
-                  </span>
-                )}
-              </div>
+              <header className="mb-2">
+                {/* --- Meta Info Bar: Date, Breadcrumbs, and Cook Mode --- */}
+                {/* When both Published and Updated dates exist, dates take full width and breadcrumbs wrap to new line */}
+                {/* When only Published date exists, everything stays on one line */}
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-0.5 sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
+                  {/* Date info - takes full width when both dates exist */}
+                  <div className={`flex flex-wrap gap-x-4 gap-y-1 leading-tight text-sm ${recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:w-full' : ''}`}>
+                    <span className="flex items-baseline gap-1.5 leading-tight">
+                      <Clock className="w-3.5 h-3.5 translate-y-0.5" />
+                      <span className="font-medium text-sm">Published:</span> <time dateTime={new Date(recipe.date).toISOString()}>{format(new Date(recipe.date), "MMMM d, yyyy")}</time>
+                    </span>
+                    {recipe.lastUpdated && recipe.lastUpdated !== recipe.date && (
+                      <span className="flex items-baseline gap-1.5 leading-tight">
+                        <Clock className="w-3.5 h-3.5 translate-y-0.5" />
+                        <span className="font-medium text-sm">Updated:</span> <time dateTime={new Date(recipe.lastUpdated).toISOString()}>{format(new Date(recipe.lastUpdated), "MMMM d, yyyy")}</time>
+                      </span>
+                    )}
+                  </div>
 
-              {/* Breadcrumbs & Cook Mode - wrap to new line when both dates exist */}
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5 mb-3 sm:mb-0">
-                <Breadcrumbs
-                  items={[
-                    { label: "Home", href: "/" },
-                    { label: "Recipes", href: "/recipes" },
-                    {
-                      items: recipe.categories.map((cat) => ({
-                        label: cat.charAt(0).toUpperCase() + cat.slice(1),
-                        href: `/recipes/category/${cat.toLowerCase()}`,
-                      })),
-                    },
-                  ]}
-                />
-                {/* Cook Mode - Mobile inline, compact variant */}
-                <div className="lg:hidden">
-                  <CookModeToggle variant="compact" />
+                  {/* Breadcrumbs & Cook Mode - wrap to new line when both dates exist */}
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5 mb-3 sm:mb-0">
+                    <Breadcrumbs
+                      items={[
+                        { label: "Home", href: "/" },
+                        { label: "Recipes", href: "/recipes" },
+                        {
+                          items: recipe.categories.map((cat) => ({
+                            label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                            href: `/recipes/category/${cat.toLowerCase()}`,
+                          })),
+                        },
+                      ]}
+                    />
+                    {/* Cook Mode - Mobile inline, compact variant */}
+                    <div className="lg:hidden">
+                      <CookModeToggle variant="compact" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-              {recipe.title}
-            </h1>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
+                  {recipe.title}
+                </h1>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {recipe.categories && <Badge variant="secondary">{recipe.categories[0]}</Badge>}
-              {recipe.recipeCuisine && <Badge variant="default">{recipe.recipeCuisine}</Badge>}
-              {recipe.tags?.map((tag: string) => (
-                <Badge key={tag} variant="outline">{tag}</Badge>
-              ))}
-            </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {recipe.categories && <Badge variant="secondary">{recipe.categories[0]}</Badge>}
+                  {recipe.recipeCuisine && <Badge variant="default">{recipe.recipeCuisine}</Badge>}
+                  {recipe.tags?.map((tag: string) => (
+                    <Badge key={tag} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
 
-            {/* Recipe Information Section */}
-            <RecipeInfo
-              prepTime={prepTime}
-              cookTime={cookTime}
-              chillTime={chillTime}
-              totalTime={totalTime}
-              recipeYield={recipeYield}
-            />
-          </header>
-
-          <ReactMarkdown
-            components={{
-              img: ({ src, alt, ...props }) => {
-                if (!src || typeof src !== "string") return null;
-                return (
-                  <NotionImage
-                    src={src}
-                    alt={alt ?? recipe.title}
-                    className="mt-0 mb-4"
-                    inline={true}
-                    {...props}
+                {/* Recipe Information Section */}
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-0.5 sm:gap-1.5 text-muted-foreground sm:mb-1.5 leading-tight">
+                  <RecipeInfo
+                    prepTime={prepTime}
+                    cookTime={cookTime}
+                    chillTime={chillTime}
+                    totalTime={totalTime}
+                    recipeYield={recipeYield}
                   />
-                );
-              },
-              h2: ({ children, ...props }) => {
-                const text = String(children);
-                const id = text
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/^-+|-+$/g, "");
-                return <h2 id={id} {...props}>{children}</h2>;
-              },
-              h3: ({ children, ...props }) => {
-                const text = String(children);
-                const id = text
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/^-+|-+$/g, "");
-                return <h3 id={id} {...props}>{children}</h3>;
-              },
-            }}
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-          >
-            {cleanedContent}
-          </ReactMarkdown>
+                  <JumpToRecipe></JumpToRecipe>
+                </div>
+              </header>
 
-          {/* --- Comment Section --- */}
-          <div id="reviews" className="not-prose my-8 sm:my-12 print:hidden">
-            <Separator className="mb-8" />
-            <CommentSection recipeId={recipe.id} />
-          </div>
+              <ReactMarkdown
+                components={{
+                  img: ({ src, alt, ...props }) => {
+                    if (!src || typeof src !== "string") return null;
+                    return (
+                      <NotionImage
+                        src={src}
+                        alt={alt ?? recipe.title}
+                        className="mt-0 mb-4"
+                        inline={true}
+                        {...props}
+                      />
+                    );
+                  },
+                  h2: ({ children, ...props }) => {
+                    const text = String(children);
+                    const id = text
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, "-")
+                      .replace(/^-+|-+$/g, "");
+                    return <h2 id={id} {...props}>{children}</h2>;
+                  },
+                  h3: ({ children, ...props }) => {
+                    const text = String(children);
+                    const id = text
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, "-")
+                      .replace(/^-+|-+$/g, "");
+                    return <h3 id={id} {...props}>{children}</h3>;
+                  },
+                }}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+              >
+                {cleanedContent}
+              </ReactMarkdown>
 
+              {/* --- Comment Section --- */}
+              <div id="reviews" className="not-prose my-8 sm:my-12 print:hidden">
+                <Separator className="mb-8" />
+                <CommentSection recipeId={recipe.id} />
+              </div>
             </article>
           </div>
 
