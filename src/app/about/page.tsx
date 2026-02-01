@@ -1,102 +1,288 @@
 import Image from "next/image";
 import { Metadata } from "next";
-import { Instagram, Facebook, Mail } from "lucide-react";
+import { Instagram, Facebook, Mail, Sparkles } from "lucide-react";
+import { SITE_URL } from "@/config/constants";
 
-// --- OPTIMIZED METADATA ---
+// --- ENHANCED SEO METADATA ---
 export const metadata: Metadata = {
-  title: "About | Cheap, Quick, and Simple Vegan Recipes",
+  title: "About Stephanie | Cheap, Quick, and Simple Vegan Recipes",
   description:
-    "I'm Stephanie, the creator of CheapQuickVegan! My mission is to share the best affordable vegan recipes, quick weeknight dinners, and Notion meal planners for simple vegan living.",
+    "Meet Stephanie, the creator of CheapQuickVegan. Discover my journey into affordable vegan cooking, Italian-inspired plant-based recipes, and my mission to make vegan eating simple, delicious, and budget-friendly for everyone.",
+  keywords: [
+    "vegan food blogger",
+    "affordable vegan recipes",
+    "plant-based cooking",
+    "vegan meal planning",
+    "Italian vegan recipes",
+    "quick vegan meals",
+    "budget vegan cooking",
+  ],
+  authors: [{ name: "Stephanie Marker" }],
+  creator: "Stephanie Marker",
+  openGraph: {
+    title: "About Stephanie | CheapQuickVegan",
+    description:
+      "Meet Stephanie, vegan recipe creator sharing affordable, quick Italian-inspired plant-based recipes and meal planners.",
+    url: `${SITE_URL}/about`,
+    siteName: "CheapQuickVegan",
+    images: [
+      {
+        url: `${SITE_URL}/images/stephanie-about.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "Stephanie Marker - CheapQuickVegan creator",
+      },
+    ],
+    locale: "en_US",
+    type: "profile",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Stephanie | CheapQuickVegan",
+    description:
+      "Meet Stephanie, vegan recipe creator sharing affordable, quick Italian-inspired plant-based recipes.",
+    images: [`${SITE_URL}/images/stephanie-about.jpg`],
+  },
+  alternates: {
+    canonical: `${SITE_URL}/about`,
+  },
 };
 
 export default function AboutPage() {
+  // JSON-LD Structured Data for Person/Author
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Stephanie Marker",
+    url: `${SITE_URL}/about`,
+    image: `${SITE_URL}/images/stephanie-about.jpg`,
+    jobTitle: "Vegan Recipe Creator & Food Blogger",
+    description:
+      "Creator of CheapQuickVegan, sharing affordable, quick vegan recipes inspired by Italian family classics.",
+    sameAs: [
+      "https://instagram.com/cheapquickvegan",
+      "https://www.facebook.com/profile.php?id=61584092626079",
+    ],
+    knowsAbout: [
+      "Vegan Cooking",
+      "Italian Cuisine",
+      "Plant-Based Recipes",
+      "Budget Cooking",
+      "Meal Planning",
+    ],
+    email: "cheapquickvegan@gmail.com",
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "About",
+        item: `${SITE_URL}/about`,
+      },
+    ],
+  };
+
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8 text-center">About CheapQuickVegan</h1>
+    <>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
 
-      {/* 🥑 Image or logo */}
-      <div className="relative w-40 h-40 mx-auto mb-10">
-        <Image
-          src="/images/stephanie-about.jpg"
-          alt="CheapQuickVegan creator"
-          fill
-          sizes="(max-width: 640px) 160px, 10vw"
-          className="rounded-full shadow-md object-cover"
-        />
-      </div>
+      <main className="relative min-h-screen">
+        {/* Hero Section */}
+        <section className="relative pt-8 pb-2 px-4">
+          <div className="max-w-4xl mx-auto">
+            {/* Flex container for all screen sizes */}
+            <div className="flex flex-row gap-6 lg:gap-10 items-start lg:items-center">
+              {/* Photo - Left on mobile, Right on desktop */}
+              <div className="relative shrink-0 order-1 lg:order-2">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-56 lg:h-56 xl:w-64 xl:h-64">
+                    {/* Decorative Frame */}
+                    <div className="absolute -inset-2 lg:-inset-4 bg-[#BC6C25]/20 rounded-[2rem] blur-xl" />
+                    <div className="hidden lg:block absolute -inset-2 border-2 border-[#606C38]/30 dark:border-[#a3b18a]/30 rounded-[1.5rem] rotate-3" />
 
-      <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-        
-        {/* H2: Mission statement emphasizes 'quick' and 'affordable vegan' */}
-        <h2 className="text-3xl font-semibold mb-4">My Mission: Providing the <strong className="font-medium">best quick and affordable vegan recipes</strong> for everyone.</h2>
-        
-        {/* --- PERSONAL STORY & INSPIRATION --- */}
-        <p>
-          Welcome to CheapQuickVegan! My <strong className="font-medium">journey with vegan cooking</strong> started when my boyfriend adopted a <strong className="font-medium">vegan diet</strong> for health reasons. What began as a challenge quickly turned into a passion. I discovered that <strong className="font-medium">vegan cooking</strong> is incredibly fun and a creative way to experiment with substitutions and unexpected ingredients.
-        </p>
+                    {/* Main Image */}
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                      <Image
+                        src="/images/stephanie-about.jpg"
+                        alt="Stephanie Marker, creator of CheapQuickVegan, vegan recipe developer"
+                        fill
+                        sizes="(max-width: 640px) 112px, (max-width: 1024px) 128px, 320px"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
 
-        {/* H3: Focusing on the specific culinary fun and influence */}
-        <h3 className="text-2xl font-semibold mt-8 mb-4">Vegan Twists on Italian Family Classics 🇮🇹</h3>
-        <p>
-          My recipes are heavily influenced by the food I learned from my boyfriend's extended <strong className="font-medium">Italian family</strong>. I love demonstrating how small, simple edits can make a massive impact on classic dishes (like adding <strong className="font-medium">plant milk to focaccia</strong> for extra crispiness!). Every recipe shared here aims to be both delicious and extremely <strong className="font-medium">time-efficient</strong>.
-        </p>
+                    {/* Decorative Label - Top Right */}
+                    <div className="absolute -top-4 -right-4 lg:-top-6 lg:-right-6 inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2 bg-[#606C38] dark:bg-[#606C38] rounded-full shadow-lg">
+                      <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
+                      <span className="text-[10px] lg:text-sm font-medium text-white tracking-wide whitespace-nowrap">
+                        CREATOR & RECIPE DEVELOPER
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-        <p>
-          I want to make <strong className="font-medium">vegan eating</strong> <em className="font-semibold">simple, affordable, and delicious </em> 
-          by providing the <strong className="font-medium">best cheap vegan recipes</strong> and resources, proving that you don't need expensive ingredients or hours in the kitchen to enjoy great food.
-        </p>
-        
-        <p>
-          Whether you're new to <strong className="font-medium">vegan cooking</strong> or just want <strong className="font-medium">easy weeknight meals</strong>, you'll find recipes here that use <strong className="font-medium">everyday ingredients</strong> and take minimal time to prepare. Every <strong className="font-medium">quick vegan meal</strong> on CheapQuickVegan is paired with a clean, mobile-first layout that's easy to follow. 
-        </p>
+              {/* Text Column */}
+              <div className="space-y-3 lg:space-y-4 order-2 lg:order-1 min-w-0 flex-1">
 
-        {/* Closing paragraph for call-to-action */}
-        <p>
-          If you want to take your <strong className="font-medium">meal planning</strong> further, check out the 
-          {" "}
-          <a
-            href="/shop"
-            className="text-[#606C38] hover:underline font-medium"
-          >
-            Shop
-          </a>{" "}
-          for my <strong className="font-medium">Notion recipe bundles</strong> and <strong className="font-medium">vegan meal planners</strong>, perfect for organizing your favorite
-           vegan meals and grocery lists.
-        </p>
-      </div>
+                {/* Main Heading */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.2] tracking-tight">
+                  <span className="block text-foreground/90 text-3xl sm:text-4xl lg:text-5xl">Hi, I'm</span>
+                  <span className="relative inline-block">
+                    <span className="relative z-10 text-[#606C38] dark:text-white">Stephanie</span>
+                    <span className="absolute bottom-1 left-0 right-0 h-2.5 bg-[#BC6C25]/30 -rotate-1 -z-0"></span>
+                  </span>
+                </h1>
 
-      {/* 🌿 Social / Contact section */}
-      <div className="mt-12 border-t border-border pt-8 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Let's Connect</h2> 
-        <p className="text-muted-foreground mb-6">
-          Follow for new recipes, vegan tips, and Notion recipe bundles.
-        </p>
+                {/* Subtitle */}
+                <p className="text-base sm:text-lg text-foreground/70 leading-relaxed max-w-2xl">
+                  Welcome to CheapQuickVegan – where affordable meets delicious in the world of plant-based cooking.
+                </p>
 
-        <div className="flex justify-center gap-8">
-          <a
-            href="https://instagram.com/cheapquickvegan"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground/80 hover:text-[#BC6C25] transition"
-          >
-            <Instagram size={32} />
-          </a>
-          <a
-            href="https://www.facebook.com/profile.php?id=61584092626079"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground/80 hover:text-[#BC6C25] transition"
-          >
-            <Facebook size={32} />
-          </a>
-          <a
-            href="mailto:cheapquickvegan@gmail.com"
-            className="inline-flex items-center justify-center text-foreground/80 hover:text-[#BC6C25] transition cursor-pointer"
-          >
-            <Mail size={32} />
-          </a>
-        </div>
-      </div>
-    </main>
+                {/* Mission Statement */}
+                <div className="relative">
+                  <div className="relative p-6 bg-[#606C38]/5 dark:bg-white/5 rounded-2xl">
+                    <h2 className="text-lg sm:text-xl font-bold mb-2 uppercase tracking-wider text-[#606C38] dark:text-[#a3b18a]">
+                      <span className="relative inline-block">
+                        <span className="relative z-10">MY MISSION</span>
+                        <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#606C38]/30 -rotate-1"></span>
+                      </span>
+                    </h2>
+                    <p className="text-base leading-relaxed text-foreground/80">
+                      Providing the best quick and affordable vegan recipes for everyone because delicious plant-based meals shouldn't break the bank or take hours to prepare.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <section className="px-4">
+          <div className="max-w-4xl mx-auto">
+            <article className="space-y-8">
+              {/* Story Section - More Dynamic Layout */}
+              <div className="space-y-6">
+                <div className="border-l-4 border-[#BC6C25] pl-6 py-2 my-6">
+                  <p className="text-lg text-foreground/70">
+                    My journey with vegan cooking started when my boyfriend adopted a vegan diet for health reasons. What began as a challenge quickly turned into a passion.
+                    I discovered that vegan cooking is incredibly fun and a creative way to experiment with substitutions and unexpected ingredients.
+                  </p>
+                </div>
+
+                {/* Italian Section - Matching My Mission style */}
+                <div className="relative p-6 bg-[#BC6C25]/10 dark:bg-white/5 rounded-2xl">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 uppercase tracking-wider text-[#BC6C25] dark:text-[#BC6C25]">
+                    <span className="relative inline-block">
+                      <span className="relative z-10">VEGAN TWISTS ON ITALIAN FAMILY CLASSICS</span>
+                      <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#BC6C25]/30 -rotate-1"></span>
+                    </span>
+                  </h3>
+                  <p className="text-base leading-relaxed text-foreground/80">
+                    My recipes are heavily influenced by the food I learned from my boyfriend's extended Italian family. I love demonstrating how small, simple edits can make a massive impact on classic dishes (like adding plant milk to focaccia for extra crispiness!).
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-[#735d78] pl-6 py-2 my-6">
+                  <p className="text-lg text-foreground/70">
+                    I want to make vegan eating simple, affordable, and delicious by providing the best cheap vegan recipes and resources.                     Whether you're new to vegan cooking or just want easy weeknight meals, you'll find recipes here that use everyday ingredients and take minimal time to prepare.
+                  </p>
+                </div>
+
+                {/* Shop CTA - More prominent */}
+                <div className="relative p-8 bg-gradient-to-r bg-[#BC6C25]/10 dark:bg-white/5 rounded-2xl my-8">
+                  <h3 className="text-2xl font-bold mb-3 text-foreground">
+                    <span className="relative inline-block">
+                      <span className="relative z-10">Ready to Level Up Your Meal Planning?</span>
+                      <span className="absolute bottom-0 left-0 right-0 h-2 bg-[#735d78]/30 -rotate-1"></span>
+                    </span>
+                  </h3>
+                  <p className="text-base mb-4 text-foreground/80">
+                    Check out my Notion recipe bundles and vegan meal planners. Perfect for organizing your favorite vegan meals and grocery lists.
+                  </p>
+                  <a
+                    href="/shop"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-[#735d78] hover:bg-[#606C38] text-white transition-colors font-bold text-lg"
+                  >
+                    Visit Shop
+                    <span className="text-xl">→</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        {/* Connect Section */}
+        <section className="py-8 px-4 bg-[#BC6C25]/10 dark:bg-white/5">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                <span className="relative inline-block">
+                  <span className="relative z-10">Let's Connect</span>
+                  <span className="absolute bottom-2 left-0 right-0 h-4 bg-[#BC6C25]/30 -rotate-1"></span>
+                </span>
+              </h2>
+
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Follow along for new recipes, vegan tips, and Italian-inspired plant-based cooking.
+              </p>
+
+              {/* Social Links - Box Style */}
+              <div className="flex flex-wrap justify-center gap-4 pt-4">
+                <a
+                  href="https://instagram.com/cheapquickvegan"
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#606C38] hover:bg-[#735d78] text-white transition-colors font-medium"
+                  aria-label="Follow CheapQuickVegan on Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                  <span>Instagram</span>
+                </a>
+
+                <a
+                  href="https://www.facebook.com/profile.php?id=61584092626079"
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#606C38] hover:bg-[#735d78] text-white transition-colors font-medium"
+                  aria-label="Follow CheapQuickVegan on Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                  <span>Facebook</span>
+                </a>
+
+                <a
+                  href="mailto:cheapquickvegan@gmail.com"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#606C38] hover:bg-[#735d78] text-white transition-colors font-medium"
+                  aria-label="Email CheapQuickVegan"
+                >
+                  <Mail className="w-5 h-5" />
+                  <span>Email</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
