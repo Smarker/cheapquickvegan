@@ -176,9 +176,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{guide.title}</p>
-                          {guide.category && (
+                          {guide.categories && (
                             <p className="text-xs text-muted-foreground truncate">
-                              {guide.category}
+                              {guide.categories[0]}
                             </p>
                           )}
                         </div>
