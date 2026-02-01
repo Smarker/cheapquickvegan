@@ -6,7 +6,6 @@ import { Recipe } from "@/types/recipe";
 import { Guide } from "@/types/guide";
 import { FavoritesSection } from "@/components/favorites/favorites-section";
 import { JumpToFavorites } from "@/components/favorites/jump-to-favorites";
-import { Sparkles } from "lucide-react";
 
 export default function HomePage() {
   const allRecipes: Recipe[] = getRecipesFromCache();
@@ -59,26 +58,6 @@ export default function HomePage() {
       <section className="relative pb-2 px-4 mb-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-3 lg:gap-14 items-start lg:items-center">
-            <div className="relative shrink-0 mx-auto lg:mx-0">
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 lg:w-40 lg:h-40">
-                {/* Decorative Frame */}
-                <div className="absolute -inset-2 bg-[#BC6C25]/20 rounded-[2rem] blur-xl" />
-                <div className="hidden lg:block absolute -inset-2 border-2 border-[#606C38]/30 dark:border-[#a3b18a]/30 rounded-[1.5rem] rotate-3" />
-
-                {/* Main Image */}
-                <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/images/stephanie.jpg"
-                    alt="Stephanie Marker, creator of CheapQuickVegan"
-                    fill
-                    sizes="(max-width: 640px) 112px, (max-width: 1024px) 128px, 160px"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Text Column */}
             <div className="space-y-1.5 min-w-0 flex-1 text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
