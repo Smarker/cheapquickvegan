@@ -23,7 +23,7 @@ export async function GET() {
         slug: guide.slug,
         coverImage: guide.coverImage,
         alt: guide.alt,
-        category: guide.category,
+        categories: guide.categories,
       })),
     };
 
