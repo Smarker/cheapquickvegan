@@ -57,9 +57,9 @@ export default function HomePage() {
       {/* HERO SECTION - Compact */}
       <section className="relative pb-2 px-4 mb-4">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-3 lg:gap-14 items-start lg:items-center">
+          <div className="flex flex-col gap-3 items-center">
             {/* Text Column */}
-            <div className="space-y-1.5 min-w-0 flex-1 text-center lg:text-left">
+            <div className="space-y-1.5 min-w-0 flex-1 text-center">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
                 <span className="block text-foreground/90 text-xl sm:text-2xl lg:text-3xl mb-1">Welcome to</span>
                 <span className="relative inline-block">
@@ -68,13 +68,12 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <p className="text-sm sm:text-base text-foreground/70 leading-snug max-w-2xl pt-1">
-                I'm Stephanie, a rock-climbing foodie who turns simple ingredients into
-                amazing vegan meals. Find quick, flavorful plant-based recipes and{" "}
+              <p className="text-sm sm:text-base text-foreground/70 leading-snug max-w-2xl mx-auto pt-1">
+                Discover easy, affordable vegan recipes and plant-based meal ideas that are quick to make and budget-friendly. From simple weeknight dinners to delicious desserts, find healthy vegan cooking inspiration with{" "}
                 <a href="#featured-guides" className="text-primary hover:underline">
                   vegan travel guides
                 </a>
-                {" "}with tips & substitutions to make cooking easy.
+                {" "}and helpful cooking tips for every meal.
               </p>
 
               <div className="pt-0.5">
