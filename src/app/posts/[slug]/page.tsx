@@ -51,7 +51,10 @@ export default async function LegacyPostPage({ params }: { params: { slug: strin
     "high-protein-vegan-tahini-date-balls-no-bake-4-ingredient-energy-bites": "tahini-date-energy-balls",
     "vegan-gluten-free-carrot-cake-balls-oat-flour-maple-sweetened": "vegan-gf-carrot-cake-balls",
     "vegan-coconut-red-curry": "maesri-paste-weeknight-curry",
-    "quick-vegan-halva-recipe-3-ingredient-tahini-maple-syrup-dessert": "vegan-tahini-maple-halva"
+    "quick-vegan-halva-recipe-3-ingredient-tahini-maple-syrup-dessert": "vegan-tahini-maple-halva",
+    "vegan-gazpacho": "fresh-vegan-no-cook-gazpacho",
+    "vegan-calzone": "quick-vegan-air-fryer-calzone",
+    
   };
 
   const newSlug = slugMap[slug] || slug;
