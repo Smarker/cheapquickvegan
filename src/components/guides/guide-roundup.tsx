@@ -77,18 +77,19 @@ export function GuideRoundup({ guide, sections }: GuideLayoutProps) {
     },
     h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { children?: React.ReactNode }) => {
       const id = String(children).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      return (
-        <h3 id={id} {...props} className="not-italic font-bold uppercase tracking-widest text-base" style={{ color: "#735d78" }}>
-          <span className="relative inline-block">
-            <span className="relative z-10">{children}</span>
-            <span
-              className="absolute bottom-0 left-0 right-0 h-2 -rotate-1 -z-0 pointer-events-none"
-              style={{ backgroundColor: "#735d7825" }}
-            />
-          </span>
-        </h3>
-      );
+      return <h3 id={id} {...props}>{children}</h3>;
     },
+    // Notion "Quote" blocks export as blockquotes — render as a pop-out callout
+    blockquote: ({ children }: { children?: React.ReactNode }) => (
+      <div
+        className="not-prose my-6 rounded-r-xl border-l-4 bg-muted/50 dark:bg-muted/20 px-6 py-5 shadow-sm"
+        style={{ borderColor: "#735d78" }}
+      >
+        <div className="text-foreground/90 leading-relaxed text-base font-medium [&>p]:m-0 [&>p+p]:mt-3">
+          {children}
+        </div>
+      </div>
+    ),
   };
 
   return (

@@ -53,8 +53,7 @@ export default async function LegacyPostPage({ params }: { params: { slug: strin
     "vegan-coconut-red-curry": "maesri-paste-weeknight-curry",
     "quick-vegan-halva-recipe-3-ingredient-tahini-maple-syrup-dessert": "vegan-tahini-maple-halva",
     "vegan-gazpacho": "fresh-vegan-no-cook-gazpacho",
-    "vegan-calzone": "quick-vegan-air-fryer-calzone",
-    
+    "vegan-calzone": "quick-vegan-air-fryer-calzone"
   };
 
   const newSlug = slugMap[slug] || slug;
