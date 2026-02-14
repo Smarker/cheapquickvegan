@@ -156,7 +156,7 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
   return (
     <section
       className="not-prose relative flex flex-col lg:flex-row lg:items-stretch overflow-hidden"
-      style={{ minHeight: "100svh" }}
+      style={{ minHeight: "calc(100svh - 4rem)" }}
     >
       {/* Image — left on even, right on odd (swap order via CSS order) */}
       {hasImage && (
@@ -213,9 +213,9 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
           </div>
         </div>
 
-        {/* Body prose — left-aligned for readability */}
+        {/* Body prose — left-aligned for readability, prose-sm keeps it compact in card */}
         {body.trim() && (
-          <div className="prose dark:prose-invert prose-base max-w-none">
+          <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <ReactMarkdown
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               components={markdownComponents as any}
@@ -246,7 +246,7 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
 
     if (part.type === "content") {
       renderedParts.push(
-        <div key={`content-${i}`} className="prose dark:prose-invert prose-lg max-w-none px-4">
+        <div key={`content-${i}`} className="prose dark:prose-invert prose-lg max-w-none px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
           <ReactMarkdown
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             components={markdownComponents as any}
@@ -280,12 +280,12 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
     }
   }
 
-  // Break fully out of the page's max-w-7xl px-4 container using negative margins,
-  // then re-add a centred max-width only for the header.
+  // Escape main's px-4 sm:px-6 lg:px-8 and py-5 sm:py-12 entirely.
+  // Negative x-margin cancels px, negative top-margin cancels pt, no bottom escape needed.
   return (
-    <div className="-mx-4">
-      {/* Header — left-aligned to match the page's max-w-7xl px-4 container */}
-      <header className="mb-8 not-prose max-w-7xl mx-auto px-4">
+    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-5 sm:-mt-12">
+      {/* Header — padded to align with the page's own container */}
+      <header className="mb-8 not-prose px-4 sm:px-6 lg:px-8 pt-5 sm:pt-12">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
@@ -316,6 +316,22 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
 
       {/* Full-bleed items */}
       <div>{renderedParts}</div>
+
+      {/* Closing section */}
+      <div
+        className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center"
+        style={{ backgroundColor: "#735d7808" }}
+      >
+        <p className="text-xs font-bold tracking-[0.22em] uppercase mb-4" style={{ color: "#735d78" }}>
+          Your vegan pantry
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+          Stock these once. Cook endlessly.
+        </h2>
+        <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+          These 10 ingredients are the foundation of almost every vegan recipe on this site. Get them in your kitchen and you&apos;ll always have something great to cook.
+        </p>
+      </div>
     </div>
   );
 }
