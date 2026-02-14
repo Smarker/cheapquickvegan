@@ -103,7 +103,12 @@ function ParallaxImagePanel({ src, alt, accent }: { src: string; alt: string; ac
     const onScroll = () => {
       const rect = el.getBoundingClientRect();
       const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-      setOffset(center * 0.2);
+      // Scale is 1.4, so we have 20% extra image on each side.
+      // Max safe shift = containerHeight * (scale - 1) / 2 = height * 0.2
+      // Clamp offset so the image never shows background.
+      const maxShift = (el.offsetHeight * 0.2);
+      const raw = center * 0.15;
+      setOffset(Math.max(-maxShift, Math.min(maxShift, raw)));
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -113,9 +118,9 @@ function ParallaxImagePanel({ src, alt, accent }: { src: string; alt: string; ac
   const isExternal = src.startsWith("http");
 
   return (
-    <div ref={ref} className="relative w-full h-full overflow-hidden" style={{ minHeight: "360px" }}>
-      {/* Parallax inner */}
-      <div className="absolute inset-0" style={{ transform: `translateY(${offset}px) scale(1.25)` }}>
+    <div ref={ref} className="relative w-full h-full overflow-hidden">
+      {/* Parallax inner — scale 1.4 guarantees no gap at any scroll position */}
+      <div className="absolute inset-0" style={{ transform: `translateY(${offset}px) scale(1.4)` }}>
         {isExternal ? (
           <NotionImage src={src} alt={alt} className="w-full h-full object-cover" />
         ) : (
@@ -151,7 +156,7 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
   return (
     <section
       className="not-prose relative flex flex-col lg:flex-row lg:items-stretch overflow-hidden"
-      style={{ minHeight: "360px" }}
+      style={{ minHeight: "100svh" }}
     >
       {/* Image — left on even, right on odd (swap order via CSS order) */}
       {hasImage && (
@@ -279,8 +284,8 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
   // then re-add a centred max-width only for the header.
   return (
     <div className="-mx-4">
-      {/* Header — centred, constrained width */}
-      <header className="mb-8 not-prose max-w-3xl mx-auto px-4">
+      {/* Header — left-aligned to match the page's max-w-7xl px-4 container */}
+      <header className="mb-8 not-prose max-w-7xl mx-auto px-4">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
