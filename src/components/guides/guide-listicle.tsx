@@ -8,7 +8,6 @@ import rehypeRaw from "rehype-raw";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { NotionImage } from "@/components/notion-image";
-import { TableOfContents } from "@/components/guides/table-of-contents";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import Image from "next/image";
@@ -114,7 +113,7 @@ function ParallaxImagePanel({ src, alt, accent }: { src: string; alt: string; ac
   const isExternal = src.startsWith("http");
 
   return (
-    <div ref={ref} className="relative flex-1 overflow-hidden" style={{ minHeight: "360px" }}>
+    <div ref={ref} className="relative w-full h-full overflow-hidden" style={{ minHeight: "360px" }}>
       {/* Parallax inner */}
       <div className="absolute inset-0" style={{ transform: `translateY(${offset}px) scale(1.25)` }}>
         {isExternal ? (
@@ -151,12 +150,12 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
 
   return (
     <section
-      className="not-prose relative flex flex-col lg:flex-row overflow-hidden"
+      className="not-prose relative flex flex-col lg:flex-row lg:items-stretch overflow-hidden"
       style={{ minHeight: "360px" }}
     >
       {/* Image — left on even, right on odd (swap order via CSS order) */}
       {hasImage && (
-        <div className={`flex-1 ${!isEven ? "lg:order-2" : ""}`}>
+        <div className={`flex-1 self-stretch ${!isEven ? "lg:order-2" : ""}`}>
           <ParallaxImagePanel src={image} alt={name} accent={accent} />
         </div>
       )}
@@ -233,7 +232,6 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
   const parts = parseListicleContent(guide.content);
   const markdownComponents = makeMarkdownComponents(guide.title);
 
-  const totalListicleItems = parts.filter((p) => p.type === "listicle").length;
   const renderedParts: React.ReactNode[] = [];
   let listicleCount = 0;
   let i = 0;
@@ -277,48 +275,42 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
     }
   }
 
-  // The listicle items need to break out of the parent px-4 container.
-  // We use -mx-4 to cancel it out so items run edge-to-edge.
+  // Break fully out of the page's max-w-7xl px-4 container using negative margins,
+  // then re-add a centred max-width only for the header.
   return (
-    <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
-      <article>
-        {/* Header — keep normal padding */}
-        <header className="mb-8 not-prose px-4">
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
-            <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              {guide.readingTime}
-            </span>
+    <div className="-mx-4">
+      {/* Header — centred, constrained width */}
+      <header className="mb-8 not-prose max-w-3xl mx-auto px-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
+          <span className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            {guide.readingTime}
+          </span>
+          <span>
+            <span className="font-medium">Published:</span>{" "}
+            <time dateTime={new Date(guide.date).toISOString()}>
+              {format(new Date(guide.date), "MMMM d, yyyy")}
+            </time>
+          </span>
+          {guide.lastUpdated && guide.lastUpdated !== guide.date && (
             <span>
-              <span className="font-medium">Published:</span>{" "}
-              <time dateTime={new Date(guide.date).toISOString()}>
-                {format(new Date(guide.date), "MMMM d, yyyy")}
+              <span className="font-medium">Updated:</span>{" "}
+              <time dateTime={new Date(guide.lastUpdated).toISOString()}>
+                {format(new Date(guide.lastUpdated), "MMMM d, yyyy")}
               </time>
             </span>
-            {guide.lastUpdated && guide.lastUpdated !== guide.date && (
-              <span>
-                <span className="font-medium">Updated:</span>{" "}
-                <time dateTime={new Date(guide.lastUpdated).toISOString()}>
-                  {format(new Date(guide.lastUpdated), "MMMM d, yyyy")}
-                </time>
-              </span>
-            )}
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
-            {guide.title}
-          </h1>
-          <div className="flex flex-wrap gap-2">
-            {guide.categories[0] && <Badge variant="secondary">{guide.categories[0]}</Badge>}
-          </div>
-        </header>
-
-        {/* Items — bleed to edges with -mx-4 */}
-        <div className="-mx-4">
-          {renderedParts}
+          )}
         </div>
-      </article>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
+          {guide.title}
+        </h1>
+        <div className="flex flex-wrap gap-2">
+          {guide.categories[0] && <Badge variant="secondary">{guide.categories[0]}</Badge>}
+        </div>
+      </header>
 
-      <TableOfContents sections={sections} />
+      {/* Full-bleed items */}
+      <div>{renderedParts}</div>
     </div>
   );
 }
