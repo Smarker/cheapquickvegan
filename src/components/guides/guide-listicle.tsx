@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -8,17 +11,19 @@ import { NotionImage } from "@/components/notion-image";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
+import Image from "next/image";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type ContentPart =
   | { type: "content"; text: string }
-  | { type: "listicle"; name: string; emoji: string; tagline: string };
+  | { type: "listicle"; name: string; emoji: string; tagline: string; image: string };
 
 // ─── Parsing ─────────────────────────────────────────────────────────────────
 
 /**
- * Split guide content on [listicle:Name|emoji|tagline] placeholders.
+ * Split guide content on [listicle:Name|emoji|tagline|image] placeholders.
+ * The image field is optional — items without one render content-only.
  */
 function parseListicleContent(content: string): ContentPart[] {
   const placeholderRegex = /\[listicle:([^\]]+)\]/g;
@@ -31,8 +36,16 @@ function parseListicleContent(content: string): ContentPart[] {
       parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
     }
 
-    const [rawName, rawEmoji = "🌱", rawTagline = ""] = match[1].split("|").map((s) => s.trim());
-    parts.push({ type: "listicle", name: rawName, emoji: rawEmoji, tagline: rawTagline });
+    const [rawName, rawEmoji = "🌱", rawTagline = "", rawImage = ""] = match[1]
+      .split("|")
+      .map((s) => s.trim());
+    parts.push({
+      type: "listicle",
+      name: rawName,
+      emoji: rawEmoji,
+      tagline: rawTagline,
+      image: rawImage,
+    });
 
     lastIndex = match.index + match[0].length;
   }
@@ -124,37 +137,124 @@ function makeMarkdownComponents(guideTitle: string) {
   };
 }
 
+// ─── Parallax image panel ─────────────────────────────────────────────────────
+
+function ParallaxImagePanel({
+  src,
+  alt,
+  accent,
+}: {
+  src: string;
+  alt: string;
+  accent: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+      // Move inner image at 30% of scroll speed for parallax
+      setOffset(center * 0.18);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const isExternal = src.startsWith("http");
+
+  return (
+    <div
+      ref={ref}
+      className="relative w-full lg:w-[340px] shrink-0 overflow-hidden"
+      style={{ minHeight: "300px" }}
+    >
+      {/* Parallax image */}
+      <div
+        className="absolute inset-0 scale-110"
+        style={{ transform: `translateY(${offset}px) scale(1.12)` }}
+      >
+        {isExternal ? (
+          <NotionImage
+            src={src}
+            alt={alt}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            className="object-cover"
+            sizes="340px"
+          />
+        )}
+      </div>
+
+      {/* Accent color overlay — Cambridge-style tint */}
+      <div
+        className="absolute inset-0 mix-blend-multiply"
+        style={{ backgroundColor: accent, opacity: 0.28 }}
+        aria-hidden
+      />
+
+      {/* Gradient fade toward content side */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(to right, transparent 60%, var(--background) 100%)`,
+        }}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
 // ─── Listicle Item Card ───────────────────────────────────────────────────────
 
 interface ListicleItemProps {
   name: string;
   emoji: string;
   tagline: string;
+  image: string;
   index: number;
-  /** Markdown prose that follows this ingredient heading, rendered inline */
   body: string;
   guideTitle: string;
   isLast: boolean;
 }
 
-function ListicleItem({ name, emoji, tagline, index, body, guideTitle, isLast }: ListicleItemProps) {
+function ListicleItem({
+  name,
+  emoji,
+  tagline,
+  image,
+  index,
+  body,
+  guideTitle,
+  isLast,
+}: ListicleItemProps) {
   const accent = ACCENT_COLORS[index % ACCENT_COLORS.length];
   const number = String(index + 1).padStart(2, "0");
   const id = slugify(name);
   const isEven = index % 2 === 0;
 
   const markdownComponents = makeMarkdownComponents(guideTitle);
+  const hasImage = Boolean(image);
 
   return (
     <section className="not-prose">
-      {/* ── Divider (skip before first item) ── */}
+      {/* ── Divider ── */}
       {index > 0 && (
-        <div className="relative my-12 flex items-center" aria-hidden>
+        <div className="relative my-10 flex items-center" aria-hidden>
           <div
             className="flex-1 h-px"
-            style={{
-              background: `linear-gradient(to right, ${accent}55, transparent)`,
-            }}
+            style={{ background: `linear-gradient(to right, ${accent}55, transparent)` }}
           />
           <span
             className="mx-4 text-xs tracking-[0.3em] uppercase font-semibold select-none"
@@ -164,54 +264,62 @@ function ListicleItem({ name, emoji, tagline, index, body, guideTitle, isLast }:
           </span>
           <div
             className="flex-1 h-px"
-            style={{
-              background: `linear-gradient(to left, ${accent}55, transparent)`,
-            }}
+            style={{ background: `linear-gradient(to left, ${accent}55, transparent)` }}
           />
         </div>
       )}
 
       {/* ── Card ── */}
       <div
-        className={`relative flex flex-col ${
-          isEven ? "lg:flex-row" : "lg:flex-row-reverse"
-        } gap-0 lg:gap-8 items-stretch`}
+        className={`relative flex flex-col overflow-hidden rounded-lg ${
+          hasImage
+            ? isEven
+              ? "lg:flex-row"
+              : "lg:flex-row-reverse"
+            : ""
+        }`}
       >
-        {/* Oversized number — decorative, bleeds behind content */}
+        {/* Oversized decorative number */}
         <div
-          className="absolute -top-6 select-none pointer-events-none z-0"
+          className="absolute -top-4 select-none pointer-events-none z-0"
           style={{
-            /* Shift number to the leading side of the layout */
-            [isEven ? "left" : "right"]: "-0.25rem",
-            fontVariantNumeric: "tabular-nums",
-            fontSize: "7rem",
+            [isEven ? "left" : "right"]: "0.5rem",
+            fontSize: "6rem",
             lineHeight: 1,
             fontWeight: 900,
             letterSpacing: "-0.06em",
-            color: `${accent}18`,
-            fontFamily: "Georgia, 'Times New Roman', serif",
+            color: `${accent}15`,
           }}
           aria-hidden
         >
           {number}
         </div>
 
+        {/* ── Image panel ── */}
+        {hasImage && (
+          <ParallaxImagePanel
+            src={image}
+            alt={name}
+            accent={accent}
+          />
+        )}
+
         {/* ── Content column ── */}
         <div
-          className="relative z-10 flex-1 flex flex-col justify-center py-8 px-6 lg:px-8"
-          style={{ backgroundColor: `${accent}08` }}
+          className="relative z-10 flex-1 flex flex-col justify-center py-8 px-6 lg:px-10"
+          style={{ backgroundColor: `${accent}09` }}
         >
-          {/* Left accent bar */}
+          {/* Accent bar — side depends on layout direction */}
           <div
-            className="absolute inset-y-0 w-1 rounded-full"
+            className="absolute inset-y-0 w-1"
             style={{
               backgroundColor: accent,
-              [isEven ? "left" : "right"]: 0,
+              [hasImage ? (isEven ? "right" : "left") : "left"]: 0,
             }}
             aria-hidden
           />
 
-          {/* Kicker / tagline */}
+          {/* Kicker */}
           {tagline && (
             <p
               className="text-xs font-bold tracking-[0.22em] uppercase mb-3"
@@ -221,11 +329,11 @@ function ListicleItem({ name, emoji, tagline, index, body, guideTitle, isLast }:
             </p>
           )}
 
-          {/* Heading row: emoji + name */}
+          {/* Emoji + heading */}
           <div className="flex items-start gap-3 mb-4">
             <span
               className="flex-shrink-0 leading-none"
-              style={{ fontSize: "2.5rem" }}
+              style={{ fontSize: "2rem" }}
               role="img"
               aria-label={name}
             >
@@ -233,14 +341,13 @@ function ListicleItem({ name, emoji, tagline, index, body, guideTitle, isLast }:
             </span>
             <h2
               id={id}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-foreground m-0"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              className="text-2xl sm:text-3xl font-bold leading-tight text-foreground m-0"
             >
               {name}
             </h2>
           </div>
 
-          {/* Prose body for this ingredient */}
+          {/* Body prose */}
           {body.trim() && (
             <div className="prose dark:prose-invert prose-base max-w-none">
               <ReactMarkdown
@@ -256,7 +363,6 @@ function ListicleItem({ name, emoji, tagline, index, body, guideTitle, isLast }:
         </div>
       </div>
 
-      {/* ── Trailing space ── */}
       {!isLast && <div className="h-4" />}
     </section>
   );
@@ -268,9 +374,6 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
   const parts = parseListicleContent(guide.content);
   const markdownComponents = makeMarkdownComponents(guide.title);
 
-  // Build listicle items with their following prose body
-  // Strategy: when we hit a listicle part, consume the very next "content" part
-  // as the body for that ingredient card.
   const totalListicleItems = parts.filter((p) => p.type === "listicle").length;
   const renderedParts: React.ReactNode[] = [];
   let listicleCount = 0;
@@ -294,7 +397,6 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
       );
       i++;
     } else {
-      // listicle item: peek ahead for the immediate prose body
       const nextPart = parts[i + 1];
       const body = nextPart?.type === "content" ? nextPart.text : "";
       const isLast = listicleCount === totalListicleItems - 1;
@@ -305,6 +407,7 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
           name={part.name}
           emoji={part.emoji}
           tagline={part.tagline}
+          image={part.image}
           index={listicleCount}
           body={body}
           guideTitle={guide.title}
@@ -313,16 +416,13 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
       );
 
       listicleCount++;
-      // Skip this listicle part + the consumed content part
       i += nextPart?.type === "content" ? 2 : 1;
     }
   }
 
   return (
     <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
-      {/* ── Main column ── */}
       <article>
-        {/* Header */}
         <header className="mb-10 not-prose">
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
             <span className="flex items-center gap-1">
@@ -345,10 +445,7 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
             )}
           </div>
 
-          <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight"
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-          >
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
             {guide.title}
           </h1>
 
@@ -357,11 +454,9 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
           </div>
         </header>
 
-        {/* Content parts */}
         <div className="space-y-2">{renderedParts}</div>
       </article>
 
-      {/* ── Sidebar TOC ── */}
       <TableOfContents sections={sections} />
     </div>
   );
