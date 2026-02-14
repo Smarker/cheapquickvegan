@@ -19,12 +19,12 @@ interface GuidePageProps {
 
 // --- Layout registry: add new guide types here ---
 const LAYOUTS: Record<string, ComponentType<GuideLayoutProps>> = {
-  Roundup: GuideRoundup,
+  "Recipe Collection": GuideRoundup,
 };
 
 // --- Schema registry: add new schema types here ---
 function buildPageSchema(guide: Guide) {
-  if (guide.categories.includes("Roundup")) {
+  if (guide.categories.includes("Recipe Collection")) {
     const tagMatches = [...guide.content.matchAll(/\[recipes:([^\]]+)\]/g)].map((m) => m[1].trim());
     const recipes = getRecipesFromCache().filter((r) =>
       r.tags?.some((t) => tagMatches.some((tag) => t.toLowerCase() === tag.toLowerCase()))
