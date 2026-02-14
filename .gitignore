@@ -48,4 +48,4 @@ next-env.d.ts
 .env*
 
 # cache
-/cache
+/cacheguides-dev-fixtures.json

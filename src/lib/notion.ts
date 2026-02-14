@@ -203,16 +203,33 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
 
 export function getGuidesFromCache(): Guide[] {
   const cachePath = path.join(process.cwd(), "guides-cache.json");
+  let guides: Guide[] = [];
   if (fs.existsSync(cachePath)) {
     try {
-      const cache = fs.readFileSync(cachePath, "utf-8");
-      return JSON.parse(cache);
+      guides = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
     } catch (error) {
       console.error("Error reading guides cache:", error);
-      return [];
     }
   }
-  return [];
+
+  // In development, merge in local fixture entries (guides-dev-fixtures.json)
+  // so you can preview unpublished guide types without touching Notion.
+  if (process.env.NODE_ENV === "development") {
+    const fixturesPath = path.join(process.cwd(), "guides-dev-fixtures.json");
+    if (fs.existsSync(fixturesPath)) {
+      try {
+        const fixtures: Guide[] = JSON.parse(fs.readFileSync(fixturesPath, "utf-8"));
+        // Prepend fixtures so they appear first; skip any that share a slug with real entries
+        const realSlugs = new Set(guides.map((g) => g.slug));
+        const newFixtures = fixtures.filter((f) => !realSlugs.has(f.slug));
+        guides = [...newFixtures, ...guides];
+      } catch (error) {
+        console.error("Error reading guides-dev-fixtures.json:", error);
+      }
+    }
+  }
+
+  return guides;
 }
 
 export async function fetchPublishedGuides() {
