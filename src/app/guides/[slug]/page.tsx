@@ -11,6 +11,7 @@ import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
 import { generateItemListSchema } from "@/lib/seo/item-list-schema";
 import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { GuideRoundup } from "@/components/guides/guide-roundup";
+import { GuideListicle } from "@/components/guides/guide-listicle";
 import type { ComponentType } from "react";
 
 interface GuidePageProps {
@@ -20,6 +21,7 @@ interface GuidePageProps {
 // --- Layout registry: add new guide types here ---
 const LAYOUTS: Record<string, ComponentType<GuideLayoutProps>> = {
   "Recipe Collection": GuideRoundup,
+  Listicle: GuideListicle,
 };
 
 // --- Schema registry: add new schema types here ---
