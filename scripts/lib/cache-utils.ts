@@ -102,6 +102,25 @@ function extractMediaUrls(markdown: string): string[] {
   return urls;
 }
 
+// Run async tasks with a max concurrency limit
+async function withConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  limit: number
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let index = 0;
+
+  async function worker() {
+    while (index < tasks.length) {
+      const current = index++;
+      results[current] = await tasks[current]();
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+  return results;
+}
+
 // Check if file is a video by extension
 function isVideoFile(filename: string): boolean {
   const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
@@ -117,33 +136,41 @@ async function processMarkdownMedia(
   publicPath: string
 ): Promise<string> {
   const mediaUrls = extractMediaUrls(markdown);
-  let processedMarkdown = markdown;
+  if (mediaUrls.length === 0) return markdown;
 
-  for (const url of mediaUrls) {
+  type DownloadResult = { url: string; filename: string; publicUrl: string | null };
+
+  const tasks = mediaUrls.map((url) => async (): Promise<DownloadResult> => {
     const filename = generateFilename(url);
     const localPath = path.join(imagesDir, filename);
     const publicUrl = `${publicPath}/${filename}`;
 
-    // Check if file already exists (avoid re-downloading)
     if (!fs.existsSync(localPath)) {
       console.log(`  Downloading: ${filename}`);
       const success = await downloadFile(url, localPath);
       if (!success) {
         console.error(`  Failed to download media for ${slug}: ${filename}`);
-        continue; // Keep original URL if download fails
+        return { url, filename, publicUrl: null };
       }
     } else {
       console.log(`  Using cached: ${filename}`);
     }
 
-    // For videos, replace markdown link with HTML video tag
+    return { url, filename, publicUrl };
+  });
+
+  // Download up to 6 images concurrently - S3 has no meaningful rate limit at this scale
+  const results = await withConcurrency(tasks, 6);
+
+  let processedMarkdown = markdown;
+  for (const { url, filename, publicUrl } of results) {
+    if (!publicUrl) continue; // keep original URL if download failed
+
     if (isVideoFile(filename)) {
-      // Match [text](url) pattern and replace with <video> tag
       const linkPattern = new RegExp(`\\[([^\\]]+)\\]\\(${url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g');
       const videoTag = `<video controls width="100%" style="max-width: 800px; border-radius: 8px;">\n  <source src="${publicUrl}" type="video/mp4">\n  Your browser does not support the video tag.\n</video>`;
       processedMarkdown = processedMarkdown.replace(linkPattern, videoTag);
     } else {
-      // For images, just replace the URL
       processedMarkdown = processedMarkdown.split(url).join(publicUrl);
     }
   }
@@ -168,22 +195,25 @@ export async function buildCache<T extends { content: string; title: string; slu
     }
 
     const pages = await config.fetchPages();
-    const allContent = [];
 
-    for (const page of pages) {
-      const content = await config.getContentFromNotion(page.id);
-      if (content) {
+    // Process pages 3 at a time - Notion API allows ~3 req/s average
+    const pageResults = await withConcurrency(
+      pages.map((page) => async () => {
+        const content = await config.getContentFromNotion(page.id);
+        if (!content) return null;
         console.log(`Processing images for: ${content.title}`);
-        // Download media and update markdown content
         content.content = await processMarkdownMedia(
           content.content,
           content.slug,
           imagesDir,
           `/${config.imagesSubdir}/images`
         );
-        allContent.push(content);
-      }
-    }
+        return content;
+      }),
+      3
+    );
+
+    const allContent = pageResults.filter(Boolean);
 
     const cachePath = path.join(process.cwd(), config.cacheFileName);
     fs.writeFileSync(cachePath, JSON.stringify(allContent, null, 2));
