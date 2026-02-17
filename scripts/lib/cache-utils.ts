@@ -117,7 +117,7 @@ async function withConcurrency<T>(
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
   return results;
 }
 
@@ -213,7 +213,7 @@ export async function buildCache<T extends { content: string; title: string; slu
       3
     );
 
-    const allContent = pageResults.filter(Boolean);
+    const allContent = pageResults.filter((c): c is T => c !== null);
 
     const cachePath = path.join(process.cwd(), config.cacheFileName);
     fs.writeFileSync(cachePath, JSON.stringify(allContent, null, 2));
