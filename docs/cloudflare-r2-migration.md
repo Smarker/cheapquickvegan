@@ -225,6 +225,66 @@ git commit -m "Remove committed images — now served from Cloudflare R2"
 
 ---
 
+## Database migration (if moving to Cloudflare Pages)
+
+R2 alone works fine while staying on Vercel — skip this section for now.
+It only matters if you later move hosting to Cloudflare Pages.
+
+### The situation
+
+You're using `@vercel/postgres`, which is Neon (serverless Postgres) under the
+hood — Vercel just resells it. The problem on Cloudflare Pages is that the Edge
+Runtime doesn't support raw TCP connections, so the standard Postgres wire
+protocol doesn't work. The fix is Neon's own package, which speaks HTTP/WebSockets
+instead of TCP, making it edge-compatible.
+
+**Your actual database doesn't move.** You just change how the app connects to it.
+
+### Steps
+
+**1. Swap the package**
+
+```bash
+pnpm remove @vercel/postgres
+pnpm add @neondatabase/serverless
+```
+
+**2. Update the import in `src/lib/db/comments.ts` and `src/lib/db/shares.ts`**
+
+```ts
+// Before
+import { sql } from '@vercel/postgres'
+
+// After
+import { neon } from '@neondatabase/serverless'
+const sql = neon(process.env.DATABASE_URL!)
+```
+
+All the SQL queries (`sql\`SELECT * FROM comments\``, etc.) stay identical —
+no schema changes, no data migration, no query rewrites.
+
+**3. Update environment variables**
+
+In Vercel, `@vercel/postgres` injects `POSTGRES_URL` automatically. With Neon
+directly, point to the same database using the connection string from the Neon
+dashboard:
+
+```bash
+# .env.local (and Cloudflare Pages environment variables)
+DATABASE_URL=postgres://user:password@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+```
+
+Find this in: [console.neon.tech](https://console.neon.tech) → your project →
+Connection Details → copy the connection string.
+
+### Why this is low risk
+
+- Same Postgres database, same tables, same data
+- The Neon free tier (0.5GB storage, 190 compute hours/month) covers a small blog indefinitely
+- If you stay on Vercel forever, you never need to do this at all
+
+---
+
 ## Cover images (special case)
 
 Recipe and guide cover images currently use a convention-based local path in
