@@ -108,18 +108,23 @@ export async function getDatabaseStructure() {
 }
 
 // In-memory memo so the JSON file is only parsed once per server process lifetime.
-// The cache files only change during build/dev restarts, so this is safe.
+// Skipped in development so that pnpm cache:recipes picks up immediately without
+// a dev-server restart.
 let _recipesCache: Recipe[] | null = null;
 
 export function getRecipesFromCache(): Recipe[] {
-  if (_recipesCache !== null) return _recipesCache;
+  if (_recipesCache !== null && process.env.NODE_ENV !== "development") {
+    return _recipesCache;
+  }
 
   const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
-      const cache = fs.readFileSync(cachePath, "utf-8");
-      _recipesCache = JSON.parse(cache);
-      return _recipesCache!;
+      const recipes = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
+      if (process.env.NODE_ENV !== "development") {
+        _recipesCache = recipes;
+      }
+      return recipes;
     } catch (error) {
       console.error("Error reading recipes cache:", error);
       return [];
