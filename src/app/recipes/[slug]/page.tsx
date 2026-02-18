@@ -31,6 +31,10 @@ export function generateStaticParams() {
   return recipes.map((recipe) => ({ slug: recipe.slug }));
 }
 
+// Revalidate in the background every hour so the aggregate rating embedded in
+// the JSON-LD schema and sidebar stays fresh without losing static performance.
+export const revalidate = 3600;
+
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
 }
