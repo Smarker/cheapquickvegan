@@ -18,3 +18,7 @@ export function filterGuides(guides: Guide[], query: string): Guide[] {
   const q = query.toLowerCase();
   return guides.filter((guide) => guide.title.toLowerCase().includes(q));
 }
+
+export function toCategorySlug(category: string): string {
+  return category.toLowerCase().replace(/\s+/g, "-");
+}

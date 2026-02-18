@@ -1,41 +1,8 @@
-/**
- * Admin Approve Comment API Route
- *
- * PUT /api/comments/admin/[id]/approve - Approve a pending comment
- */
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { approveComment } from '@/lib/db/comments';
-import { requireAdminAuth } from '@/lib/auth/admin-auth';
+import { createAdminCommentHandler } from '@/lib/api/admin-comment-handler';
 
-/**
- * PUT /api/comments/admin/[id]/approve
- * Approves a pending comment
- */
-export async function PUT(
+export const PUT: (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // Verify admin authentication
-    const authError = await requireAdminAuth();
-    if (authError) return authError;
-
-    const { id } = await params;
-
-    // Approve comment
-    const comment = await approveComment(id);
-
-    return NextResponse.json({
-      success: true,
-      comment,
-      message: 'Comment approved successfully',
-    });
-  } catch (error) {
-    console.error('Failed to approve comment:', error);
-    return NextResponse.json(
-      { error: 'Failed to approve comment' },
-      { status: 500 }
-    );
-  }
-}
+  context: { params: Promise<{ id: string }> }
+) => Promise<Response> = createAdminCommentHandler("approve", approveComment);
