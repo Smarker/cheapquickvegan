@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { trackShare } from '@/lib/db/shares';
 import { SharePlatform } from '@/types/share';
+import { getClientIpAddress } from '@/lib/api/request-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,9 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get IP and User Agent for analytics
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      'unknown';
+    const ipAddress = getClientIpAddress(request, 'unknown');
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
     const shareEvent = await trackShare({

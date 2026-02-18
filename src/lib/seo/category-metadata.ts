@@ -1,0 +1,41 @@
+import { Metadata } from "next";
+import { SITE_URL } from "@/config/constants";
+
+interface CategoryMetadataInput {
+  categoryName: string;
+  contentLabel: string; // e.g. "Recipes" or "Guides"
+  description: string;
+  canonicalUrl: string;
+  imageAlt: string;
+}
+
+export function generateCategoryMetadata({
+  categoryName,
+  contentLabel,
+  description,
+  canonicalUrl,
+  imageAlt,
+}: CategoryMetadataInput): Metadata {
+  const title = `${categoryName} ${contentLabel}`;
+  const ogTitle = `${title} | Cheap Quick Vegan`;
+  const imageUrl = `${SITE_URL}/opengraph-image.png`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: ogTitle,
+      description,
+      type: "website",
+      url: canonicalUrl,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: imageAlt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: ogTitle,
+      description,
+      images: [imageUrl],
+    },
+  };
+}

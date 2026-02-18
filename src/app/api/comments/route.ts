@@ -10,10 +10,12 @@ import { commentSchema, replySchema } from '@/lib/validators/comment-schemas';
 import { createComment, getApprovedComments, getAggregateRating } from '@/lib/db/comments';
 import { checkRateLimit, incrementRateLimit } from '@/lib/db/rate-limit';
 import { generateOwnershipToken } from '@/lib/auth/ownership-token';
-import { sanitizeCommentText, sanitizeName, sanitizeEmail, containsSuspiciousContent } from '@/lib/sanitize';
+import { sanitizeCommentText, sanitizeName, sanitizeEmail } from '@/lib/sanitize';
 import { sendNewCommentEmail } from '@/lib/email/notifications';
 import { getRecipesFromCache } from '@/lib/notion';
 import { getAdminConfig } from '@/lib/auth/admin-auth';
+import { validateInput, checkCommentContent } from '@/lib/api/comment-validation';
+import { getClientIpAddress } from '@/lib/api/request-utils';
 
 /**
  * GET /api/comments?recipeId=xxx
@@ -62,20 +64,12 @@ export async function POST(request: NextRequest) {
     const schema = isReply ? replySchema : commentSchema;
 
     // Validate input
-    const validationResult = schema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const data = validationResult.data;
+    const validation = validateInput(schema, body);
+    if (!validation.ok) return validation.response;
+    const data = validation.data;
 
     // Get IP address for rate limiting
-    const forwarded = request.headers.get('x-forwarded-for');
-    const ipAddress = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || '127.0.0.1';
+    const ipAddress = getClientIpAddress(request);
 
     // Check rate limit
     const rateLimit = await checkRateLimit(ipAddress);
@@ -102,12 +96,8 @@ export async function POST(request: NextRequest) {
     const sanitizedEmail = sanitizeEmail(data.email);
 
     // Check for suspicious content
-    if (containsSuspiciousContent(sanitizedCommentText)) {
-      return NextResponse.json(
-        { error: 'Comment contains suspicious content and cannot be submitted' },
-        { status: 400 }
-      );
-    }
+    const contentError = checkCommentContent(sanitizedCommentText);
+    if (contentError) return contentError;
 
     // Generate ownership token
     const comment = await createComment({

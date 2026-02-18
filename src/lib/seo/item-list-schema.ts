@@ -1,5 +1,6 @@
 import { Recipe } from "@/types/recipe";
 import { SITE_URL } from "@/config/constants";
+import { normalizeImageUrl } from "@/lib/utils";
 
 export function generateItemListSchema(
   title: string,
@@ -9,9 +10,7 @@ export function generateItemListSchema(
   coverImage?: string
 ) {
   const pageUrl = `${SITE_URL}/guides/${slug}`;
-  const imageUrl = coverImage
-    ? coverImage.startsWith("http") ? coverImage : `${SITE_URL}${coverImage}`
-    : `${SITE_URL}/opengraph-image.png`;
+  const imageUrl = normalizeImageUrl(coverImage);
 
   return {
     "@context": "https://schema.org",
@@ -37,11 +36,7 @@ export function generateItemListSchema(
         url: `${SITE_URL}/recipes/${recipe.slug}`,
         name: recipe.title,
         description: recipe.description,
-        image: recipe.coverImage
-          ? recipe.coverImage.startsWith("http")
-            ? recipe.coverImage
-            : `${SITE_URL}${recipe.coverImage}`
-          : undefined,
+        image: recipe.coverImage ? normalizeImageUrl(recipe.coverImage) : undefined,
       })),
     },
   };

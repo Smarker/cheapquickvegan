@@ -9,7 +9,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { editCommentSchema, deleteCommentSchema } from '@/lib/validators/comment-schemas';
 import { getCommentById, updateComment, deleteComment } from '@/lib/db/comments';
 import { verifyOwnershipToken } from '@/lib/auth/ownership-token';
-import { sanitizeCommentText, containsSuspiciousContent } from '@/lib/sanitize';
+import { sanitizeCommentText } from '@/lib/sanitize';
+import { validateInput, checkCommentContent } from '@/lib/api/comment-validation';
 import { sendNewCommentEmail } from '@/lib/email/notifications';
 import { getRecipesFromCache } from '@/lib/notion';
 
@@ -26,16 +27,9 @@ export async function PUT(
     const body = await request.json();
 
     // Validate input
-    const validationResult = editCommentSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { commentText, ownershipToken } = validationResult.data;
+    const validation = validateInput(editCommentSchema, body);
+    if (!validation.ok) return validation.response;
+    const { commentText, ownershipToken } = validation.data;
 
     // Verify comment exists
     const comment = await getCommentById(id);
@@ -61,12 +55,8 @@ export async function PUT(
     const sanitizedText = sanitizeCommentText(commentText);
 
     // Check for suspicious content
-    if (containsSuspiciousContent(sanitizedText)) {
-      return NextResponse.json(
-        { error: 'Comment contains suspicious content and cannot be updated' },
-        { status: 400 }
-      );
-    }
+    const contentError = checkCommentContent(sanitizedText, "updated");
+    if (contentError) return contentError;
 
     // Update comment
     const updatedComment = await updateComment(id, sanitizedText);
@@ -110,16 +100,9 @@ export async function DELETE(
     const body = await request.json();
 
     // Validate input
-    const validationResult = deleteCommentSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { ownershipToken } = validationResult.data;
+    const deleteValidation = validateInput(deleteCommentSchema, body);
+    if (!deleteValidation.ok) return deleteValidation.response;
+    const { ownershipToken } = deleteValidation.data;
 
     // Verify comment exists
     const comment = await getCommentById(id);
