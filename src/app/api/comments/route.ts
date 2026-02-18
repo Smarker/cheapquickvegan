@@ -63,10 +63,15 @@ export async function POST(request: NextRequest) {
     const isReply = !!body.parentCommentId;
     const schema = isReply ? replySchema : commentSchema;
 
-    // Validate input
-    const validation = validateInput(schema, body);
-    if (!validation.ok) return validation.response;
-    const data = validation.data;
+    // Validate input — inline here because schema is dynamic (union type breaks generic inference)
+    const validationResult = schema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validationResult.error.errors },
+        { status: 400 }
+      );
+    }
+    const data = validationResult.data;
 
     // Get IP address for rate limiting
     const ipAddress = getClientIpAddress(request);
