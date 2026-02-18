@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
 
 interface NotionImageProps {
   src: string;
@@ -11,22 +10,14 @@ interface NotionImageProps {
 }
 
 export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (src) {
-      setImgSrc(src);
-    }
-  }, [src]);
-
-  if (!imgSrc) return null;
+  if (!src) return null;
 
   // Inline mode: natural dimensions, no stretching, safe inside <p> tags
   if (inline) {
     return (
       <span className={`block ${className || ""}`}>
         <Image
-          src={imgSrc}
+          src={src}
           alt={alt || ""}
           width={800}
           height={800}
@@ -48,7 +39,7 @@ export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
       className={`relative w-full aspect-[16/9] max-h-[500px] mb-8 rounded-lg overflow-hidden ${className || ""}`}
     >
       <Image
-        src={imgSrc}
+        src={src}
         alt={alt || ""}
         fill
         className="object-cover"
