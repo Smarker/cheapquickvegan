@@ -141,6 +141,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
               src={guide.coverImage}
               alt={guide.alt || guide.title}
               className="object-cover w-full h-full"
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1280px"
             />
           </div>
         )}
