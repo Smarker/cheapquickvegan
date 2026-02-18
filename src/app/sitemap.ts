@@ -6,17 +6,18 @@ import { SITE_URL } from "@/config/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const recipes = getRecipesFromCache();
+  const guides = getGuidesFromCache();
+
   const recipeUrls = recipes.map((recipe: Recipe) => ({
     url: `${SITE_URL}/recipes/${recipe.slug}`,
-    lastModified: new Date(), // new Date(post.date),
+    lastModified: new Date(recipe.lastUpdated || recipe.date),
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
 
-  const guides = getGuidesFromCache();
   const guideUrls = guides.map((guide: Guide) => ({
     url: `${SITE_URL}/guides/${guide.slug}`,
-    lastModified: new Date(),
+    lastModified: new Date(guide.lastUpdated || guide.date),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
@@ -41,8 +42,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.priority,
   }));
 
-  // Recipe category pages
-  const recipeCategories = ["breakfast", "meal", "dessert", "side", "snack"];
+  // Derive recipe category pages from actual data so new categories are included automatically
+  const recipeCategories = [
+    ...new Set(recipes.flatMap((r: Recipe) => r.categories.map((c) => c.toLowerCase()))),
+  ];
   const recipeCategoryUrls = recipeCategories.map((cat) => ({
     url: `${SITE_URL}/recipes/category/${cat}`,
     lastModified: new Date(),
@@ -50,8 +53,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Guide category pages
-  const guideCategories = ["travel", "vegan-food", "how-to"];
+  // Derive guide category pages from actual data so new categories are included automatically
+  const guideCategories = [
+    ...new Set(guides.flatMap((g: Guide) => g.categories.map((c) => c.toLowerCase().replace(/\s+/g, "-")))),
+  ];
   const guideCategoryUrls = guideCategories.map((cat) => ({
     url: `${SITE_URL}/guides/category/${cat}`,
     lastModified: new Date(),

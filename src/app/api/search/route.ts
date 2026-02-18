@@ -27,7 +27,15 @@ export async function GET() {
       })),
     };
 
-    return NextResponse.json(searchData);
+    // Cache the search index at the CDN/browser level.
+    // The data only changes when a new build is deployed, so a short s-maxage
+    // with a long stale-while-revalidate window is safe and reduces cold-start
+    // latency as the blog grows.
+    return NextResponse.json(searchData, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     console.error("Error fetching search data:", error);
     return NextResponse.json({ recipes: [], guides: [] }, { status: 500 });

@@ -6,6 +6,15 @@ import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
+// Pre-render every category that exists in the data so the page is static at
+// deploy time and new categories added in Notion appear automatically after the
+// next cache rebuild + deployment.
+export function generateStaticParams() {
+  const recipes = getRecipesFromCache();
+  const categories = [...new Set(recipes.flatMap((r) => r.categories.map((c) => c.toLowerCase())))];
+  return categories.map((cat) => ({ cat }));
+}
+
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
 }
