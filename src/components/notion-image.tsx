@@ -7,9 +7,10 @@ interface NotionImageProps {
   alt?: string;
   className?: string;
   inline?: boolean; // Use natural dimensions, safe for inline rendering
+  sizes?: string;
 }
 
-export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
+export function NotionImage({ src, alt, className, inline, sizes }: NotionImageProps) {
   if (!src) return null;
 
   // Inline mode: natural dimensions, no stretching, safe inside <p> tags
@@ -45,7 +46,7 @@ export function NotionImage({ src, alt, className, inline }: NotionImageProps) {
         className="object-cover"
         placeholder="blur"
         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+"
-        sizes="(max-width: 768px) 100vw, 800px"
+        sizes={sizes ?? "(max-width: 768px) 100vw, 800px"}
         priority
       />
     </div>

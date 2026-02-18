@@ -1,4 +1,6 @@
 // app/page.tsx
+export const revalidate = 86400; // 24 hours — allows revalidatePath() and periodic refresh
+
 import Image from "next/image";
 import Link from "next/link";
 import { getGuidesFromCache, getRecipesFromCache } from "@/lib/notion";
