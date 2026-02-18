@@ -24,6 +24,13 @@ import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
 import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
 
+// Pre-render every published recipe at build time so the first visitor to any
+// recipe page gets a fully static response instead of a cold-start render.
+export function generateStaticParams() {
+  const recipes = getRecipesFromCache();
+  return recipes.map((recipe) => ({ slug: recipe.slug }));
+}
+
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
 }

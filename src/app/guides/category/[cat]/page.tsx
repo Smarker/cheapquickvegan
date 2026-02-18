@@ -6,6 +6,17 @@ import { notFound } from "next/navigation";
 import GuideListPage from "@/components/guides/guide-list-page";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
+// Pre-render every guide category derived from the data so pages are static at
+// deploy time and new categories from Notion appear automatically after the
+// next cache rebuild + deployment.
+export function generateStaticParams() {
+  const guides = getGuidesFromCache();
+  const categories = [
+    ...new Set(guides.flatMap((g) => g.categories.map((c) => c.toLowerCase().replace(/\s+/g, "-")))),
+  ];
+  return categories.map((cat) => ({ cat }));
+}
+
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
 }

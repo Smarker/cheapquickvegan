@@ -13,6 +13,13 @@ import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-t
 import { GuideRoundup } from "@/components/guides/guide-roundup";
 import type { ComponentType } from "react";
 
+// Pre-render every published guide at build time so the first visitor gets a
+// fully static response instead of a cold-start render.
+export function generateStaticParams() {
+  const guides = getGuidesFromCache();
+  return guides.map((guide) => ({ slug: guide.slug }));
+}
+
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
 }

@@ -107,12 +107,19 @@ export async function getDatabaseStructure() {
   return dataSource;
 }
 
+// In-memory memo so the JSON file is only parsed once per server process lifetime.
+// The cache files only change during build/dev restarts, so this is safe.
+let _recipesCache: Recipe[] | null = null;
+
 export function getRecipesFromCache(): Recipe[] {
+  if (_recipesCache !== null) return _recipesCache;
+
   const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
       const cache = fs.readFileSync(cachePath, "utf-8");
-      return JSON.parse(cache);
+      _recipesCache = JSON.parse(cache);
+      return _recipesCache!;
     } catch (error) {
       console.error("Error reading recipes cache:", error);
       return [];
@@ -201,14 +208,25 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
 
 // ===== GUIDE FUNCTIONS =====
 
+// In-memory memo so the JSON file is only parsed once per server process lifetime.
+let _guidesCache: Guide[] | null = null;
+
 export function getGuidesFromCache(): Guide[] {
   const cachePath = path.join(process.cwd(), "guides-cache.json");
   let guides: Guide[] = [];
-  if (fs.existsSync(cachePath)) {
-    try {
-      guides = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
-    } catch (error) {
-      console.error("Error reading guides cache:", error);
+
+  if (_guidesCache !== null && process.env.NODE_ENV !== "development") {
+    guides = _guidesCache;
+  } else {
+    if (fs.existsSync(cachePath)) {
+      try {
+        guides = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
+        if (process.env.NODE_ENV !== "development") {
+          _guidesCache = guides;
+        }
+      } catch (error) {
+        console.error("Error reading guides cache:", error);
+      }
     }
   }
 
