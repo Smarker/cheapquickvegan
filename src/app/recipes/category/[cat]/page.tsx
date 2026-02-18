@@ -6,6 +6,8 @@ import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
+export const revalidate = 86400; // 24 hours — allows revalidatePath() and periodic refresh
+
 // Pre-render every category that exists in the data so the page is static at
 // deploy time and new categories added in Notion appear automatically after the
 // next cache rebuild + deployment.

@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import GuideListPage from "@/components/guides/guide-list-page";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
 
+export const revalidate = 86400; // 24 hours — allows revalidatePath() and periodic refresh
+
 // Pre-render every guide category derived from the data so pages are static at
 // deploy time and new categories from Notion appear automatically after the
 // next cache rebuild + deployment.
