@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
-import { generateCategoryMetadata } from "@/lib/seo/metadata-builders";
+import { generateCategoryMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { buildCategoryBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
 import { formatCategoryName } from "@/lib/utils";
 

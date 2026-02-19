@@ -12,7 +12,7 @@ import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders"
 import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { GuideRoundup } from "@/components/guides/guide-roundup";
 import type { ComponentType } from "react";
-import { generateArticleMetadata } from "@/lib/seo/metadata-builders";
+import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
 import { normalizeImageUrl } from "@/lib/utils";
 

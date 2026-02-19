@@ -3,7 +3,7 @@ import { Guide } from "@/types/guide";
 import { Metadata } from "next";
 import GuideListPage from "@/components/guides/guide-list-page";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
-import { generateAllArticlesMetadata } from "@/lib/seo/metadata-builders";
+import { generateAllArticlesMetadata } from "@/lib/seo/nextjs-metadata-builders";
 
 export const metadata: Metadata = generateAllArticlesMetadata(
   "All Guides",

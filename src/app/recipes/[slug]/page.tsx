@@ -23,7 +23,7 @@ import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
 import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
-import { generateArticleMetadata } from "@/lib/seo/metadata-builders";
+import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
 import { normalizeImageUrl } from "@/lib/utils";
 
