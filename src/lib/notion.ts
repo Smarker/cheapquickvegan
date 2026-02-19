@@ -141,18 +141,23 @@ export async function fetchPublishedPosts() {
   // This function is now intended to be used only by the caching script.
   const dataSourceId = await getDataSourceId();
 
+  const isDev = process.env.NODE_ENV === "development";
+  const statusFilter = isDev
+    ? {
+        or: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Status", status: { equals: "Draft" } },
+        ],
+      }
+    : {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+        ],
+      };
+
   const recipes = await notion.dataSources.query({
     data_source_id: dataSourceId,
-    filter: {
-      and: [
-        {
-          property: "Status",
-          status: {
-            equals: "Published",
-          },
-        },
-      ],
-    },
+    filter: statusFilter,
     sorts: [
       {
         property: "Published Date",
@@ -253,18 +258,23 @@ export async function fetchPublishedGuides() {
   // This function is intended to be used only by the caching script.
   const dataSourceId = await getGuidesDataSourceId();
 
+  const isDev = process.env.NODE_ENV === "development";
+  const statusFilter = isDev
+    ? {
+        or: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Status", status: { equals: "Draft" } },
+        ],
+      }
+    : {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+        ],
+      };
+
   const guides = await notion.dataSources.query({
     data_source_id: dataSourceId,
-    filter: {
-      and: [
-        {
-          property: "Status",
-          status: {
-            equals: "Published",
-          },
-        },
-      ],
-    },
+    filter: statusFilter,
     sorts: [
       {
         property: "Published Date",
