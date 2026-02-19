@@ -30,7 +30,9 @@ function buildPageMetadata(
   };
 }
 
-export function generateRootPageMetadata(
+// For root/index pages (e.g. /recipes, /guides): type "website" with no
+// authorship or publishing dates. Takes a path and constructs the canonical URL.
+export function generateAllArticlesMetadata(
   title: string,
   description: string,
   path: string,
