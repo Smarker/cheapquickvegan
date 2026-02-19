@@ -30,7 +30,7 @@ function buildPageMetadata(
   };
 }
 
-export function generateListPageMetadata(
+export function generateRootPageMetadata(
   title: string,
   description: string,
   path: string,
@@ -47,6 +47,9 @@ interface CategoryMetadataInput {
   imageAlt: string;
 }
 
+// For category pages (e.g. /recipes/category/travel): derives the title by
+// joining categoryName + contentLabel ("Travel Recipes"), and takes a fully
+// constructed canonicalUrl because the caller already has it.
 export function generateCategoryMetadata({
   categoryName,
   contentLabel,
