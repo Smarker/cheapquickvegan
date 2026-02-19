@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { SITE_URL } from "@/config/constants";
+import { buildPageMetadata } from "@/lib/seo/list-page-metadata";
 
 interface CategoryMetadataInput {
   categoryName: string;
@@ -17,25 +17,5 @@ export function generateCategoryMetadata({
   imageAlt,
 }: CategoryMetadataInput): Metadata {
   const title = `${categoryName} ${contentLabel}`;
-  const ogTitle = `${title} | Cheap Quick Vegan`;
-  const imageUrl = `${SITE_URL}/opengraph-image.png`;
-
-  return {
-    title,
-    description,
-    alternates: { canonical: canonicalUrl },
-    openGraph: {
-      title: ogTitle,
-      description,
-      type: "website",
-      url: canonicalUrl,
-      images: [{ url: imageUrl, width: 1200, height: 630, alt: imageAlt }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: ogTitle,
-      description,
-      images: [imageUrl],
-    },
-  };
+  return buildPageMetadata(title, description, canonicalUrl, imageAlt);
 }

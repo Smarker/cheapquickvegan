@@ -1,25 +1,25 @@
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 
-export function generateListPageMetadata(
+/** Shared builder used by both generateListPageMetadata and generateCategoryMetadata. */
+export function buildPageMetadata(
   title: string,
   description: string,
-  path: string,
+  canonicalUrl: string,
   imageAlt: string
 ): Metadata {
-  const url = `${SITE_URL}${path}`;
   const ogTitle = `${title} | Cheap Quick Vegan`;
   const imageUrl = `${SITE_URL}/opengraph-image.png`;
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: ogTitle,
       description,
       type: "website",
-      url,
+      url: canonicalUrl,
       images: [{ url: imageUrl, width: 1200, height: 630, alt: imageAlt }],
     },
     twitter: {
@@ -29,4 +29,13 @@ export function generateListPageMetadata(
       images: [imageUrl],
     },
   };
+}
+
+export function generateListPageMetadata(
+  title: string,
+  description: string,
+  path: string,
+  imageAlt: string
+): Metadata {
+  return buildPageMetadata(title, description, `${SITE_URL}${path}`, imageAlt);
 }

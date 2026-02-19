@@ -1,9 +1,5 @@
 import { formatCategoryName } from "@/lib/utils";
-
-interface BreadcrumbItem {
-  name: string;
-  path: string;
-}
+import type { BreadcrumbItem } from "@/lib/seo/breadcrumbs";
 
 export function buildArticleBreadcrumbs(
   contentType: "recipes" | "guides",
@@ -17,7 +13,7 @@ export function buildArticleBreadcrumbs(
     { name: section, path: `/${contentType}` },
     ...categories.map((cat) => ({
       name: formatCategoryName(cat),
-      path: `/${contentType}/category/${cat.toLowerCase()}`,
+      path: `/${contentType}/category/${cat.toLowerCase().replace(/\s+/g, "-")}`,
     })),
     { name: title, path: `/${contentType}/${slug}` },
   ];
