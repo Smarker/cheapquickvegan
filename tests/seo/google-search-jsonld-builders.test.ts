@@ -39,7 +39,7 @@ describe("generateBreadcrumbJsonLd", () => {
     const items = [
       { name: "Home", path: "" },
       { name: "Recipes", path: "/recipes" },
-      { name: "Italian Food", path: "/recipes/category/italian-food" },
+      { name: "Meal", path: "/recipes/category/meal" },
       { name: "Pasta Salad", path: "/recipes/pasta-salad" },
     ];
     const result = generateBreadcrumbJsonLd(items);
@@ -59,8 +59,8 @@ describe("generateBreadcrumbJsonLd", () => {
     expect(result.itemListElement[2]).toEqual({
       "@type": "ListItem",
       position: 3,
-      name: "Italian Food",
-      item: `${SITE_URL}/recipes/category/italian-food`,
+      name: "Meal",
+      item: `${SITE_URL}/recipes/category/meal`,
     });
     expect(result.itemListElement[3]).toEqual({
       "@type": "ListItem",
@@ -332,12 +332,12 @@ describe("buildArticleBreadcrumbs", () => {
       "recipes",
       "My Recipe",
       "my-recipe",
-      ["italian-food"]
+      ["meal"]
     );
     expect(result).toEqual([
       { name: "Home", path: "" },
       { name: "Recipes", path: "/recipes" },
-      { name: "Italian Food", path: "/recipes/category/italian-food" },
+      { name: "Meal", path: "/recipes/category/meal" },
       { name: "My Recipe", path: "/recipes/my-recipe" },
     ]);
   });
