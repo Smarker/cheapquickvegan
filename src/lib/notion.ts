@@ -33,6 +33,7 @@ interface RecipePageProperties {
   "Published Date"?: { date?: { start: string } };
   "Last Updated"?: { date?: { start: string } };
   Tags?: { multi_select: NotionSelectOption[] };
+  Ingredients?: { multi_select: NotionSelectOption[] };
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
@@ -108,17 +109,32 @@ export async function getDatabaseStructure() {
 }
 
 export function getRecipesFromCache(): Recipe[] {
+  let recipes: Recipe[] = [];
   const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
-      const cache = fs.readFileSync(cachePath, "utf-8");
-      return JSON.parse(cache);
+      recipes = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
     } catch (error) {
       console.error("Error reading recipes cache:", error);
-      return [];
     }
   }
-  return [];
+
+  // In development, merge in local fixture entries (recipes-dev-fixtures.json)
+  if (process.env.NODE_ENV === "development") {
+    const fixturesPath = path.join(process.cwd(), "recipes-dev-fixtures.json");
+    if (fs.existsSync(fixturesPath)) {
+      try {
+        const fixtures: Recipe[] = JSON.parse(fs.readFileSync(fixturesPath, "utf-8"));
+        const realSlugs = new Set(recipes.map((r) => r.slug));
+        const newFixtures = fixtures.filter((f) => !realSlugs.has(f.slug));
+        recipes = [...newFixtures, ...recipes];
+      } catch (error) {
+        console.error("Error reading recipes-dev-fixtures.json:", error);
+      }
+    }
+  }
+
+  return recipes;
 }
 
 export async function fetchPublishedPosts() {
@@ -187,6 +203,7 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       lastUpdated: properties["Last Updated"]?.date?.start || publishedDate,
       content: contentString,
       tags: properties.Tags?.multi_select?.map((tag) => tag.name) || [],
+      ingredients: properties.Ingredients?.multi_select?.map((i) => i.name) || [],
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",

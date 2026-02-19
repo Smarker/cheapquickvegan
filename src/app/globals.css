@@ -180,3 +180,8 @@ html {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Listicle layout: remove footer top margin so closing bg reaches footer */
+body.listicle-page footer {
+  margin-top: 0 !important;
+}

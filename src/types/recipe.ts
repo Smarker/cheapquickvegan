@@ -7,6 +7,7 @@ export interface Recipe {
   alt: string;
   content: string;
   tags?: string[];
+  ingredients?: string[];
   date: string;
   lastUpdated: string;
   categories: string[];

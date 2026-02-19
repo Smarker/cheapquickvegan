@@ -1,22 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
+import { Clock, ArrowUp } from "lucide-react";
 import { NotionImage } from "@/components/notion-image";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
+import { Recipe } from "@/types/recipe";
 import Image from "next/image";
+import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type ContentPart =
   | { type: "content"; text: string }
-  | { type: "listicle"; name: string; emoji: string; tagline: string; image: string };
+  | { type: "listicle"; name: string; emoji: string; tagline: string; image: string; recipeTag: string };
 
 // ─── Parsing ─────────────────────────────────────────────────────────────────
 
@@ -30,10 +32,17 @@ function parseListicleContent(content: string): ContentPart[] {
     if (match.index > lastIndex) {
       parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
     }
-    const [rawName, rawEmoji = "🌱", rawTagline = "", rawImage = ""] = match[1]
+    const [rawName, rawEmoji = "🌱", rawTagline = "", rawImage = "", rawTag = ""] = match[1]
       .split("|")
       .map((s) => s.trim());
-    parts.push({ type: "listicle", name: rawName, emoji: rawEmoji, tagline: rawTagline, image: rawImage });
+    parts.push({
+      type: "listicle",
+      name: rawName,
+      emoji: rawEmoji,
+      tagline: rawTagline,
+      image: rawImage,
+      recipeTag: rawTag || rawName,
+    });
     lastIndex = match.index + match[0].length;
   }
 
@@ -44,11 +53,80 @@ function parseListicleContent(content: string): ContentPart[] {
   return parts;
 }
 
+// ─── Recipe chips ─────────────────────────────────────────────────────────────
+
+function RecipeChips({ recipes, accent }: { recipes: Recipe[]; accent: string }) {
+  if (recipes.length === 0) return null;
+  return (
+    <div className="mt-6 pt-5 border-t" style={{ borderColor: `${accent}33` }}>
+      <p className="text-xs font-bold tracking-[0.16em] uppercase mb-3" style={{ color: accent }}>
+        Recipes using this
+      </p>
+      <ul className="flex flex-col gap-2">
+        {recipes.map((r) => (
+          <li key={r.slug}>
+            <Link
+              href={`/recipes/${r.slug}`}
+              className="group inline-flex items-center gap-2 text-sm font-medium hover:underline underline-offset-2"
+              style={{ color: accent }}
+            >
+              <span
+                className="inline-block w-1 h-1 rounded-full flex-shrink-0 transition-transform group-hover:scale-150"
+                style={{ backgroundColor: accent }}
+                aria-hidden
+              />
+              {r.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 const ACCENT_COLORS = ["#735d78", "#a3b18a", "#c4a882"] as const;
+
+// ─── Jump TOC ─────────────────────────────────────────────────────────────────
+
+function JumpTOC({ items, onJump }: { items: Array<{ name: string; index: number }>; onJump: (index: number) => void }) {
+  if (items.length === 0) return null;
+  return (
+    <nav aria-label="Jump to ingredient" className="max-w-7xl mx-auto px-8 sm:px-10 lg:px-16 pt-4 sm:pt-6 pb-6 sm:pb-8">
+      <p className="text-xs font-bold tracking-[0.16em] uppercase text-muted-foreground mb-3">Jump to</p>
+      <ol className="flex flex-wrap gap-2">
+        {items.map(({ name, index }) => {
+          const accent = ACCENT_COLORS[index % ACCENT_COLORS.length];
+          return (
+            <li key={name}>
+              <button
+                onClick={() => onJump(index)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border transition-colors cursor-pointer"
+                style={{ borderColor: accent, color: accent }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.backgroundColor = accent;
+                  el.style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.backgroundColor = "";
+                  el.style.color = accent;
+                }}
+              >
+                <span className="text-xs font-bold opacity-50">{String(index + 1).padStart(2, "0")}</span>
+                {name}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
 
 // ─── Markdown overrides ───────────────────────────────────────────────────────
 
@@ -103,10 +181,7 @@ function ParallaxImagePanel({ src, alt, accent }: { src: string; alt: string; ac
     const onScroll = () => {
       const rect = el.getBoundingClientRect();
       const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-      // Scale is 1.4, so we have 20% extra image on each side.
-      // Max safe shift = containerHeight * (scale - 1) / 2 = height * 0.2
-      // Clamp offset so the image never shows background.
-      const maxShift = (el.offsetHeight * 0.2);
+      const maxShift = el.offsetHeight * 0.2;
       const raw = center * 0.15;
       setOffset(Math.max(-maxShift, Math.min(maxShift, raw)));
     };
@@ -119,15 +194,13 @@ function ParallaxImagePanel({ src, alt, accent }: { src: string; alt: string; ac
 
   return (
     <div ref={ref} className="relative w-full h-full overflow-hidden">
-      {/* Parallax inner — scale 1.4 guarantees no gap at any scroll position */}
       <div className="absolute inset-0" style={{ transform: `translateY(${offset}px) scale(1.4)` }}>
         {isExternal ? (
           <NotionImage src={src} alt={alt} className="w-full h-full object-cover" />
         ) : (
-          <Image src={src} alt={alt} fill className="object-cover" sizes="50vw" />
+          <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
         )}
       </div>
-      {/* Accent color overlay */}
       <div className="absolute inset-0 mix-blend-multiply" style={{ backgroundColor: accent, opacity: 0.32 }} aria-hidden />
     </div>
   );
@@ -140,12 +213,15 @@ interface ListicleItemProps {
   emoji: string;
   tagline: string;
   image: string;
+  recipeTag: string;
   index: number;
   body: string;
   guideTitle: string;
+  linkedRecipes: Recipe[];
+  sectionRef: React.RefCallback<HTMLElement>;
 }
 
-function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: ListicleItemProps) {
+function ListicleItem({ name, tagline, image, index, body, guideTitle, linkedRecipes, sectionRef }: ListicleItemProps) {
   const accent = ACCENT_COLORS[index % ACCENT_COLORS.length];
   const number = String(index + 1).padStart(2, "0");
   const id = slugify(name);
@@ -155,24 +231,34 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
 
   return (
     <section
+      ref={sectionRef}
       className="not-prose relative flex flex-col lg:flex-row lg:items-stretch overflow-hidden"
       style={{ minHeight: "calc(100svh - 4rem)" }}
     >
-      {/* Image — left on even, right on odd (swap order via CSS order) */}
+      {/* Mobile image — full-bleed at top, only on small screens */}
       {hasImage && (
-        <div className={`flex-1 self-stretch ${!isEven ? "lg:order-2" : ""}`}>
+        <div className="lg:hidden relative w-full" style={{ height: "55vw", minHeight: "220px" }}>
+          <ParallaxImagePanel src={image} alt={name} accent={accent} />
+        </div>
+      )}
+
+      {/* Desktop image — left on even, right on odd */}
+      {hasImage && (
+        <div className={`hidden lg:block flex-1 self-stretch ${!isEven ? "lg:order-2" : ""}`}>
           <ParallaxImagePanel src={image} alt={name} accent={accent} />
         </div>
       )}
 
       {/* Content */}
       <div
-        className={`relative flex-1 flex flex-col justify-center py-12 px-8 lg:px-12 ${!isEven && hasImage ? "lg:order-1" : ""}`}
-        style={{ backgroundColor: `${accent}0d` }}
+        className={`relative flex-1 flex flex-col justify-center py-12 px-8 lg:px-16 ${!isEven && hasImage ? "lg:order-1" : ""}`}
+        style={{ backgroundColor: `${accent}22` }}
       >
-        {/* Accent bar on the image-facing edge */}
+        {/* Accent bar — both sides on mobile (thin), image-facing side only on desktop */}
+        <div className="absolute inset-y-0 left-0 w-px lg:hidden" style={{ backgroundColor: accent }} aria-hidden />
+        <div className="absolute inset-y-0 right-0 w-px lg:hidden" style={{ backgroundColor: accent }} aria-hidden />
         <div
-          className="absolute inset-y-0 w-1"
+          className="absolute inset-y-0 w-1 hidden lg:block"
           style={{
             backgroundColor: accent,
             [hasImage ? (isEven ? "left" : "right") : "left"]: 0,
@@ -180,7 +266,7 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
           aria-hidden
         />
 
-        {/* Decorative number — top corner on content side */}
+        {/* Decorative number */}
         <div
           className="absolute top-2 select-none pointer-events-none"
           style={{
@@ -199,23 +285,18 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
         {/* Centered header block */}
         <div className="text-center mb-6">
           {tagline && (
-            <p className="text-xs font-bold tracking-[0.22em] uppercase mb-3" style={{ color: accent }}>
+            <p className="text-sm font-bold tracking-[0.18em] uppercase mb-3" style={{ color: accent }}>
               {tagline}
             </p>
           )}
-          <div className="flex items-center justify-center gap-3 mb-1">
-            <span className="leading-none" style={{ fontSize: "2.25rem" }} role="img" aria-label={name}>
-              {emoji}
-            </span>
-            <h2 id={id} className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-foreground m-0">
-              {name}
-            </h2>
-          </div>
+          <h2 id={id} className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-foreground m-0">
+            {name}
+          </h2>
         </div>
 
-        {/* Body prose — left-aligned for readability, prose-sm keeps it compact in card */}
+        {/* Body prose */}
         {body.trim() && (
-          <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          <div className="prose dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <ReactMarkdown
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               components={markdownComponents as any}
@@ -226,6 +307,8 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
             </ReactMarkdown>
           </div>
         )}
+
+        <RecipeChips recipes={linkedRecipes} accent={accent} />
       </div>
     </section>
   );
@@ -233,9 +316,36 @@ function ListicleItem({ name, emoji, tagline, image, index, body, guideTitle }: 
 
 // ─── Main Layout ─────────────────────────────────────────────────────────────
 
-export function GuideListicle({ guide, sections }: GuideLayoutProps) {
+export function GuideListicle({ guide, allRecipes = [] }: GuideLayoutProps) {
+  useEffect(() => {
+    document.body.classList.add("listicle-page");
+    return () => document.body.classList.remove("listicle-page");
+  }, []);
+
+  // Back-to-top visibility
+  const [showTop, setShowTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Refs for each listicle section so TOC can scroll to them without touching the URL
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  const onJump = useCallback((index: number) => {
+    const el = sectionRefs.current[index];
+    if (!el) return;
+    const navHeight = 64; // h-16 = 4rem = 64px
+    const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, []);
+
   const parts = parseListicleContent(guide.content);
   const markdownComponents = makeMarkdownComponents(guide.title);
+
+  const tocItems = parts
+    .filter((p): p is Extract<ContentPart, { type: "listicle" }> => p.type === "listicle")
+    .map((p, index) => ({ name: p.name, index }));
 
   const renderedParts: React.ReactNode[] = [];
   let listicleCount = 0;
@@ -246,21 +356,37 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
 
     if (part.type === "content") {
       renderedParts.push(
-        <div key={`content-${i}`} className="prose dark:prose-invert prose-lg max-w-none px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <ReactMarkdown
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            components={markdownComponents as any}
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-          >
-            {part.text}
-          </ReactMarkdown>
+        <div key={`content-${i}`} className="pt-0 pb-6 sm:pb-10">
+          <div className="prose dark:prose-invert prose-lg max-w-7xl mx-auto px-8 sm:px-10 lg:px-16">
+            <ReactMarkdown
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              components={markdownComponents as any}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+            >
+              {part.text}
+            </ReactMarkdown>
+          </div>
         </div>
       );
       i++;
     } else {
       const nextPart = parts[i + 1];
       const body = nextPart?.type === "content" ? nextPart.text : "";
+
+      const needle = part.recipeTag.toLowerCase();
+      const linkedRecipes = allRecipes
+        .filter((r) =>
+          r.ingredients
+            ? r.ingredients.some((ing) => ing.toLowerCase() === needle)
+            : r.content.toLowerCase().includes(needle)
+        )
+        .slice(0, 3);
+
+      const capturedIndex = listicleCount;
+      const sectionRefCallback: React.RefCallback<HTMLElement> = (el) => {
+        sectionRefs.current[capturedIndex] = el;
+      };
 
       renderedParts.push(
         <ListicleItem
@@ -269,9 +395,12 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
           emoji={part.emoji}
           tagline={part.tagline}
           image={part.image}
+          recipeTag={part.recipeTag}
           index={listicleCount}
           body={body}
           guideTitle={guide.title}
+          linkedRecipes={linkedRecipes}
+          sectionRef={sectionRefCallback}
         />
       );
 
@@ -280,12 +409,11 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
     }
   }
 
-  // Escape main's px-4 sm:px-6 lg:px-8 and py-5 sm:py-12 entirely.
-  // Negative x-margin cancels px, negative top-margin cancels pt, no bottom escape needed.
   return (
-    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-5 sm:-mt-12">
-      {/* Header — padded to align with the page's own container */}
-      <header className="mb-8 not-prose px-4 sm:px-6 lg:px-8 pt-5 sm:pt-12">
+    <div className="-mt-5 sm:-mt-12 -mb-5 sm:-mb-12" style={{ width: "100vw", position: "relative", left: "50%", transform: "translateX(-50%)" }}>
+      {/* Header */}
+      <header className="mb-3 not-prose pt-5 sm:pt-12">
+        <div className="max-w-7xl mx-auto px-8 sm:px-10 lg:px-16">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground mb-4 text-sm">
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
@@ -312,7 +440,11 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
         <div className="flex flex-wrap gap-2">
           {guide.categories[0] && <Badge variant="secondary">{guide.categories[0]}</Badge>}
         </div>
+        </div>
       </header>
+
+      {/* Jump TOC */}
+      <JumpTOC items={tocItems} onJump={onJump} />
 
       {/* Full-bleed items */}
       <div>{renderedParts}</div>
@@ -322,7 +454,7 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
         className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center"
         style={{ backgroundColor: "#735d7808" }}
       >
-        <p className="text-xs font-bold tracking-[0.22em] uppercase mb-4" style={{ color: "#735d78" }}>
+        <p className="text-sm font-bold tracking-[0.18em] uppercase mb-4" style={{ color: "#735d78" }}>
           Your vegan pantry
         </p>
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
@@ -332,6 +464,19 @@ export function GuideListicle({ guide, sections }: GuideLayoutProps) {
           These 10 ingredients are the foundation of almost every vegan recipe on this site. Get them in your kitchen and you&apos;ll always have something great to cook.
         </p>
       </div>
+
+      {/* Back to top */}
+      {showTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold tracking-wide shadow-lg border transition-opacity"
+          style={{ backgroundColor: "#735d78", color: "#fff", borderColor: "#735d78" }}
+          aria-label="Back to top"
+        >
+          <ArrowUp className="h-3.5 w-3.5" />
+          Top
+        </button>
+      )}
     </div>
   );
 }
