@@ -9,6 +9,10 @@ CheapQuickVegan is a Next.js-based vegan food and travel blog with a focus on SE
 - **Styling:** Tailwind CSS with shadcn/ui components
 - **Database:** Vercel Postgres (for comments and ratings)
 
+### src/lib vs src/components
+
+`src/lib` is purely data and logic — no React, no JSX, no `.tsx` files. If a file needs to render anything, it belongs in `src/components` instead.
+
 ## Critical SEO Rules
 
 ### Never change URL structures
