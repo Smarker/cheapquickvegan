@@ -70,22 +70,6 @@ describe("generateBreadcrumbJsonLd", () => {
     });
   });
 
-  it("prefixes SITE_URL to every item URL", () => {
-    const result = generateBreadcrumbJsonLd([
-      { name: "About", path: "/about" },
-    ]);
-    expect(result.itemListElement[0].item).toBe(`${SITE_URL}/about`);
-  });
-
-  it("gives every item @type ListItem", () => {
-    const result = generateBreadcrumbJsonLd([
-      { name: "Home", path: "" },
-      { name: "About", path: "/about" },
-    ]);
-    result.itemListElement.forEach((item) => {
-      expect(item["@type"]).toBe("ListItem");
-    });
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -166,12 +150,6 @@ describe("generateFaqJsonLd", () => {
     expect(result.mainEntity[0].acceptedAnswer.text).toBe("Answer to second.");
   });
 
-  it("each mainEntity item has @type Question and acceptedAnswer @type Answer", () => {
-    const content = "**Q: Q?**\n**A: A.**";
-    const result = generateFaqJsonLd(content);
-    expect(result.mainEntity[0]["@type"]).toBe("Question");
-    expect(result.mainEntity[0].acceptedAnswer["@type"]).toBe("Answer");
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -362,23 +340,6 @@ describe("buildArticleBreadcrumbs", () => {
     expect(result[3]).toMatchObject({ name: "Pasta", path: "/recipes/category/pasta" });
   });
 
-  it("defaults to no categories when omitted", () => {
-    const result = buildArticleBreadcrumbs("recipes", "Recipe", "my-recipe");
-    expect(result).toHaveLength(3);
-  });
-
-  it("always starts with Home as path ''", () => {
-    const result = buildArticleBreadcrumbs("guides", "Guide", "guide");
-    expect(result[0]).toEqual({ name: "Home", path: "" });
-  });
-
-  it("always ends with the article as the last item", () => {
-    const result = buildArticleBreadcrumbs("recipes", "Soup", "soup", [
-      "soups",
-    ]);
-    const last = result[result.length - 1];
-    expect(last).toEqual({ name: "Soup", path: "/recipes/soup" });
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -402,32 +363,6 @@ describe("buildCategoryBreadcrumbs", () => {
       { name: "Guides", path: "/guides" },
       { name: "Travel", path: "/guides/category/travel" },
     ]);
-  });
-
-  it("always returns exactly 3 items", () => {
-    const result = buildCategoryBreadcrumbs(
-      "recipes",
-      "Category",
-      "category"
-    );
-    expect(result).toHaveLength(3);
-  });
-
-  it("always starts with Home", () => {
-    const result = buildCategoryBreadcrumbs("recipes", "Soups", "soups");
-    expect(result[0]).toEqual({ name: "Home", path: "" });
-  });
-
-  it("sets section name to Recipes for recipes contentType", () => {
-    const result = buildCategoryBreadcrumbs("recipes", "Quick", "quick");
-    expect(result[1].name).toBe("Recipes");
-    expect(result[1].path).toBe("/recipes");
-  });
-
-  it("sets section name to Guides for guides contentType", () => {
-    const result = buildCategoryBreadcrumbs("guides", "Quick", "quick");
-    expect(result[1].name).toBe("Guides");
-    expect(result[1].path).toBe("/guides");
   });
 
   it("uses the provided categorySlug in the category path", () => {

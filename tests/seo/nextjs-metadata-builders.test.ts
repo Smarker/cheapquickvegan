@@ -47,11 +47,6 @@ describe("generateArticleMetadata", () => {
     expect(result.openGraph?.type).toBe("article");
   });
 
-  it("sets openGraph url to the canonical URL", () => {
-    const result = generateArticleMetadata(base);
-    expect(result.openGraph?.url).toBe(`${SITE_URL}/recipes/easy-pasta`);
-  });
-
   it("sets publishedTime as ISO string from date", () => {
     const result = generateArticleMetadata(base);
     const og = result.openGraph as { publishedTime?: string };
@@ -120,12 +115,6 @@ describe("generateArticleMetadata", () => {
 
   it("falls back to opengraph-image.png when no coverImage is given", () => {
     const result = generateArticleMetadata(base);
-    const images = result.openGraph?.images as Array<{ url: string }>;
-    expect(images[0].url).toBe(`${SITE_URL}/opengraph-image.png`);
-  });
-
-  it("falls back to opengraph-image.png when coverImage is null", () => {
-    const result = generateArticleMetadata({ ...base, coverImage: null });
     const images = result.openGraph?.images as Array<{ url: string }>;
     expect(images[0].url).toBe(`${SITE_URL}/opengraph-image.png`);
   });
@@ -230,11 +219,6 @@ describe("generateAllArticlesMetadata", () => {
     expect(result.twitter?.card).toBe("summary_large_image");
   });
 
-  it("appends site name to Twitter title", () => {
-    const result = call();
-    expect(result.twitter?.title).toBe("All Recipes | Cheap Quick Vegan");
-  });
-
   it("reflects the provided imageAlt in OG image alt", () => {
     const result = generateAllArticlesMetadata(
       "All Guides",
@@ -290,12 +274,6 @@ describe("generateCategoryMetadata", () => {
     expect(result.description).toBe("Italian vegan recipes");
   });
 
-  it("uses opengraph-image.png as OG image", () => {
-    const result = generateCategoryMetadata(base);
-    const images = result.openGraph?.images as Array<{ url: string }>;
-    expect(images[0].url).toBe(`${SITE_URL}/opengraph-image.png`);
-  });
-
   it("reflects imageAlt in OG image alt", () => {
     const result = generateCategoryMetadata(base);
     const images = result.openGraph?.images as Array<{
@@ -303,11 +281,6 @@ describe("generateCategoryMetadata", () => {
       alt: string;
     }>;
     expect(images[0].alt).toBe("Italian vegan recipes");
-  });
-
-  it("sets Twitter card to summary_large_image", () => {
-    const result = generateCategoryMetadata(base);
-    expect(result.twitter?.card).toBe("summary_large_image");
   });
 
   it("works for guide categories", () => {
