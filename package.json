@@ -9,7 +9,9 @@
     "lint": "next lint",
     "cache:all": "pnpm run cache:recipes && pnpm run cache:guides",
     "cache:recipes": "tsx scripts/cache-recipes.ts",
-    "cache:guides": "tsx scripts/cache-guides.ts"
+    "cache:guides": "tsx scripts/cache-guides.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -68,7 +70,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.7.2",
     "tw-animate-css": "^1.3.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@10.11.0",
   "browserslist": {
