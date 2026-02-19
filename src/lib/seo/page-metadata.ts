@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 
-/** Shared builder used by both generateListPageMetadata and generateCategoryMetadata. */
-export function buildPageMetadata(
+function buildPageMetadata(
   title: string,
   description: string,
   canonicalUrl: string,
@@ -38,4 +37,22 @@ export function generateListPageMetadata(
   imageAlt: string
 ): Metadata {
   return buildPageMetadata(title, description, `${SITE_URL}${path}`, imageAlt);
+}
+
+interface CategoryMetadataInput {
+  categoryName: string;
+  contentLabel: string; // e.g. "Recipes" or "Guides"
+  description: string;
+  canonicalUrl: string;
+  imageAlt: string;
+}
+
+export function generateCategoryMetadata({
+  categoryName,
+  contentLabel,
+  description,
+  canonicalUrl,
+  imageAlt,
+}: CategoryMetadataInput): Metadata {
+  return buildPageMetadata(`${categoryName} ${contentLabel}`, description, canonicalUrl, imageAlt);
 }
