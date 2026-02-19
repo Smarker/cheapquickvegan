@@ -5,6 +5,9 @@ import { SITE_URL } from "@/config/constants";
 import { notFound } from "next/navigation";
 import GuideListPage from "@/components/guides/guide-list-page";
 import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { generateCategoryMetadata } from "@/lib/seo/metadata-builders";
+import { buildCategoryBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
+import { formatCategoryName } from "@/lib/utils";
 
 export const revalidate = 86400; // 24 hours — allows revalidatePath() and periodic refresh
 
@@ -25,56 +28,29 @@ interface CategoryPageProps {
 
 const VALID_CATEGORIES = ["travel", "vegan food", "how to"];
 
-function getCategoryDisplayName(cat: string): string {
-  return cat
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { cat } = await params;
-  const categoryName = getCategoryDisplayName(cat);
+  const categoryName = formatCategoryName(cat);
 
-  // Validate category
   if (!VALID_CATEGORIES.includes(cat.toLowerCase().replace(/-/g, " "))) {
-    return {
-      title: "Category Not Found",
-    };
+    return { title: "Category Not Found" };
   }
 
-  return {
-    title: `${categoryName} Guides`,
-    description: `Browse all ${categoryName.toLowerCase()} guides. Comprehensive articles and resources for your vegan lifestyle.`,
-    alternates: { canonical: `${SITE_URL}/guides/category/${cat}` },
-    openGraph: {
-      title: `${categoryName} Guides | Cheap Quick Vegan`,
-      description: `Browse all ${categoryName.toLowerCase()} guides. Comprehensive articles and resources for your vegan lifestyle.`,
-      type: "website",
-      url: `${SITE_URL}/guides/category/${cat}`,
-      images: [
-        {
-          url: `${SITE_URL}/opengraph-image.png`,
-          width: 1200,
-          height: 630,
-          alt: `${categoryName} Guides`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${categoryName} Guides | Cheap Quick Vegan`,
-      description: `Browse all ${categoryName.toLowerCase()} guides. Comprehensive articles and resources for your vegan lifestyle.`,
-      images: [`${SITE_URL}/opengraph-image.png`],
-    },
-  };
+  const description = `Browse all ${categoryName.toLowerCase()} guides. Comprehensive articles and resources for your vegan lifestyle.`;
+
+  return generateCategoryMetadata({
+    categoryName,
+    contentLabel: "Guides",
+    description,
+    canonicalUrl: `${SITE_URL}/guides/category/${cat}`,
+    imageAlt: `${categoryName} Guides`,
+  });
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { cat } = await params;
-  const categoryName = getCategoryDisplayName(cat);
+  const categoryName = formatCategoryName(cat);
 
-  // Validate category
   if (!VALID_CATEGORIES.includes(cat.toLowerCase().replace(/-/g, " "))) {
     notFound();
   }
@@ -87,11 +63,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <>
-      <BreadcrumbJsonLd items={[
-        { name: "Home", path: "" },
-        { name: "Guides", path: "/guides" },
-        { name: categoryName, path: `/guides/category/${cat}` },
-      ]} />
+      <BreadcrumbJsonLd items={buildCategoryBreadcrumbs("guides", categoryName, cat)} />
       <GuideListPage
         guides={categoryGuides}
         title={`${categoryName} Guides`}
