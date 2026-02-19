@@ -3,6 +3,7 @@ import { SITE_URL } from "@/config/constants";
 import { formatCategoryName, normalizeImageUrl } from "@/lib/utils";
 import type { BreadcrumbItem } from "@/lib/seo/breadcrumbs";
 
+// https://developers.google.com/search/docs/appearance/structured-data/faqpage
 export function generateFaqJsonLd(faqContent: string) {
   const lines = faqContent
     .split("\n")
@@ -47,6 +48,7 @@ export function generateFaqJsonLd(faqContent: string) {
   };
 }
 
+// https://developers.google.com/search/docs/appearance/structured-data/carousel#all-in-one
 export function generateItemListSchema(
   title: string,
   description: string,
@@ -87,6 +89,7 @@ export function generateItemListSchema(
   };
 }
 
+// https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
 export function buildArticleBreadcrumbs(
   contentType: "recipes" | "guides",
   title: string,
