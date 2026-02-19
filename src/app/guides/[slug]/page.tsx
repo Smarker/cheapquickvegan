@@ -6,7 +6,7 @@ import { ResolvingMetadata } from "next";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { generateTOC } from "@/lib/guide-parser";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders";
 import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-travel-layout";

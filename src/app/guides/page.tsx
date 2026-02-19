@@ -2,7 +2,7 @@ import { getGuidesFromCache } from "@/lib/notion";
 import { Guide } from "@/types/guide";
 import { Metadata } from "next";
 import GuideListPage from "@/components/guides/guide-list-page";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateAllArticlesMetadata } from "@/lib/seo/nextjs-metadata-builders";
 
 export const metadata: Metadata = generateAllArticlesMetadata(

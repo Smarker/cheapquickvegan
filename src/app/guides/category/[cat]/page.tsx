@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { SITE_URL } from "@/config/constants";
 import { notFound } from "next/navigation";
 import GuideListPage from "@/components/guides/guide-list-page";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateCategoryMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { buildCategoryBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
 import { formatCategoryName } from "@/lib/utils";

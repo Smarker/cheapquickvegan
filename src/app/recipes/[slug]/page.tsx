@@ -17,7 +17,7 @@ import { getAggregateRating } from "@/lib/db/comments";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
 import { RecipeInfo } from "@/components/recipes/recipe-info";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";

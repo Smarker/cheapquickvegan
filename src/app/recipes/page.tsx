@@ -3,7 +3,7 @@ import RecipePageClient from "@/components/recipes/recipe-page-client";
 import { getRecipesFromCache } from "@/lib/notion";
 import { Recipe } from "@/types/recipe";
 import { Metadata } from "next";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateAllArticlesMetadata } from "@/lib/seo/nextjs-metadata-builders";
 
 export const metadata: Metadata = generateAllArticlesMetadata(

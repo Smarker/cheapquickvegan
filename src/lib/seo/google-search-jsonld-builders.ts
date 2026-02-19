@@ -1,7 +1,25 @@
 import { Recipe } from "@/types/recipe";
 import { SITE_URL } from "@/config/constants";
 import { formatCategoryName, normalizeImageUrl } from "@/lib/utils";
-import type { BreadcrumbItem } from "@/lib/seo/breadcrumbs";
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+// https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
+export function generateBreadcrumbJsonLd(items: BreadcrumbItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.path}`,
+    })),
+  };
+}
 
 // https://developers.google.com/search/docs/appearance/structured-data/faqpage
 export function generateFaqJsonLd(faqContent: string) {
@@ -89,7 +107,6 @@ export function generateItemListSchema(
   };
 }
 
-// https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
 export function buildArticleBreadcrumbs(
   contentType: "recipes" | "guides",
   title: string,
