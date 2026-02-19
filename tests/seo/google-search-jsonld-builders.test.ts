@@ -35,13 +35,15 @@ describe("generateBreadcrumbJsonLd", () => {
   });
 
   it("builds multiple items with sequential positions and correct URLs", () => {
+    // Reflects the real recipe breadcrumb: Home → Recipes → Category → Recipe
     const items = [
       { name: "Home", path: "" },
       { name: "Recipes", path: "/recipes" },
+      { name: "Italian Food", path: "/recipes/category/italian-food" },
       { name: "Pasta Salad", path: "/recipes/pasta-salad" },
     ];
     const result = generateBreadcrumbJsonLd(items);
-    expect(result.itemListElement).toHaveLength(3);
+    expect(result.itemListElement).toHaveLength(4);
     expect(result.itemListElement[0]).toEqual({
       "@type": "ListItem",
       position: 1,
@@ -57,6 +59,12 @@ describe("generateBreadcrumbJsonLd", () => {
     expect(result.itemListElement[2]).toEqual({
       "@type": "ListItem",
       position: 3,
+      name: "Italian Food",
+      item: `${SITE_URL}/recipes/category/italian-food`,
+    });
+    expect(result.itemListElement[3]).toEqual({
+      "@type": "ListItem",
+      position: 4,
       name: "Pasta Salad",
       item: `${SITE_URL}/recipes/pasta-salad`,
     });
