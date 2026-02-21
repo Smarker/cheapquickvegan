@@ -22,6 +22,22 @@ type ContentPart =
 
 // ─── Parsing ─────────────────────────────────────────────────────────────────
 
+interface ClosingSection {
+  eyebrow: string;
+  heading: string;
+  body: string;
+}
+
+function extractClosingSection(content: string): { content: string; closing: ClosingSection | null } {
+  const match = content.match(/\[closing:([^\]]+)\]/);
+  if (!match) return { content, closing: null };
+  const [rawEyebrow = "", rawHeading = "", rawBody = ""] = match[1].split("|").map((s) => s.trim());
+  return {
+    content: content.replace(match[0], ""),
+    closing: { eyebrow: rawEyebrow, heading: rawHeading, body: rawBody },
+  };
+}
+
 function parseListicleContent(content: string): ContentPart[] {
   const placeholderRegex = /\[listicle:([^\]]+)\]/g;
   const parts: ContentPart[] = [];
@@ -340,7 +356,8 @@ export function GuideListicle({ guide, allRecipes = [] }: GuideLayoutProps) {
     window.scrollTo({ top, behavior: "smooth" });
   }, []);
 
-  const parts = parseListicleContent(guide.content);
+  const { content: strippedContent, closing } = extractClosingSection(guide.content);
+  const parts = parseListicleContent(strippedContent);
   const markdownComponents = makeMarkdownComponents(guide.title);
 
   const tocItems = parts
@@ -450,20 +467,21 @@ export function GuideListicle({ guide, allRecipes = [] }: GuideLayoutProps) {
       <div>{renderedParts}</div>
 
       {/* Closing section */}
+      {closing?.eyebrow && (
       <div
         className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center"
         style={{ backgroundColor: "#735d7808" }}
       >
         <p className="text-sm font-bold tracking-[0.18em] uppercase mb-4" style={{ color: "#735d78" }}>
-          Your vegan pantry
+          {closing?.eyebrow}
         </p>
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-          Stock these once. Cook endlessly.
+          {closing?.heading}
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
-          These 10 ingredients are the foundation of almost every vegan recipe on this site. Get them in your kitchen and you&apos;ll always have something great to cook.
+          {closing?.body}
         </p>
-      </div>
+      </div>)}
 
       {/* Back to top */}
       {showTop && (
