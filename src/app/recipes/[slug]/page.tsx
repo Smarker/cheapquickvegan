@@ -17,12 +17,26 @@ import { getAggregateRating } from "@/lib/db/comments";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Clock } from "lucide-react";
 import { RecipeInfo } from "@/components/recipes/recipe-info";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
-import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { ContentCarousel } from "@/components/common/content-carousel";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
 import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
+import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
+import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
+import { normalizeImageUrl } from "@/lib/utils";
+
+// Pre-render every published recipe at build time so the first visitor to any
+// recipe page gets a fully static response instead of a cold-start render.
+export function generateStaticParams() {
+  const recipes = getRecipesFromCache();
+  return recipes.map((recipe) => ({ slug: recipe.slug }));
+}
+
+// Revalidate in the background every hour so the aggregate rating embedded in
+// the JSON-LD schema and sidebar stays fresh without losing static performance.
+export const revalidate = 3600;
 
 interface RecipePageProps {
   params: Promise<{ slug: string }>;
@@ -42,35 +56,17 @@ export async function generateMetadata(
     };
   }
 
-  return {
+  return generateArticleMetadata({
     title: recipe.title,
     description: recipe.description,
-    alternates: { canonical: `${SITE_URL}/recipes/${recipe.slug}` },
-    openGraph: {
-      title: recipe.title,
-      description: recipe.description,
-      type: "article",
-      url: `${SITE_URL}/recipes/${recipe.slug}`,
-      publishedTime: new Date(recipe.date).toISOString(),
-      modifiedTime: new Date(recipe.lastUpdated || recipe.date).toISOString(),
-      authors: ["Stephanie Marker"],
-      tags: recipe.tags,
-      images: [
-        {
-          url: recipe.coverImage || `${SITE_URL}/opengraph-image.png`,
-          width: 1200,
-          height: 630,
-          alt: recipe.alt || recipe.title,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: recipe.title,
-      description: recipe.description,
-      images: [{ url: recipe.coverImage || `${SITE_URL}/opengraph-image.png`, alt: recipe.alt || recipe.title }],
-    },
-  };
+    slug: recipe.slug,
+    date: recipe.date,
+    lastUpdated: recipe.lastUpdated,
+    coverImage: recipe.coverImage,
+    alt: recipe.alt,
+    basePath: "/recipes",
+    tags: recipe.tags,
+  });
 }
 
 export default async function RecipePage({ params }: RecipePageProps) {
@@ -120,11 +116,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
     "@type": "Recipe",
     name: recipe.title,
     description: recipe.description,
-    image: recipe.coverImage
-      ? recipe.coverImage.startsWith("http")
-        ? recipe.coverImage
-        : `${SITE_URL}${recipe.coverImage}`
-      : `${SITE_URL}/opengraph-image.png`,
+    image: normalizeImageUrl(recipe.coverImage),
     author: { "@type": "Person", name: "Stephanie Marker" },
     datePublished: new Date(recipe.date).toISOString(),
     dateModified: new Date(recipe.lastUpdated || recipe.date).toISOString(),
@@ -143,9 +135,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         };
 
         if (step.image) {
-          howToStep.image = step.image.startsWith('http')
-            ? step.image
-            : `${SITE_URL}${step.image}`;
+          howToStep.image = normalizeImageUrl(step.image);
         }
 
         return howToStep;
@@ -170,19 +160,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
   // Generate FAQ schema if content contains FAQs
   const faqJsonLd = recipe.content ? generateFaqJsonLd(recipe.content) : null;
 
-  // Use the recipe's primary category (first category) for breadcrumbs
-  const category = recipe.categories[0];
-
-  // Build breadcrumb items with each category as a separate item
-  const breadcrumbItems = [
-    { name: "Home", path: "" },
-    { name: "Recipes", path: "/recipes" },
-    ...recipe.categories.map((cat) => ({
-      name: cat.charAt(0).toUpperCase() + cat.slice(1),
-      path: `/recipes/category/${cat.toLowerCase()}`,
-    })),
-    { name: recipe.title, path: `/recipes/${recipe.slug}` },
-  ];
+  const breadcrumbItems = buildArticleBreadcrumbs(
+    "recipes",
+    recipe.title,
+    recipe.slug,
+    recipe.categories
+  );
 
   return (
     <>

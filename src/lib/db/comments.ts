@@ -73,13 +73,16 @@ export async function createComment(data: {
 /**
  * Gets approved comments for a recipe with nested replies
  */
+const MAX_COMMENTS_PER_RECIPE = 500;
+
 export async function getApprovedComments(recipeId: string): Promise<Comment[]> {
-  // Get all approved comments for the recipe
+  // Limit rows fetched so a single popular recipe can't cause an unbounded query.
   const result = await sql`
     SELECT * FROM comments
     WHERE recipe_id = ${recipeId}
       AND status = 'approved'
     ORDER BY created_at ASC
+    LIMIT ${MAX_COMMENTS_PER_RECIPE}
   `;
 
   const allComments = result.rows.map(rowToComment);

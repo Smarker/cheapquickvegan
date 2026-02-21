@@ -4,7 +4,21 @@ import { Recipe } from "@/types/recipe";
 import { Metadata } from "next";
 import CategoryPageClient from "@/components/recipes/category-page-client";
 import { SITE_URL } from "@/config/constants";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { generateCategoryMetadata } from "@/lib/seo/nextjs-metadata-builders";
+import { buildCategoryBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
+import { formatCategoryName } from "@/lib/utils";
+
+export const revalidate = 86400; // 24 hours — allows revalidatePath() and periodic refresh
+
+// Pre-render every category that exists in the data so the page is static at
+// deploy time and new categories added in Notion appear automatically after the
+// next cache rebuild + deployment.
+export function generateStaticParams() {
+  const recipes = getRecipesFromCache();
+  const categories = [...new Set(recipes.flatMap((r) => r.categories.map((c) => c.toLowerCase())))];
+  return categories.map((cat) => ({ cat }));
+}
 
 interface CategoryPageProps {
   params: Promise<{ cat: string }>;
@@ -20,35 +34,17 @@ const categoryDescriptions: Record<string, string> = {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { cat } = await params;
-  const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
+  const displayCategory = formatCategoryName(cat);
   const description = categoryDescriptions[cat.toLowerCase()] ||
     `Browse our collection of vegan ${cat} recipes. Cheap, quick, and delicious.`;
 
-  return {
-    title: `${displayCategory} Recipes`,
+  return generateCategoryMetadata({
+    categoryName: displayCategory,
+    contentLabel: "Recipes",
     description,
-    alternates: { canonical: `${SITE_URL}/recipes/category/${cat}` },
-    openGraph: {
-      title: `${displayCategory} Recipes | Cheap Quick Vegan`,
-      description,
-      type: "website",
-      url: `${SITE_URL}/recipes/category/${cat}`,
-      images: [
-        {
-          url: `${SITE_URL}/opengraph-image.png`,
-          width: 1200,
-          height: 630,
-          alt: `${displayCategory} vegan recipes`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${displayCategory} Recipes | Cheap Quick Vegan`,
-      description,
-      images: [`${SITE_URL}/opengraph-image.png`],
-    },
-  };
+    canonicalUrl: `${SITE_URL}/recipes/category/${cat}`,
+    imageAlt: `${displayCategory} vegan recipes`,
+  });
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
@@ -60,15 +56,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     )
   );
 
-  const displayCategory = cat.charAt(0).toUpperCase() + cat.slice(1);
+  const displayCategory = formatCategoryName(cat);
 
   return (
     <>
-      <BreadcrumbJsonLd items={[
-        { name: "Home", path: "" },
-        { name: "Recipes", path: "/recipes" },
-        { name: displayCategory, path: `/recipes/category/${cat.toLowerCase()}` },
-      ]} />
+      <BreadcrumbJsonLd items={buildCategoryBreadcrumbs("recipes", displayCategory, cat.toLowerCase())} />
       <CategoryPageClient recipes={recipes} category={displayCategory} />
     </>
   );

@@ -6,13 +6,23 @@ import { ResolvingMetadata } from "next";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
 import { generateTOC } from "@/lib/guide-parser";
-import { BreadcrumbJsonLd } from "@/lib/seo/breadcrumbs";
-import { generateFaqJsonLd } from "@/lib/seo/faq-schema";
-import { generateItemListSchema } from "@/lib/seo/item-list-schema";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
+import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders";
 import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { GuideRoundup } from "@/components/guides/guide-roundup";
 import { GuideListicle } from "@/components/guides/guide-listicle";
 import type { ComponentType } from "react";
+import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
+import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
+import { normalizeImageUrl } from "@/lib/utils";
+
+// Pre-render every published guide at build time so the first visitor gets a
+// fully static response instead of a cold-start render.
+export function generateStaticParams() {
+  const guides = getGuidesFromCache();
+  return guides.map((guide) => ({ slug: guide.slug }));
+}
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -56,9 +66,7 @@ function buildPageSchema(guide: Guide) {
     "@type": "Article",
     headline: guide.title,
     description: guide.description,
-    image: guide.coverImage
-      ? guide.coverImage.startsWith("http") ? guide.coverImage : `${SITE_URL}${guide.coverImage}`
-      : `${SITE_URL}/opengraph-image.png`,
+    image: normalizeImageUrl(guide.coverImage),
     author: { "@type": "Person", name: "Stephanie Marker" },
     publisher: {
       "@type": "Organization",
@@ -81,32 +89,16 @@ export async function generateMetadata(
 
   if (!guide) return { title: "Guide Not Found" };
 
-  return {
+  return generateArticleMetadata({
     title: guide.title,
     description: guide.description,
-    alternates: { canonical: `${SITE_URL}/guides/${guide.slug}` },
-    openGraph: {
-      title: guide.title,
-      description: guide.description,
-      type: "article",
-      url: `${SITE_URL}/guides/${guide.slug}`,
-      publishedTime: new Date(guide.date).toISOString(),
-      modifiedTime: new Date(guide.lastUpdated || guide.date).toISOString(),
-      authors: ["Stephanie Marker"],
-      images: [{
-        url: guide.coverImage || `${SITE_URL}/opengraph-image.png`,
-        width: 1200,
-        height: 630,
-        alt: guide.alt || guide.title,
-      }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: guide.title,
-      description: guide.description,
-      images: [{ url: guide.coverImage || `${SITE_URL}/opengraph-image.png`, alt: guide.alt || guide.title }],
-    },
-  };
+    slug: guide.slug,
+    date: guide.date,
+    lastUpdated: guide.lastUpdated,
+    coverImage: guide.coverImage,
+    alt: guide.alt,
+    basePath: "/guides",
+  });
 }
 
 export default async function GuidePage({ params }: GuidePageProps) {
@@ -126,20 +118,18 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const layoutKey = guide.categories.find((c) => c in LAYOUTS);
   const Layout = layoutKey ? LAYOUTS[layoutKey] : GuideTravelLayout;
 
-  const category = guide.categories[0];
-
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
       />
-      <BreadcrumbJsonLd items={[
-        { name: "Home", path: "" },
-        { name: "Guides", path: "/guides" },
-        { name: category.charAt(0).toUpperCase() + category.slice(1), path: `/guides/category/${category.toLowerCase()}` },
-        { name: guide.title, path: `/guides/${guide.slug}` },
-      ]} />
+      <BreadcrumbJsonLd items={buildArticleBreadcrumbs(
+        "guides",
+        guide.title,
+        guide.slug,
+        guide.categories
+      )} />
       {faqJsonLd && faqJsonLd.mainEntity.length > 0 && (
         <script
           type="application/ld+json"
@@ -154,6 +144,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
               src={guide.coverImage}
               alt={guide.alt || guide.title}
               className="object-cover w-full h-full"
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1280px"
             />
           </div>
         )}
