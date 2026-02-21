@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm run cache:all && next dev --turbopack",
+    "dev": "pnpm run cache:all:dev && next dev --turbopack",
     "build": "pnpm run cache:all && next build",
     "start": "next start",
     "lint": "next lint",
     "cache:all": "pnpm run cache:recipes && pnpm run cache:guides",
+    "cache:all:dev": "pnpm run cache:recipes:dev && pnpm run cache:guides:dev",
     "cache:recipes": "tsx scripts/cache-recipes.ts",
+    "cache:recipes:dev": "NODE_ENV=development tsx scripts/cache-recipes.ts",
     "cache:guides": "tsx scripts/cache-guides.ts",
+    "cache:guides:dev": "NODE_ENV=development tsx scripts/cache-guides.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

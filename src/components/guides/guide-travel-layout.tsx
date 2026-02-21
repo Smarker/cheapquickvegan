@@ -1,4 +1,5 @@
 import { Guide } from "@/types/guide";
+import { Recipe } from "@/types/recipe";
 import { ContentSection } from "@/types/content";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
@@ -15,6 +16,7 @@ export interface GuideLayoutProps {
   guide: Guide;
   sections: ContentSection[];
   allGuides: Guide[];
+  allRecipes?: Recipe[];
 }
 
 export function GuideTravelLayout({ guide, sections, allGuides }: GuideLayoutProps) {

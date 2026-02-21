@@ -11,6 +11,7 @@ import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders";
 import { GuideTravelLayout, GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { GuideRoundup } from "@/components/guides/guide-roundup";
+import { GuideListicle } from "@/components/guides/guide-listicle";
 import type { ComponentType } from "react";
 import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
@@ -30,10 +31,27 @@ interface GuidePageProps {
 // --- Layout registry: add new guide types here ---
 const LAYOUTS: Record<string, ComponentType<GuideLayoutProps>> = {
   "Recipe Collection": GuideRoundup,
+  Essentials: GuideListicle,
 };
 
 // --- Schema registry: add new schema types here ---
 function buildPageSchema(guide: Guide) {
+  if (guide.categories.includes("Essentials")) {
+    const items = [...guide.content.matchAll(/\[listicle:([^\]]+)\]/g)].map((m, i) => {
+      const [name] = m[1].split("|").map((s) => s.trim());
+      return { "@type": "ListItem", position: i + 1, name, url: `${SITE_URL}/guides/${guide.slug}` };
+    });
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: guide.title,
+      description: guide.description,
+      url: `${SITE_URL}/guides/${guide.slug}`,
+      numberOfItems: items.length,
+      itemListElement: items,
+    };
+  }
+
   if (guide.categories.includes("Recipe Collection")) {
     const tagMatches = [...guide.content.matchAll(/\[recipes:([^\]]+)\]/g)].map((m) => m[1].trim());
     const recipes = getRecipesFromCache().filter((r) =>
@@ -91,6 +109,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
   if (!guide) notFound();
 
   const sections = generateTOC(guide.content);
+  const isEssentials = guide.categories.includes("Essentials");
+  const allRecipes = isEssentials ? getRecipesFromCache() : undefined;
   const pageJsonLd = buildPageSchema(guide);
   const faqJsonLd = generateFaqJsonLd(guide.content);
 
@@ -129,7 +149,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </div>
         )}
 
-        <Layout guide={guide} sections={sections} allGuides={allGuides} />
+        <Layout guide={guide} sections={sections} allGuides={allGuides} allRecipes={allRecipes} />
       </div>
     </>
   );

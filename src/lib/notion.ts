@@ -33,6 +33,7 @@ interface RecipePageProperties {
   "Published Date"?: { date?: { start: string } };
   "Last Updated"?: { date?: { start: string } };
   Tags?: { multi_select: NotionSelectOption[] };
+  Ingredients?: { multi_select: NotionSelectOption[] };
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
@@ -117,38 +118,58 @@ export function getRecipesFromCache(): Recipe[] {
     return _recipesCache;
   }
 
+  let recipes: Recipe[] = [];
   const cachePath = path.join(process.cwd(), "recipes-cache.json");
   if (fs.existsSync(cachePath)) {
     try {
-      const recipes = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
+      recipes = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
       if (process.env.NODE_ENV !== "development") {
         _recipesCache = recipes;
       }
-      return recipes;
     } catch (error) {
       console.error("Error reading recipes cache:", error);
-      return [];
     }
   }
-  return [];
+
+  // In development, merge in local fixture entries (recipes-dev-fixtures.json)
+  if (process.env.NODE_ENV === "development") {
+    const fixturesPath = path.join(process.cwd(), "recipes-dev-fixtures.json");
+    if (fs.existsSync(fixturesPath)) {
+      try {
+        const fixtures: Recipe[] = JSON.parse(fs.readFileSync(fixturesPath, "utf-8"));
+        const realSlugs = new Set(recipes.map((r) => r.slug));
+        const newFixtures = fixtures.filter((f) => !realSlugs.has(f.slug));
+        recipes = [...newFixtures, ...recipes];
+      } catch (error) {
+        console.error("Error reading recipes-dev-fixtures.json:", error);
+      }
+    }
+  }
+
+  return recipes;
 }
 
 export async function fetchPublishedPosts() {
   // This function is now intended to be used only by the caching script.
   const dataSourceId = await getDataSourceId();
 
+  const isDev = process.env.NODE_ENV === "development";
+  const statusFilter = isDev
+    ? {
+        or: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Status", status: { equals: "Draft" } },
+        ],
+      }
+    : {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+        ],
+      };
+
   const recipes = await notion.dataSources.query({
     data_source_id: dataSourceId,
-    filter: {
-      and: [
-        {
-          property: "Status",
-          status: {
-            equals: "Published",
-          },
-        },
-      ],
-    },
+    filter: statusFilter,
     sorts: [
       {
         property: "Published Date",
@@ -199,6 +220,7 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       lastUpdated: properties["Last Updated"]?.date?.start || publishedDate,
       content: contentString,
       tags: properties.Tags?.multi_select?.map((tag) => tag.name) || [],
+      ingredients: properties.Ingredients?.multi_select?.map((i) => i.name) || [],
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
@@ -259,18 +281,23 @@ export async function fetchPublishedGuides() {
   // This function is intended to be used only by the caching script.
   const dataSourceId = await getGuidesDataSourceId();
 
+  const isDev = process.env.NODE_ENV === "development";
+  const statusFilter = isDev
+    ? {
+        or: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Status", status: { equals: "Draft" } },
+        ],
+      }
+    : {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+        ],
+      };
+
   const guides = await notion.dataSources.query({
     data_source_id: dataSourceId,
-    filter: {
-      and: [
-        {
-          property: "Status",
-          status: {
-            equals: "Published",
-          },
-        },
-      ],
-    },
+    filter: statusFilter,
     sorts: [
       {
         property: "Published Date",
