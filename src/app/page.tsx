@@ -44,9 +44,10 @@ export default function HomePage() {
   const allGuides: Guide[] = getGuidesFromCache();
 
   const featuredGuideSlugs = [
-    "cusco-peru-vegan-food",
+    "vegan-pantry-essentials",
     "ollantaytambo-vegan-food-travel-guide",
-    "aguas-calientes-vegan-food"
+    "aguas-calientes-vegan-food",
+    "vegan-air-fryer-recipes"
   ];
 
   const featuredGuides = allGuides.filter((r) =>

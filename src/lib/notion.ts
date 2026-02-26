@@ -277,6 +277,20 @@ export function getGuidesFromCache(): Guide[] {
   return guides;
 }
 
+export function getRelatedGuides(recipe: Recipe): Guide[] {
+  const guides = getGuidesFromCache();
+  const recipeTags = recipe.tags?.map((t) => t.toLowerCase()) ?? [];
+  if (recipeTags.length === 0) return [];
+
+  return guides
+    .filter((guide) => {
+      const guideTags = [...guide.content.matchAll(/\[recipes:([^\]]+)\]/g)]
+        .map((m) => m[1].trim().toLowerCase());
+      return guideTags.some((tag) => recipeTags.includes(tag));
+    })
+    .slice(0, 3);
+}
+
 export async function fetchPublishedGuides() {
   // This function is intended to be used only by the caching script.
   const dataSourceId = await getGuidesDataSourceId();

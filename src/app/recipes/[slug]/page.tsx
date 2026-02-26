@@ -1,4 +1,4 @@
-import { getRecipesFromCache } from "@/lib/notion";
+import { getRecipesFromCache, getRelatedGuides } from "@/lib/notion";
 import { Recipe } from "@/types/recipe";
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
@@ -102,6 +102,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
     );
     relatedRecipes = sameCategory.sort(() => 0.5 - Math.random());
   }
+
+  const relatedGuides = getRelatedGuides(recipe);
 
   const { sections } = generateRecipeTOC(recipe.content, relatedRecipes.length > 0);
 
@@ -332,6 +334,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
         <section id="related-recipes" className="max-w-6xl mx-auto px-4 mt-12 mb-12 print:hidden">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Try these similar recipes</h2>
           <ContentCarousel items={relatedRecipes} basePath="/recipes" itemsPerPage={3} />
+        </section>
+      )}
+
+      {/* --- Related Guides --- Full Width */}
+      {relatedGuides.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 mt-8 mb-12 print:hidden">
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">Explore our vegan guides</h2>
+          <ContentCarousel items={relatedGuides} basePath="/guides" itemsPerPage={3} />
         </section>
       )}
 
