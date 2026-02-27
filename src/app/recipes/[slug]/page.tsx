@@ -125,7 +125,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
     recipeCategory: recipe.categories?.[0] || undefined,
     recipeCuisine: recipe.recipeCuisine || undefined,
     keywords: recipe.tags?.join(", ") || undefined,
-    recipeIngredient: ingredients.map((ing) => ing.replace(/^-+\s*/, "")),
+    recipeIngredient: ingredients.map((ing) =>
+      ing.replace(/^-+\s*/, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    ),
     recipeInstructions: instructions
       .filter((step) => step.text.trim() && step.text.trim() !== "---")
       .map((step) => {
