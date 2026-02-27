@@ -17,7 +17,11 @@ export const revalidate = 86400; // 24 hours — allows revalidatePath() and per
 export function generateStaticParams() {
   const guides = getGuidesFromCache();
   const categories = [
-    ...new Set(guides.flatMap((g) => g.categories.map((c) => c.toLowerCase().replace(/\s+/g, "-")))),
+    ...new Set(
+      guides
+        .filter((g) => g.categories.length > 0)
+        .map((g) => g.categories[0].toLowerCase().replace(/\s+/g, "-"))
+    ),
   ];
   return categories.map((cat) => ({ cat }));
 }
@@ -26,16 +30,9 @@ interface CategoryPageProps {
   params: Promise<{ cat: string }>;
 }
 
-const VALID_CATEGORIES = ["travel", "vegan food", "how to"];
-
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { cat } = await params;
   const categoryName = formatCategoryName(cat);
-
-  if (!VALID_CATEGORIES.includes(cat.toLowerCase().replace(/-/g, " "))) {
-    return { title: "Category Not Found" };
-  }
-
   const description = `Browse all ${categoryName.toLowerCase()} guides. Comprehensive articles and resources for your vegan lifestyle.`;
 
   return generateCategoryMetadata({
@@ -51,15 +48,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const { cat } = await params;
   const categoryName = formatCategoryName(cat);
 
-  if (!VALID_CATEGORIES.includes(cat.toLowerCase().replace(/-/g, " "))) {
-    notFound();
-  }
-
   const allGuides = getGuidesFromCache();
   const categoryGuides = allGuides.filter((guide: Guide) => {
     const guideCategory = guide.categories[0]?.toLowerCase().replace(/\s+/g, "-");
     return guideCategory === cat.toLowerCase();
   });
+
+  if (categoryGuides.length === 0) {
+    notFound();
+  }
 
   return (
     <>

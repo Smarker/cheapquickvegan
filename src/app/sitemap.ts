@@ -53,9 +53,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Derive guide category pages from actual data so new categories are included automatically
+  // Derive guide category pages from primary category only — matches the filter used by the category page
   const guideCategories = [
-    ...new Set(guides.flatMap((g: Guide) => g.categories.map((c) => c.toLowerCase().replace(/\s+/g, "-")))),
+    ...new Set(
+      guides
+        .filter((g: Guide) => g.categories.length > 0)
+        .map((g: Guide) => g.categories[0].toLowerCase().replace(/\s+/g, "-"))
+    ),
   ];
   const guideCategoryUrls = guideCategories.map((cat) => ({
     url: `${SITE_URL}/guides/category/${cat}`,

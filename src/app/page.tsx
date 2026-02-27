@@ -43,6 +43,31 @@ export default function HomePage() {
 
   const allGuides: Guide[] = getGuidesFromCache();
 
+  // Derive guide categories from primary category — same logic as the category page and sitemap
+  const guideCategoryDescriptions: Record<string, string> = {
+    "vegan-travel": "Vegan-friendly travel guides to help you eat plant-based anywhere in the world",
+    "recipe-collection": "Curated collections of vegan recipes organized by theme or ingredient",
+    "essentials": "Essential guides on vegan pantry staples, ingredients, and plant-based basics",
+  };
+
+  const guideCategoryMap: Record<string, Guide> = {};
+  for (const guide of allGuides) {
+    const primary = guide.categories[0];
+    if (primary && !guideCategoryMap[primary]) {
+      guideCategoryMap[primary] = guide;
+    }
+  }
+  const guideCategories = Object.entries(guideCategoryMap).map(([name, guide]) => {
+    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    return {
+      name,
+      slug,
+      image: guide.coverImage || "/images/placeholder.jpg",
+      alt: guide.alt || `${name} vegan guides`,
+      description: guideCategoryDescriptions[slug] ?? `Browse all ${name.toLowerCase()} vegan guides`,
+    };
+  });
+
   const featuredGuideSlugs = [
     "vegan-pantry-essentials",
     "ollantaytambo-vegan-food-travel-guide",
@@ -73,7 +98,7 @@ export default function HomePage() {
 
               <p className="text-sm sm:text-base text-foreground/70 leading-snug max-w-2xl mx-auto pt-1">
                 Discover easy, affordable vegan recipes and plant-based meal ideas that are quick to make and budget-friendly. From simple weeknight dinners to delicious desserts, find healthy vegan cooking inspiration with{" "}
-                <a href="#featured-guides" className="text-primary hover:underline">
+                <a href="#guide-categories" className="text-primary hover:underline">
                   vegan travel guides
                 </a>
                 {" "}and helpful cooking tips for every meal.
@@ -164,8 +189,43 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* YOUR FAVORITES */}
-      <FavoritesSection allRecipes={allRecipes} />
+      {/* GUIDE CATEGORIES */}
+      <h2 id="guide-categories" className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
+        <span className="relative inline-block">
+          <span className="relative z-10">Guide Categories</span>
+          <span className="absolute bottom-1 left-0 right-0 h-3 bg-[#735d78]/30 -rotate-1"></span>
+        </span>
+      </h2>
+
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16">
+        {guideCategories.map((cat) => (
+          <Link
+            key={cat.slug}
+            href={`/guides/category/${cat.slug}`}
+            className="block group"
+          >
+            <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
+                <Image
+                  src={cat.image}
+                  alt={cat.alt}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                />
+              </div>
+              <div className="p-3">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center mb-1">
+                  {cat.name}
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 text-center line-clamp-2">
+                  {cat.description}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
 
       {/* FEATURED GUIDES */}
       <h2 id="featured-guides" className="text-3xl sm:text-4xl font-bold mb-8 mt-12">
@@ -175,7 +235,7 @@ export default function HomePage() {
         </span>
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
+      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6 mb-16">
         {featuredGuides.map((featuredGuide) => (
           <Link
             key={featuredGuide.slug}
@@ -183,17 +243,15 @@ export default function HomePage() {
             className="block group"
           >
             <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-
-              <div className="relative w-full aspect-[2/1] overflow-hidden">
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <Image
                   src={featuredGuide.coverImage || "/images/placeholder.jpg"}
                   alt={featuredGuide.title}
                   fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                 />
               </div>
-
               <div className="p-3">
                 <h3 className="text-md font-semibold text-gray-900 dark:text-white text-center line-clamp-2 min-h-[3rem]">
                   {featuredGuide.title}
@@ -203,6 +261,9 @@ export default function HomePage() {
           </Link>
         ))}
       </div>
+
+      {/* YOUR FAVORITES */}
+      <FavoritesSection allRecipes={allRecipes} />
 
     </div>
   );
