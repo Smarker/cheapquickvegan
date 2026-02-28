@@ -10,6 +10,7 @@ import { TableOfContents } from "@/components/guides/table-of-contents";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { RoundupRecipeCard } from "@/components/guides/roundup-recipe-card";
 import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 type ContentPart =
   | { type: "content"; text: string }
@@ -116,6 +117,20 @@ export function GuideRoundup({ guide, sections }: GuideLayoutProps) {
               </span>
             )}
           </div>
+
+          <Breadcrumbs
+            className="mb-4 sm:-ml-2"
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Guides", href: "/guides" },
+              {
+                items: guide.categories.map((cat) => ({
+                  label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  href: `/guides/category/${cat.toLowerCase().replace(/\s+/g, "-")}`,
+                })),
+              },
+            ]}
+          />
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
             {guide.title}

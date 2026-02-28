@@ -2,6 +2,27 @@
 
 CheapQuickVegan is a Next.js-based vegan food and travel blog with a focus on SEO optimization and user experience.
 
+## Project Context
+
+This project uses TypeScript (Next.js) with content from Notion. Tests are located in the project — check for test directories before claiming none exist. When making data/parser changes, verify with existing tests.
+
+## General Rules
+
+- Always prefer the simplest solution. Do not edit types, refactor abstractions, or add infrastructure unless explicitly asked.
+- When the user says "just do X", do exactly X and nothing more.
+- Ask before refactoring. If you think something should be restructured, say so and wait for approval before changing it.
+
+## UI & Styling
+
+- When making UI/styling changes, make minimal targeted edits first. Do not change multiple CSS properties at once.
+- After each change, describe exactly what was changed so the user can verify before proceeding.
+- When a user requests a visual change (e.g., "show 3 items", "move photo to the right"), clarify the exact behavior before coding. "Show 3" could mean slice to 3 or display 3 at a time. "Search results" could mean modal or dropdown. Ask if ambiguous.
+
+## Git Workflow
+
+- Before creating or switching branches, always `git pull` the base branch first.
+- When working with multiple branches, confirm which branch should receive which changes before committing.
+
 ## Architecture Notes
 
 - **Framework:** Next.js 16 with App Router
@@ -23,9 +44,19 @@ Current URL patterns that must remain unchanged:
 - `/` - Homepage
 - `/recipes` - All recipes listing
 - `/recipes/[slug]` - Individual recipe pages
-- `/recipes/category/[category]` - Category pages
+- `/recipes/category/[cat]` - Recipe category pages
+- `/guides` - All guides listing
+- `/guides/[slug]` - Individual guide pages
+- `/guides/category/[cat]` - Guide category pages
+- `/posts/[slug]` - Blog post pages
 - `/about` - About page
-- `/favorites` - Favorites page
+- `/contact` - Contact page
+- `/shop` - Shop page
+- `/start-here` - Start here page
+- `/privacy-policy` - Privacy policy
+- `/disclaimer` - Disclaimer
+- `/terms-and-conditions` - Terms and conditions
+- `/thank-you` - Thank you page
 
 If you need to provide context about where a user came from, use client-side state management (React state, context, localStorage) or session storage. Never reflect navigation state in the URL.
 

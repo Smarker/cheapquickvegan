@@ -11,6 +11,7 @@ import { NotionImage } from "@/components/notion-image";
 import { TableOfContents } from "@/components/guides/table-of-contents";
 import { InstagramEmbed } from "@/components/guides/instagram-embed";
 import { MapEmbed } from "@/components/guides/map-embed";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 export interface GuideLayoutProps {
   guide: Guide;
@@ -69,6 +70,20 @@ export function GuideTravelLayout({ guide, sections, allGuides }: GuideLayoutPro
                 </span>
               )}
             </div>
+
+            <Breadcrumbs
+              className="mb-4 sm:-ml-2"
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Guides", href: "/guides" },
+                {
+                  items: guide.categories.map((cat) => ({
+                    label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                    href: `/guides/category/${cat.toLowerCase().replace(/\s+/g, "-")}`,
+                  })),
+                },
+              ]}
+            />
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               {guide.title}

@@ -1,5 +1,19 @@
 {
   "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/stephaniemarker/Projects/cheapquickvegan && npx tsc --noEmit --pretty 2>&1 | head -20"
+          }
+        ]
+      }
+    ]
   }
 }

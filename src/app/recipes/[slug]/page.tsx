@@ -224,6 +224,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   {/* Breadcrumbs & Cook Mode - wrap to new line when both dates exist */}
                   <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 leading-tight w-full sm:w-auto -translate-y-0.5 mb-3 sm:mb-0">
                     <Breadcrumbs
+                      className={recipe.lastUpdated && recipe.lastUpdated !== recipe.date ? 'sm:-ml-3' : ''}
                       items={[
                         { label: "Home", href: "/" },
                         { label: "Recipes", href: "/recipes" },
