@@ -46,11 +46,12 @@ Read the first word to determine the mode:
 Generate **3 SEO-optimized alt text options** for the image described after `alt`.
 
 Rules:
-- Each option must be **under 125 characters**
-- Lead with the food, not "photo of" or "image of"
+- Each option must be **150–160 characters**
+- Lead with the food or subject, not "photo of" or "image of"
 - Include vegan context where it sounds natural (not forced)
 - Use descriptive, specific language — colors, textures, ingredients, setting
 - Avoid keyword stuffing; write for humans first
+- No em dashes (—); use commas instead
 - If a recipe or guide title is visible in the conversation context, use it to inform specificity
 
 Output format:
@@ -157,7 +158,7 @@ If the first word isn't `alt`, `title`, `faq`, or `links`, respond with:
 ```
 /seo usage:
 
-  /seo alt [image description]       — 3 alt text options under 125 chars
+  /seo alt [image description]       — 3 alt text options at 150–160 chars
   /seo title [topic]                  — 5 title suggestions with keyword notes
   /seo faq [topic or pasted content]  — 5 Q&As + FAQPage JSON-LD
   /seo links [topic]                  — internal link suggestions from real slugs

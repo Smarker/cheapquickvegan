@@ -109,7 +109,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   // Remove Recipe Details section from markdown since we display it in the visual card
   const cleanedContent = recipe.content.replace(
-    /#{1,3}\s*Recipe Details?\s*\n[\s\S]*?(?=\n#{1,3}\s|\n\n[A-Z]|\Z)/i,
+    /#{1,3}\s*Recipe Details?\s*\n[\s\S]*?(?=\n#{1,3}\s|\n\n[A-Z]|$)/i,
     ''
   ).trim();
 
