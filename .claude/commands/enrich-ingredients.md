@@ -75,7 +75,19 @@ Skip ingredients that already have tags, aliases, and a parent or `no_parent = t
 
 ---
 
-## Step 3 — Output format
+## Step 3 — Update enrich-all-ingredients.ts
+
+When applying enrichment, edit `scripts/enrich-all-ingredients.ts` directly.
+
+The `ENRICHMENT` object has two sections:
+1. **Lines starting after "Ingredients with no enrichment at all"** — full entries with `categoryTags`, `aliases`, and/or `parent`/`noParent`
+2. **Lines starting after "Already have tags/aliases but no parent decision"** — short entries with only `noParent` or `parent`
+
+**Before adding any entry, search the entire `ENRICHMENT` object for the ingredient name.** If it already exists in section 1 with `noParent: true`, do not add it to section 2. If it exists in section 2 already, update it in place rather than adding a duplicate. Duplicate keys are a TypeScript error and will break the build.
+
+---
+
+## Step 4 — Output format
 
 If the user asked about a **specific ingredient**, answer directly and concisely:
 
