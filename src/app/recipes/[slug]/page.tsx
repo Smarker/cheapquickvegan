@@ -124,6 +124,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
     dateModified: new Date(recipe.lastUpdated || recipe.date).toISOString(),
     recipeCategory: recipe.categories?.[0] || undefined,
     recipeCuisine: recipe.recipeCuisine || undefined,
+    suitableForDiet: "https://schema.org/VeganDiet",
     keywords: recipe.tags?.join(", ") || undefined,
     recipeIngredient: ingredients.map((ing) =>
       ing.replace(/^-+\s*/, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
