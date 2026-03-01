@@ -14,61 +14,11 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Recipe } from "@/types/recipe";
 import Image from "next/image";
 import Link from "next/link";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type ContentPart =
-  | { type: "content"; text: string }
-  | { type: "listicle"; name: string; emoji: string; tagline: string; image: string; recipeTag: string };
-
-// ─── Parsing ─────────────────────────────────────────────────────────────────
-
-interface ClosingSection {
-  eyebrow: string;
-  heading: string;
-  body: string;
-}
-
-function extractClosingSection(content: string): { content: string; closing: ClosingSection | null } {
-  const match = content.match(/\[closing:([^\]]+)\]/);
-  if (!match) return { content, closing: null };
-  const [rawEyebrow = "", rawHeading = "", rawBody = ""] = match[1].split("|").map((s) => s.trim());
-  return {
-    content: content.replace(match[0], ""),
-    closing: { eyebrow: rawEyebrow, heading: rawHeading, body: rawBody },
-  };
-}
-
-function parseListicleContent(content: string): ContentPart[] {
-  const placeholderRegex = /\[listicle:([^\]]+)\]/g;
-  const parts: ContentPart[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = placeholderRegex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
-    }
-    const [rawName, rawEmoji = "🌱", rawTagline = "", rawImage = "", rawTag = ""] = match[1]
-      .split("|")
-      .map((s) => s.trim());
-    parts.push({
-      type: "listicle",
-      name: rawName,
-      emoji: rawEmoji,
-      tagline: rawTagline,
-      image: rawImage,
-      recipeTag: rawTag || rawName,
-    });
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < content.length) {
-    parts.push({ type: "content", text: content.slice(lastIndex) });
-  }
-
-  return parts;
-}
+import {
+  ListicleContentPart as ContentPart,
+  parseListicleContent,
+  extractClosingSection,
+} from "@/lib/guide-parser";
 
 // ─── Recipe chips ─────────────────────────────────────────────────────────────
 

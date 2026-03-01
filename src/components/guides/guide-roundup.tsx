@@ -1,4 +1,5 @@
 import { getRecipesFromCache } from "@/lib/notion";
+import { parseRoundupContent, RoundupContentPart as ContentPart } from "@/lib/guide-parser";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -12,31 +13,6 @@ import { RoundupRecipeCard } from "@/components/guides/roundup-recipe-card";
 import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
-type ContentPart =
-  | { type: "content"; text: string }
-  | { type: "recipes"; tag: string };
-
-// Split content on [recipes:Tag Name] placeholders, e.g. [recipes:Air Fryer]
-function parseRoundupContent(content: string): ContentPart[] {
-  const placeholderRegex = /\[recipes:([^\]]+)\]/g;
-  const parts: ContentPart[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = placeholderRegex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
-    }
-    parts.push({ type: "recipes", tag: match[1].trim() });
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < content.length) {
-    parts.push({ type: "content", text: content.slice(lastIndex) });
-  }
-
-  return parts;
-}
 
 export function GuideRoundup({ guide, sections }: GuideLayoutProps) {
   const allRecipes = getRecipesFromCache();

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { ResolvingMetadata } from "next";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
-import { generateTOC } from "@/lib/guide-parser";
+import { generateTOC, parseRoundupContent, parseListicleContent } from "@/lib/guide-parser";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders";
@@ -37,10 +37,9 @@ const LAYOUTS: Record<string, ComponentType<GuideLayoutProps>> = {
 // --- Schema registry: add new schema types here ---
 function buildPageSchema(guide: Guide) {
   if (guide.categories.includes("Essentials")) {
-    const items = [...guide.content.matchAll(/\[listicle:([^\]]+)\]/g)].map((m, i) => {
-      const [name] = m[1].split("|").map((s) => s.trim());
-      return { "@type": "ListItem", position: i + 1, name, url: `${SITE_URL}/guides/${guide.slug}` };
-    });
+    const items = parseListicleContent(guide.content)
+      .filter((p) => p.type === "listicle")
+      .map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `${SITE_URL}/guides/${guide.slug}` }));
     return {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -53,7 +52,9 @@ function buildPageSchema(guide: Guide) {
   }
 
   if (guide.categories.includes("Recipe Collection")) {
-    const tagMatches = [...guide.content.matchAll(/\[recipes:([^\]]+)\]/g)].map((m) => m[1].trim());
+    const tagMatches = parseRoundupContent(guide.content)
+      .filter((p) => p.type === "recipes")
+      .map((p) => p.tag);
     const recipes = getRecipesFromCache().filter((r) =>
       r.tags?.some((t) => tagMatches.some((tag) => t.toLowerCase() === tag.toLowerCase()))
     );

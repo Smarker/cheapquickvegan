@@ -72,3 +72,84 @@ export function generateTOC(markdown: string): ContentSection[] {
   const { sections } = parseGuideContent(markdown);
   return sections;
 }
+
+// ─── Roundup content parsing ───────────────────────────────────────────────
+
+export type RoundupContentPart =
+  | { type: "content"; text: string }
+  | { type: "recipes"; tag: string };
+
+/** Split content on [recipes:Tag Name] placeholders, e.g. [recipes:Air Fryer] */
+export function parseRoundupContent(content: string): RoundupContentPart[] {
+  const placeholderRegex = /\[recipes:([^\]]+)\]/g;
+  const parts: RoundupContentPart[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = placeholderRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
+    }
+    parts.push({ type: "recipes", tag: match[1].trim() });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push({ type: "content", text: content.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
+// ─── Listicle content parsing ──────────────────────────────────────────────
+
+export type ListicleContentPart =
+  | { type: "content"; text: string }
+  | { type: "listicle"; name: string; emoji: string; tagline: string; image: string; recipeTag: string };
+
+export interface ClosingSection {
+  eyebrow: string;
+  heading: string;
+  body: string;
+}
+
+export function extractClosingSection(content: string): { content: string; closing: ClosingSection | null } {
+  const match = content.match(/\[closing:([^\]]+)\]/);
+  if (!match) return { content, closing: null };
+  const [rawEyebrow = "", rawHeading = "", rawBody = ""] = match[1].split("|").map((s) => s.trim());
+  return {
+    content: content.replace(match[0], ""),
+    closing: { eyebrow: rawEyebrow, heading: rawHeading, body: rawBody },
+  };
+}
+
+export function parseListicleContent(content: string): ListicleContentPart[] {
+  const placeholderRegex = /\[listicle:([^\]]+)\]/g;
+  const parts: ListicleContentPart[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = placeholderRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
+    }
+    const [rawName, rawEmoji = "🌱", rawTagline = "", rawImage = "", rawTag = ""] = match[1]
+      .split("|")
+      .map((s) => s.trim());
+    parts.push({
+      type: "listicle",
+      name: rawName,
+      emoji: rawEmoji,
+      tagline: rawTagline,
+      image: rawImage,
+      recipeTag: rawTag || rawName,
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push({ type: "content", text: content.slice(lastIndex) });
+  }
+
+  return parts;
+}
