@@ -11,8 +11,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-import { neon } from '@neondatabase/serverless';
-const sql = neon(process.env.POSTGRES_URL!);
+import { sql } from '@vercel/postgres';
 const dryRun = process.argv.includes('--dry-run');
 
 // ─── Enrichment data ──────────────────────────────────────────────────────────
