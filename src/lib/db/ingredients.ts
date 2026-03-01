@@ -7,6 +7,13 @@ export interface Ingredient {
   aliases: string[] | null;
   categoryTags: string[] | null;
   parentId: string | null;
+  noParent: boolean;
+}
+
+export interface IngredientRow extends Ingredient {
+  parentName: string | null;
+  recipeCount: number;
+  updatedAt: string | null;
 }
 
 export function toIngredientSlug(name: string): string {
@@ -19,7 +26,7 @@ export function toIngredientSlug(name: string): string {
 
 export async function findIngredientByName(name: string): Promise<Ingredient | null> {
   const { rows } = await sql`
-    SELECT id, name, slug, aliases, category_tags, parent_id
+    SELECT id, name, slug, aliases, category_tags, parent_id, no_parent
     FROM ingredients
     WHERE LOWER(name) = LOWER(${name})
     LIMIT 1
@@ -40,7 +47,7 @@ export async function upsertIngredient(data: {
     ON CONFLICT (name) DO UPDATE
       SET slug = COALESCE(ingredients.slug, EXCLUDED.slug),
           updated_at = CURRENT_TIMESTAMP
-    RETURNING id, name, slug, aliases, category_tags, parent_id
+    RETURNING id, name, slug, aliases, category_tags, parent_id, no_parent
   `;
   return rowToIngredient(rows[0]);
 }
@@ -70,11 +77,59 @@ export async function syncRecipeIngredients(
   }
 }
 
+export async function listAllIngredients(): Promise<IngredientRow[]> {
+  const { rows } = await sql`
+    SELECT i.id, i.name, i.slug, i.aliases, i.category_tags, i.parent_id, i.no_parent,
+           i.updated_at,
+           p.name AS parent_name,
+           COUNT(DISTINCT ri.recipe_id) AS recipe_count
+    FROM ingredients i
+    LEFT JOIN ingredients p ON i.parent_id = p.id
+    LEFT JOIN recipe_ingredients ri ON ri.ingredient_id = i.id
+    GROUP BY i.id, i.name, i.slug, i.aliases, i.category_tags, i.parent_id, i.no_parent, i.updated_at, p.name
+    ORDER BY i.name
+  `;
+  return rows.map((row: any) => ({
+    ...rowToIngredient(row),
+    parentName: row.parent_name ?? null,
+    recipeCount: Number(row.recipe_count),
+    updatedAt: row.updated_at ? new Date(row.updated_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+  }));
+}
+
+export async function deleteIngredient(id: string): Promise<void> {
+  await sql`DELETE FROM ingredients WHERE id = ${id}::uuid`;
+}
+
+export async function updateIngredient(
+  id: string,
+  fields: {
+    name?: string;
+    slug?: string;
+    parentId: string | null;
+    categoryTags: string[] | null;
+    aliases: string[] | null;
+    noParent?: boolean;
+  }
+): Promise<Ingredient> {
+  const { rows } = await sql`
+    UPDATE ingredients
+    SET name           = COALESCE(${fields.name ?? null}, name),
+        slug           = COALESCE(${fields.slug ?? null}, slug),
+        parent_id      = ${fields.parentId}::uuid,
+        category_tags  = ${fields.categoryTags as any}::text[],
+        aliases        = ${fields.aliases as any}::text[],
+        no_parent      = ${fields.noParent ?? false},
+        updated_at     = CURRENT_TIMESTAMP
+    WHERE id = ${id}::uuid
+    RETURNING id, name, slug, aliases, category_tags, parent_id, no_parent
+  `;
+  return rowToIngredient(rows[0]);
+}
+
 // Returns recipe slugs that use a given ingredient, walking the parent→child hierarchy.
 // Cached by Next.js — invalidate with revalidateTag('recipe_ingredients') after a sync.
 export async function getRecipesByIngredient(ingredientSlug: string): Promise<string[]> {
-  'use cache';
-
   const { rows } = await sql`
     WITH RECURSIVE ingredient_tree AS (
       SELECT id FROM ingredients WHERE slug = ${ingredientSlug}
@@ -99,5 +154,6 @@ function rowToIngredient(row: any): Ingredient {
     aliases: row.aliases ?? null,
     categoryTags: row.category_tags ?? null,
     parentId: row.parent_id ?? null,
+    noParent: row.no_parent ?? false,
   };
 }

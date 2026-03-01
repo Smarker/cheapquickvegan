@@ -9,9 +9,15 @@ Always evaluate names with all three in mind.
 
 ---
 
-## Step 1 — Run the dry-run sync
+## Step 1 — Refresh the recipe cache, then run the dry-run sync
 
-Run the following command and capture its full output:
+First, always refresh the cache from Notion so the analysis reflects the latest recipe content:
+
+```
+pnpm cache:recipes
+```
+
+Then run the dry-run sync and capture its full output:
 
 ```
 pnpm sync:ingredients --dry-run
@@ -34,13 +40,6 @@ For each extracted ingredient line in the format:
 ```
 
 Flag the following types of canonicalization issues:
-
-### 🔀 Duplicates at different specificity
-Ingredients that are the same thing named at different levels of specificity.
-- Suggest a `parent_id` relationship: the more specific is the child, the more generic is the parent
-- **SEO note:** prefer the more specific name as canonical — "sourdough discard" ranks better than "sourdough" for long-tail searches, and guide roundups can walk the hierarchy to find all children
-- e.g. `"sugar"` and `"granulated sugar"` → granulated sugar is child of sugar
-- e.g. `"vegan cheese"` and `"vegan mozzarella"` → vegan mozzarella is child of vegan cheese
 
 ### 🏷️ Brand names in canonical name
 Ingredient names that include a specific brand — bad for cross-linking and nutrition lookup.
@@ -74,13 +73,26 @@ Briefly confirm ingredients that are clean, specific, and consistent — so the 
 
 ## Step 3 — Output format
 
-Group findings by category (not by recipe). This makes it easier to act on them globally.
+Group findings by category. Within each category, output every flagged ingredient as a card in this exact format:
 
-For each flagged ingredient show:
-- The canonical name as extracted
-- Which recipe slug(s) it appeared in
-- A concrete suggested action (rename to X, set parent to Y, add alias Z, set category_tags to ["X"])
+```
+Canonical name: "[name]"
+Fix: [concrete action — rename to X / set parent to Y / add alias Z / set category_tags to ["X"]]
+Notion recipe(s) to update: [slug], [slug]
+────────────────────────────────────────
+```
 
-End with a short summary: total recipes scanned, total ingredients extracted, number of issues found.
+For 🧭 Guide cross-linking opportunities, use this format instead:
+
+```
+Ingredient: "[name]"
+Appears in: [slug], [slug], [slug]
+Suggested category_tags: ["tag1", "tag2"]
+────────────────────────────────────────
+```
+
+For ✅ Looks good, a single short bullet list is fine — no cards needed.
+
+End with a summary line: `X recipes scanned · Y ingredients extracted · Z issues found`
 
 Keep the tone direct and practical — this is a maintenance tool, not a report.

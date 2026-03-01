@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, LogOut, MessageSquare } from 'lucide-react';
+import { RefreshCw, LogOut, MessageSquare, Wheat } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminCommentsPage() {
@@ -126,6 +126,14 @@ export default function AdminCommentsPage() {
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button
+              onClick={() => router.push('/admin/ingredients')}
+              variant="outline"
+              size="sm"
+            >
+              <Wheat className="h-4 w-4 mr-2" />
+              Ingredients
             </Button>
             <Button
               onClick={handleLogout}

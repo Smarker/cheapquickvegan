@@ -1,3 +1,36 @@
+// Words that end in 's' but are not plurals — never singularized
+const UNCOUNTABLE = new Set([
+  'hummus', 'molasses', 'oats', 'lentils', 'grits', 'tahinis', 'grains',
+  'herbs', 'flakes', 'crumbs', 'dregs', 'grounds',
+]);
+
+// Singularize only the last word of a canonical ingredient name.
+// Keeps names like "garlic clove" (not "garlic cloves"),
+// "bell pepper" (not "bell peppers"), "blueberry" (not "blueberries").
+function singularizeLastWord(name: string): string {
+  const words = name.split(' ');
+  const last = words[words.length - 1];
+  words[words.length - 1] = singularize(last);
+  return words.join(' ');
+}
+
+function singularize(word: string): string {
+  if (UNCOUNTABLE.has(word)) return word;
+  if (word.endsWith('ies') && word.length > 4) return word.slice(0, -3) + 'y'; // berries→berry
+  if (word.endsWith('oes') && word.length > 5) return word.slice(0, -2);        // tomatoes→tomato, potatoes→potato
+  if (word.endsWith('aves') && word.length > 5) return word.slice(0, -4) + 'af'; // leaves→leaf, loaves→loaf
+  if (word.endsWith('ses') || word.endsWith('xes') || word.endsWith('zes')) return word.slice(0, -2);
+  if (word.endsWith('ches') || word.endsWith('shes')) return word.slice(0, -2);
+  if (
+    word.endsWith('s') &&
+    !word.endsWith('ss') &&
+    !word.endsWith('us') &&
+    !word.endsWith('is') &&
+    word.length > 3
+  ) return word.slice(0, -1);                                                    // peppers→pepper
+  return word;
+}
+
 // Units that appear between a quantity number and the ingredient name
 const UNITS = [
   'tablespoon', 'tablespoons', 'tbsp',
@@ -14,6 +47,7 @@ const UNITS = [
   'can', 'cans',
   'bunch', 'bunches',
   'package', 'packages', 'pkg',
+  'pack', 'packs',
   'piece', 'pieces',
   'head', 'heads',
   'stalk', 'stalks',
@@ -24,11 +58,13 @@ const UNITS = [
   'bag', 'bags',
   'jar', 'jars',
   'bottle', 'bottles',
+  'pint', 'pints',
   'strip', 'strips',
   'drop', 'drops',
   'dash', 'dashes',
   'pinch', 'pinches',
   'handful', 'handfuls',
+  'ear', 'ears',
   'container', 'containers',
   'box', 'boxes',
 ];
@@ -46,16 +82,22 @@ const MODIFIERS = new Set([
   'frozen', 'thawed', 'cooked', 'uncooked', 'raw', 'dried', 'fresh',
   'canned', 'packed', 'heaping', 'level', 'ripe', 'softened', 'melted',
   'toasted', 'roasted', 'divided', 'large', 'medium', 'small',
-  'extra', 'firm', 'soft', 'silken', 'drained', 'rinsed', 'pressed',
+  'firm', 'soft', 'silken', 'drained', 'rinsed', 'pressed',
   'torn', 'crumbled', 'shaved', 'zested', 'juiced', 'seeded', 'deseeded',
+  'loosely',
 ]);
 
-// Phrases at the end of an ingredient line that don't describe the ingredient itself
-const TRAILING_PHRASES = [
+// Pre-compiled regexes for trailing phrases — built once at module load, not per call
+const TRAILING_PHRASE_RES = [
   'or to taste', 'to taste', 'as needed', 'or more', 'or as needed',
   'for serving', 'for garnish', 'for topping', 'for coating',
   'if desired', 'optional', 'approximately', 'about', 'plus more',
   'plus more to taste', 'or your favorite', 'or preferred',
+].map((p) => new RegExp(`[,]?\\s*${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i'));
+
+// Pre-compiled regex for leading multi-word phrases
+const LEADING_PHRASE_RES = [
+  /^room temperature\s+/i,
 ];
 
 export interface ExtractedIngredient {
@@ -79,21 +121,28 @@ export function extractIngredient(rawLine: string): ExtractedIngredient {
   text = text.replace(/\s*\([^)]*\)/g, '').trim();
 
   // 4. Strip trailing phrases (case-insensitive, with optional leading comma)
-  for (const phrase of TRAILING_PHRASES) {
-    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    text = text.replace(new RegExp(`[,]?\\s*${escaped}\\s*$`, 'i'), '').trim();
+  for (const re of TRAILING_PHRASE_RES) {
+    text = text.replace(re, '').trim();
   }
   // Strip "for [gerund] ..." patterns not covered by the list above
   // e.g. "for greasing the pan", "for frying", "for coating the tray"
   text = text.replace(/[,]?\s+for\s+\w+ing\b.*/i, '').trim();
+  // Strip "to [verb] ..." trailing context phrases
+  // e.g. "olive oil to sauté veggies", "dill to top the soup"
+  text = text.replace(/[,]?\s+to\s+\w+\b.*/i, '').trim();
+
+  // Strip informal leading quantity phrases with no number: "dash of", "pinch of", "handful of"
+  text = text.replace(/^(?:a\s+)?(?:dash|pinch|handful|sprinkle|knob|splash)\s+of\s+/i, '').trim();
 
   // 5. Extract leading quantity: a number (including fractions and ranges)
   //    followed by an optional unit
   //    e.g. "2 cups", "1/2 tsp", "3-4", "½"
   let quantity: string | null = null;
 
-  // Ordered longest-first so "1 2/3" (mixed) matches before "1" (whole)
-  const NUMBER = '(?:[\\d]+\\s+[\\d]+\\/[\\d]+|[\\d]+\\/[\\d]+|[\\d]+(?:-[\\d]+)?|[½¼¾⅓⅔⅛⅜⅝⅞])';
+  // Ordered longest-first to match the most specific format first:
+  //   "1 and ½", "1 2/3", "1 ½", "1½", "1/2", "3-4", "1–2" (en-dash range), "½–¾" (unicode fraction range), "½"
+  const UNICODE_FRAC = '[½¼¾⅓⅔⅛⅜⅝⅞]';
+  const NUMBER = `(?:[\\d]+\\s+and\\s+${UNICODE_FRAC}|[\\d]+\\s+[\\d]+\\/[\\d]+|[\\d]+\\s+${UNICODE_FRAC}|[\\d]+${UNICODE_FRAC}|[\\d]+\\/[\\d]+|[\\d]+(?:[-–][\\d]+)?|${UNICODE_FRAC}[-–]${UNICODE_FRAC}|${UNICODE_FRAC})`;
   const qtyRe = new RegExp(`^(${NUMBER})\\s*`, 'i');
   const qtyMatch = text.match(qtyRe);
 
@@ -112,9 +161,16 @@ export function extractIngredient(rawLine: string): ExtractedIngredient {
       quantity = num;
       text = rest;
     }
+
+    // Strip leading "of" left by "X cups of Y" patterns
+    text = text.replace(/^of\s+/i, '').trim();
   }
 
-  // 6. Strip leading modifier adjectives, collect them as notes
+  // 6. Strip multi-word leading phrases, then single-word modifiers
+  for (const re of LEADING_PHRASE_RES) {
+    text = text.replace(re, '').trim();
+  }
+
   const collectedNotes: string[] = [];
   let changed = true;
 
@@ -128,8 +184,12 @@ export function extractIngredient(rawLine: string): ExtractedIngredient {
     }
   }
 
-  // 7. Normalise: lowercase, collapse whitespace
-  const canonicalName = text.trim().toLowerCase().replace(/\s+/g, ' ');
+  // Strip trailing ", [prep]" left by inline prep notes e.g. "garlic clove, minced"
+  text = text.replace(/,\s*(?:cut|sliced|chopped|minced|diced|grated|crushed|halved|quartered|cubed|pitted|torn|crumbled|thinly|finely|roughly|coarsely)\b.*/i, '').trim();
+
+  // 7. Normalise: lowercase, collapse whitespace, singularize last word
+  const normalized = text.trim().toLowerCase().replace(/\s+/g, ' ');
+  const canonicalName = singularizeLastWord(normalized);
 
   return {
     canonicalName: canonicalName || rawLine.replace(/^[-*]\s*/, '').trim().toLowerCase(),

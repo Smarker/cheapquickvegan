@@ -102,6 +102,34 @@ function extractMediaUrls(markdown: string): string[] {
   return urls;
 }
 
+// Retry a function up to `retries` times on transient errors, with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  baseDelayMs = 1500
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastError = err;
+      const isTransient =
+        err?.status === 502 || err?.status === 503 || err?.status === 429 ||
+        err?.code === 'ETIMEDOUT' || err?.message?.includes('timeout') ||
+        err?.message?.includes('Request timeout');
+      if (attempt < retries && isTransient) {
+        const delay = baseDelayMs * 2 ** (attempt - 1);
+        console.warn(`  [retry ${attempt}/${retries}] ${err?.status ?? err?.message} — waiting ${delay}ms`);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw lastError;
+}
+
 // Run async tasks with a max concurrency limit
 async function withConcurrency<T>(
   tasks: (() => Promise<T>)[],
@@ -181,7 +209,7 @@ async function processMarkdownMedia(
 /**
  * Generic cache builder for recipes/guides
  */
-export async function buildCache<T extends { content: string; title: string; slug: string }>(
+export async function buildCache<T extends { content: string; title: string; slug: string; id: string }>(
   config: CacheConfig<T>
 ): Promise<void> {
   try {
@@ -194,13 +222,36 @@ export async function buildCache<T extends { content: string; title: string; slu
       console.log(`Created directory: ${imagesDir}`);
     }
 
+    // Load existing cache so we can fall back to stale entries on transient Notion errors
+    const cachePath = path.join(process.cwd(), config.cacheFileName);
+    const existingCache: T[] = fs.existsSync(cachePath)
+      ? JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
+      : [];
+    const existingById = new Map(existingCache.map((c) => [c.id, c]));
+
     const pages = await config.fetchPages();
+    let skipped = 0;
 
     // Process pages 3 at a time - Notion API allows ~3 req/s average
     const pageResults = await withConcurrency(
       pages.map((page) => async () => {
-        const content = await config.getContentFromNotion(page.id);
-        if (!content) return null;
+        let content: T | null = null;
+        try {
+          content = await withRetry(() => config.getContentFromNotion(page.id));
+        } catch (err: any) {
+          console.error(`  [error] page ${page.id}: ${err?.status ?? err?.message}`);
+        }
+
+        if (!content) {
+          // Fall back to stale cache entry so the recipe isn't dropped
+          const stale = existingById.get(page.id) ?? null;
+          if (stale) {
+            console.warn(`  [stale] using cached entry for page ${page.id}`);
+            skipped++;
+          }
+          return stale;
+        }
+
         console.log(`Processing images for: ${content.title}`);
         content.content = await processMarkdownMedia(
           content.content,
@@ -215,10 +266,14 @@ export async function buildCache<T extends { content: string; title: string; slu
 
     const allContent = pageResults.filter((c): c is T => c !== null);
 
-    const cachePath = path.join(process.cwd(), config.cacheFileName);
     fs.writeFileSync(cachePath, JSON.stringify(allContent, null, 2));
 
-    console.log(`Successfully cached ${allContent.length} ${config.contentType} with local images.`);
+    const fresh = allContent.length - skipped;
+    console.log(
+      `Successfully cached ${allContent.length} ${config.contentType} with local images` +
+      (skipped > 0 ? ` (${fresh} fresh, ${skipped} kept from previous cache due to errors)` : '') +
+      '.'
+    );
   } catch (error) {
     console.error(`Error caching ${config.contentType}:`, error);
     process.exit(1);
