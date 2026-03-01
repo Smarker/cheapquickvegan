@@ -107,7 +107,6 @@ const ENRICHMENT: Record<string, {
   'ground white pepper':      { noParent: true },
   'hot sauce':                { noParent: true },
   'medjool date':             { noParent: true },
-  'onion powder':             { noParent: true },
   'orange liqueur':           { noParent: true },
   'portobello mushroom':      { noParent: true },
   'powdered sugar':           { parent: 'sugar' },

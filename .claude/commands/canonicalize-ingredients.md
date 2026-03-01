@@ -9,25 +9,33 @@ Always evaluate names with all three in mind.
 
 ---
 
-## Step 1 — Refresh the recipe cache, then run the dry-run sync
+## Step 1 — Refresh the recipe cache, run the dry-run sync, and load DB state
 
-First, always refresh the cache from Notion so the analysis reflects the latest recipe content:
+First, run all three commands and capture their output before doing any analysis:
 
+**1a. Refresh the cache from Notion:**
 ```
 pnpm cache:recipes
 ```
 
-Then run the dry-run sync and capture its full output:
-
+**1b. Dry-run sync:**
 ```
 pnpm sync:ingredients --dry-run
 ```
 
 If the user provided a specific recipe slug after the command (e.g. `/canonicalize-ingredients vegan-pancakes`), run:
-
 ```
 pnpm sync:ingredients [slug] --dry-run
 ```
+
+**1c. Load current DB enrichment state:**
+```
+pnpm tsx scripts/enrich-ingredients-report.ts --all
+```
+
+This returns every ingredient in the DB with its current `category_tags`, `aliases`, `parent_name`, and `no_parent` values. Use this to avoid suggesting work that's already done:
+- For 🧭 **Guide cross-linking**: skip any ingredient that already has `category_tags` set. Only suggest tags for ingredients with empty tags.
+- For 🔤 and 🌫️ issues: note if an ingredient already exists in the DB under a different name (it may be a rename candidate rather than a new entry).
 
 ---
 
