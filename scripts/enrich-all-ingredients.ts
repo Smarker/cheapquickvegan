@@ -119,7 +119,7 @@ const ENRICHMENT: Record<string, {
 async function main() {
   if (dryRun) console.log('DRY RUN — no DB writes\n');
 
-  const rows = await sql`
+  const { rows } = await sql`
     SELECT i.id, i.name, p.name AS parent_name, i.no_parent, i.category_tags, i.aliases
     FROM ingredients i
     LEFT JOIN ingredients p ON p.id = i.parent_id
