@@ -1,11 +1,12 @@
 import { getGuidesFromCache, getRecipesFromCache } from "@/lib/notion";
+import { getRecipesByIngredient, toIngredientSlug, findIngredientSuggestionsForTag } from "@/lib/db/ingredients";
 import { Guide } from "@/types/guide";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { ResolvingMetadata } from "next";
 import { NotionImage } from "@/components/notion-image";
 import { SITE_URL } from "@/config/constants";
-import { generateTOC, parseRoundupContent, parseListicleContent } from "@/lib/guide-parser";
+import { generateTOC, parseRoundupContent, parseListicleContent, extractClosingSection } from "@/lib/guide-parser";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { generateFaqJsonLd } from "@/lib/seo/google-search-jsonld-builders";
 import { generateItemListSchema } from "@/lib/seo/google-search-jsonld-builders";
@@ -111,7 +112,41 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
   const sections = generateTOC(guide.content);
   const isEssentials = guide.categories.includes("Essentials");
-  const allRecipes = isEssentials ? getRecipesFromCache() : undefined;
+
+  let linkedRecipesByTag: Record<string, import("@/types/recipe").Recipe[]> | undefined;
+  if (isEssentials) {
+    const recipeCache = getRecipesFromCache();
+    const recipeBySlug = new Map(recipeCache.map((r) => [r.slug, r]));
+    const { content: strippedContent } = extractClosingSection(guide.content);
+    const listicleParts = parseListicleContent(strippedContent).filter(
+      (p): p is Extract<import("@/lib/guide-parser").ListicleContentPart, { type: "listicle" }> => p.type === "listicle"
+    );
+
+    linkedRecipesByTag = {};
+    await Promise.all(
+      listicleParts.map(async (part) => {
+        const slugs = await getRecipesByIngredient(toIngredientSlug(part.recipeTag), part.recipeTag);
+        linkedRecipesByTag![part.recipeTag] = slugs
+          .map((s) => recipeBySlug.get(s))
+          .filter((r): r is import("@/types/recipe").Recipe => r !== undefined);
+
+        if (linkedRecipesByTag![part.recipeTag].length === 0) {
+          const suggestions = await findIngredientSuggestionsForTag(part.recipeTag);
+          if (suggestions.length > 0) {
+            console.warn(
+              `[guide-listicle] "${guide.slug}" tag "${part.recipeTag}" → 0 recipes. ` +
+              `Suggestions: ${suggestions.map((s) => `"${s.name}" (${s.recipeCount} recipe${s.recipeCount === 1 ? "" : "s"})`).join(", ")}`
+            );
+          } else {
+            console.warn(
+              `[guide-listicle] "${guide.slug}" tag "${part.recipeTag}" → 0 recipes, no similar ingredients found in DB.`
+            );
+          }
+        }
+      })
+    );
+  }
+
   const pageJsonLd = buildPageSchema(guide);
   const faqJsonLd = generateFaqJsonLd(guide.content);
 
@@ -150,7 +185,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </div>
         )}
 
-        <Layout guide={guide} sections={sections} allGuides={allGuides} allRecipes={allRecipes} />
+        <Layout guide={guide} sections={sections} allGuides={allGuides} linkedRecipesByTag={linkedRecipesByTag} />
       </div>
     </>
   );

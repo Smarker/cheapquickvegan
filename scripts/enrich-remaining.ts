@@ -87,6 +87,7 @@ const ENRICHMENT: Record<string, {
   'yellow onion':               { aliases: ['yellow onions', 'brown onion'] }, // keep parent: onion
 
   // ── Need tags + aliases ──────────────────────────────────────────────────
+  'nutritional yeast':          { categoryTags: ['seasoning', 'dairy-alternative', 'fortified'], aliases: ['nooch', 'nutritional yeast flakes'], noParent: true },
   'corn tortilla':              { categoryTags: ['grain', 'baking'], aliases: ['corn tortillas', 'tortillas de maíz', 'maize tortilla'] }, // keep parent: tortilla
   'orange liqueur':             { categoryTags: ['condiment'], aliases: ['triple sec', 'Cointreau', 'Grand Marnier'], noParent: true },
 

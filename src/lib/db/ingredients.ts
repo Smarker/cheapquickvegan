@@ -128,11 +128,17 @@ export async function updateIngredient(
 }
 
 // Returns recipe slugs that use a given ingredient, walking the parent→child hierarchy.
+// Pass originalName (e.g. "Coconut Milk") to also match by aliases on the ingredient.
 // Cached by Next.js — invalidate with revalidateTag('recipe_ingredients') after a sync.
-export async function getRecipesByIngredient(ingredientSlug: string): Promise<string[]> {
+export async function getRecipesByIngredient(ingredientSlug: string, originalName?: string): Promise<string[]> {
+  const nameLower = (originalName ?? '').toLowerCase();
   const { rows } = await sql`
     WITH RECURSIVE ingredient_tree AS (
-      SELECT id FROM ingredients WHERE slug = ${ingredientSlug}
+      SELECT id FROM ingredients
+      WHERE slug = ${ingredientSlug}
+         OR (${nameLower} != '' AND ${nameLower} = ANY(
+               SELECT LOWER(a) FROM unnest(COALESCE(aliases, '{}')) AS a
+             ))
       UNION ALL
       SELECT i.id
       FROM ingredients i
@@ -144,6 +150,26 @@ export async function getRecipesByIngredient(ingredientSlug: string): Promise<st
     ORDER BY ri.recipe_slug
   `;
   return rows.map((r: any) => r.recipe_slug);
+}
+
+// Find ingredients whose name is similar to `query` and have at least one linked recipe.
+// Used to suggest better recipeTag names when a listicle tag yields 0 matches.
+export async function findIngredientSuggestionsForTag(
+  query: string
+): Promise<Array<{ name: string; slug: string; recipeCount: number }>> {
+  const lower = query.toLowerCase();
+  const { rows } = await sql`
+    SELECT i.name, i.slug, COUNT(DISTINCT ri.recipe_id)::int AS recipe_count
+    FROM ingredients i
+    LEFT JOIN recipe_ingredients ri ON ri.ingredient_id = i.id
+    WHERE LOWER(i.name) LIKE ${'%' + lower + '%'}
+       OR ${lower} LIKE '%' || LOWER(i.name) || '%'
+    GROUP BY i.id, i.name, i.slug
+    HAVING COUNT(DISTINCT ri.recipe_id) > 0
+    ORDER BY recipe_count DESC
+    LIMIT 5
+  `;
+  return rows.map((r: any) => ({ name: r.name, slug: r.slug, recipeCount: r.recipe_count }));
 }
 
 function rowToIngredient(row: any): Ingredient {

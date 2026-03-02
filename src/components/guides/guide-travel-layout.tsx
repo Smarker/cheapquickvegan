@@ -18,6 +18,7 @@ export interface GuideLayoutProps {
   sections: ContentSection[];
   allGuides: Guide[];
   allRecipes?: Recipe[];
+  linkedRecipesByTag?: Record<string, Recipe[]>;
 }
 
 export function GuideTravelLayout({ guide, sections, allGuides }: GuideLayoutProps) {

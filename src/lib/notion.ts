@@ -33,7 +33,6 @@ interface RecipePageProperties {
   "Published Date"?: { date?: { start: string } };
   "Last Updated"?: { date?: { start: string } };
   Tags?: { multi_select: NotionSelectOption[] };
-  Ingredients?: { multi_select: NotionSelectOption[] };
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
@@ -220,7 +219,6 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       lastUpdated: properties["Last Updated"]?.date?.start || publishedDate,
       content: contentString,
       tags: properties.Tags?.multi_select?.map((tag) => tag.name) || [],
-      ingredients: properties.Ingredients?.multi_select?.map((i) => i.name) || [],
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",

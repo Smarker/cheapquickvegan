@@ -283,7 +283,7 @@ function ListicleItem({ name, tagline, image, index, body, guideTitle, linkedRec
 
 // ─── Main Layout ─────────────────────────────────────────────────────────────
 
-export function GuideListicle({ guide, allRecipes = [] }: GuideLayoutProps) {
+export function GuideListicle({ guide, linkedRecipesByTag = {} }: GuideLayoutProps) {
   useEffect(() => {
     document.body.classList.add("listicle-page");
     return () => document.body.classList.remove("listicle-page");
@@ -342,14 +342,7 @@ export function GuideListicle({ guide, allRecipes = [] }: GuideLayoutProps) {
       const nextPart = parts[i + 1];
       const body = nextPart?.type === "content" ? nextPart.text : "";
 
-      const needle = part.recipeTag.toLowerCase();
-      const linkedRecipes = allRecipes
-        .filter((r) =>
-          r.ingredients
-            ? r.ingredients.some((ing) => ing.toLowerCase() === needle)
-            : r.content.toLowerCase().includes(needle)
-        )
-        .slice(0, 3);
+      const linkedRecipes = (linkedRecipesByTag[part.recipeTag] ?? []).slice(0, 3);
 
       const capturedIndex = listicleCount;
       const sectionRefCallback: React.RefCallback<HTMLElement> = (el) => {

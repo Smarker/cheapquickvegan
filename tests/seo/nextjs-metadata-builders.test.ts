@@ -44,7 +44,8 @@ describe("generateArticleMetadata", () => {
 
   it("sets openGraph type to article", () => {
     const result = generateArticleMetadata(base);
-    expect(result.openGraph?.type).toBe("article");
+    const og = result.openGraph as { type?: string };
+    expect(og.type).toBe("article");
   });
 
   it("sets publishedTime as ISO string from date", () => {
@@ -153,7 +154,8 @@ describe("generateArticleMetadata", () => {
 
   it("sets Twitter card to summary_large_image", () => {
     const result = generateArticleMetadata(base);
-    expect(result.twitter?.card).toBe("summary_large_image");
+    const twitter = result.twitter as { card?: string };
+    expect(twitter.card).toBe("summary_large_image");
   });
 
   it("sets Twitter title and description", () => {
@@ -189,7 +191,8 @@ describe("generateAllArticlesMetadata", () => {
 
   it("sets openGraph type to website", () => {
     const result = call();
-    expect(result.openGraph?.type).toBe("website");
+    const og = result.openGraph as { type?: string };
+    expect(og.type).toBe("website");
   });
 
   it("appends site name to OG title", () => {
@@ -216,7 +219,8 @@ describe("generateAllArticlesMetadata", () => {
 
   it("sets Twitter card to summary_large_image", () => {
     const result = call();
-    expect(result.twitter?.card).toBe("summary_large_image");
+    const twitter = result.twitter as { card?: string };
+    expect(twitter.card).toBe("summary_large_image");
   });
 
   it("reflects the provided imageAlt in OG image alt", () => {
@@ -266,7 +270,8 @@ describe("generateCategoryMetadata", () => {
 
   it("sets openGraph type to website", () => {
     const result = generateCategoryMetadata(base);
-    expect(result.openGraph?.type).toBe("website");
+    const og = result.openGraph as { type?: string };
+    expect(og.type).toBe("website");
   });
 
   it("sets description", () => {
