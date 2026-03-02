@@ -1,5 +1,5 @@
 import { getGuidesFromCache, getRecipesFromCache } from "@/lib/notion";
-import { getRecipesByIngredient, toIngredientSlug, findIngredientSuggestionsForTag } from "@/lib/db/ingredients";
+import { getRecipesByIngredient, getRecipesByIngredientCategoryTag, toIngredientSlug, findIngredientSuggestionsForTag } from "@/lib/db/ingredients";
 import { Guide } from "@/types/guide";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -30,13 +30,14 @@ interface GuidePageProps {
 }
 
 // --- Layout registry: add new guide types here ---
-const LAYOUTS: Record<string, ComponentType<GuideLayoutProps>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LAYOUTS: Record<string, ComponentType<GuideLayoutProps> | ((props: GuideLayoutProps) => Promise<any>)> = {
   "Recipe Collection": GuideRoundup,
   Essentials: GuideListicle,
 };
 
 // --- Schema registry: add new schema types here ---
-function buildPageSchema(guide: Guide) {
+async function buildPageSchema(guide: Guide) {
   if (guide.categories.includes("Essentials")) {
     const items = parseListicleContent(guide.content)
       .filter((p) => p.type === "listicle")
@@ -53,13 +54,46 @@ function buildPageSchema(guide: Guide) {
   }
 
   if (guide.categories.includes("Recipe Collection")) {
-    const tagMatches = parseRoundupContent(guide.content)
-      .filter((p) => p.type === "recipes")
-      .map((p) => p.tag);
-    const recipes = getRecipesFromCache().filter((r) =>
-      r.tags?.some((t) => tagMatches.some((tag) => t.toLowerCase() === tag.toLowerCase()))
+    const allRecipes = getRecipesFromCache();
+    const roundupParts = parseRoundupContent(guide.content).filter((p) => p.type === "recipes");
+
+    // Collect all resolved recipe slugs across all parts
+    const resolvedSlugs = new Set<string>();
+
+    // Find first ingredient part before async resolution (TypeScript can't track closure mutations)
+    const firstIngredientPart = roundupParts.find(
+      (p): p is Extract<typeof p, { source: "ingredient" }> => p.source === "ingredient"
     );
-    return generateItemListSchema(guide.title, guide.description, guide.slug, recipes, guide.coverImage);
+
+    await Promise.all(
+      roundupParts.map(async (part) => {
+        if (part.source === "method") {
+          allRecipes
+            .filter((r) => r.tags?.some((t) => t.toLowerCase() === part.tag.toLowerCase()))
+            .forEach((r) => resolvedSlugs.add(r.slug));
+        } else if (part.source === "ingredient") {
+          const slugs = await getRecipesByIngredient(part.slug);
+          slugs.forEach((s) => resolvedSlugs.add(s));
+        } else if (part.source === "theme") {
+          const slugs = await getRecipesByIngredientCategoryTag(part.tag);
+          slugs.forEach((s) => resolvedSlugs.add(s));
+        }
+      })
+    );
+
+    const recipes = allRecipes.filter((r) => resolvedSlugs.has(r.slug));
+    const schema = generateItemListSchema(guide.title, guide.description, guide.slug, recipes, guide.coverImage);
+
+    // For ingredient guides, add `about` to help search engines understand the topic
+    if (firstIngredientPart) {
+      const ingredientName = firstIngredientPart.slug
+        .split("-")
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+      return { ...schema, about: { "@type": "Thing", name: ingredientName } };
+    }
+
+    return schema;
   }
 
   // Default: Article (travel guides, etc.)
@@ -147,7 +181,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
     );
   }
 
-  const pageJsonLd = buildPageSchema(guide);
+  const pageJsonLd = await buildPageSchema(guide);
   const faqJsonLd = generateFaqJsonLd(guide.content);
 
   // Pick layout: first matching category in registry, fallback to travel

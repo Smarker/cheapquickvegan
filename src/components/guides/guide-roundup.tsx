@@ -1,5 +1,7 @@
 import { getRecipesFromCache } from "@/lib/notion";
 import { parseRoundupContent, RoundupContentPart as ContentPart } from "@/lib/guide-parser";
+import { getRecipesByIngredient, getRecipesByIngredientCategoryTag } from "@/lib/db/ingredients";
+import { Recipe } from "@/types/recipe";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,9 +16,31 @@ import { GuideLayoutProps } from "@/components/guides/guide-travel-layout";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 
-export function GuideRoundup({ guide, sections }: GuideLayoutProps) {
+export async function GuideRoundup({ guide, sections }: GuideLayoutProps) {
   const allRecipes = getRecipesFromCache();
   const parts = parseRoundupContent(guide.content);
+
+  // Pre-resolve ingredient and theme parts before render
+  const recipesByPartIndex = new Map<number, Recipe[]>();
+  await Promise.all(
+    parts.map(async (part, i) => {
+      if (part.type !== "recipes") return;
+      if (part.source === "method") {
+        recipesByPartIndex.set(
+          i,
+          allRecipes.filter((r) => r.tags?.some((t) => t.toLowerCase() === part.tag.toLowerCase()))
+        );
+      } else if (part.source === "ingredient") {
+        const slugs = await getRecipesByIngredient(part.slug);
+        const slugSet = new Set(slugs);
+        recipesByPartIndex.set(i, allRecipes.filter((r) => slugSet.has(r.slug)));
+      } else if (part.source === "theme") {
+        const slugs = await getRecipesByIngredientCategoryTag(part.tag);
+        const slugSet = new Set(slugs);
+        recipesByPartIndex.set(i, allRecipes.filter((r) => slugSet.has(r.slug)));
+      }
+    })
+  );
 
   const markdownComponents = {
     img: ({ src, alt }: { src?: string; alt?: string }) => {
@@ -132,10 +156,7 @@ export function GuideRoundup({ guide, sections }: GuideLayoutProps) {
             );
           }
 
-          const taggedRecipes = allRecipes.filter((r) =>
-            r.tags?.some((t) => t.toLowerCase() === part.tag.toLowerCase())
-          );
-
+          const taggedRecipes = recipesByPartIndex.get(i) ?? [];
           if (taggedRecipes.length === 0) return null;
 
           return (

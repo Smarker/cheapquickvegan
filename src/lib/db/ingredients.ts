@@ -152,6 +152,18 @@ export async function getRecipesByIngredient(ingredientSlug: string, originalNam
   return rows.map((r: any) => r.recipe_slug);
 }
 
+// Returns recipe slugs that use any ingredient whose category_tags contains `tag`.
+export async function getRecipesByIngredientCategoryTag(tag: string): Promise<string[]> {
+  const { rows } = await sql`
+    SELECT DISTINCT ri.recipe_slug
+    FROM recipe_ingredients ri
+    JOIN ingredients i ON ri.ingredient_id = i.id
+    WHERE ${tag} = ANY(COALESCE(i.category_tags, '{}'))
+    ORDER BY ri.recipe_slug
+  `;
+  return rows.map((r: any) => r.recipe_slug);
+}
+
 // Find ingredients whose name is similar to `query` and have at least one linked recipe.
 // Used to suggest better recipeTag names when a listicle tag yields 0 matches.
 export async function findIngredientSuggestionsForTag(

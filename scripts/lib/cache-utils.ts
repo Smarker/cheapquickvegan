@@ -208,10 +208,14 @@ async function processMarkdownMedia(
 
 /**
  * Generic cache builder for recipes/guides
+ * Pass --slug <value> to refresh only the entry matching that slug.
  */
 export async function buildCache<T extends { content: string; title: string; slug: string; id: string }>(
   config: CacheConfig<T>
 ): Promise<void> {
+  const slugArg = process.argv.find((a) => a.startsWith('--slug='))?.replace('--slug=', '')
+    ?? (process.argv.includes('--slug') ? process.argv[process.argv.indexOf('--slug') + 1] : undefined);
+
   try {
     console.log(`Fetching ${config.contentType} from Notion...`);
 
@@ -229,7 +233,26 @@ export async function buildCache<T extends { content: string; title: string; slu
       : [];
     const existingById = new Map(existingCache.map((c) => [c.id, c]));
 
-    const pages = await config.fetchPages();
+    const allPages = await config.fetchPages();
+
+    let pages = allPages;
+    if (slugArg) {
+      const cachedEntry = existingCache.find((c) => c.slug === slugArg);
+      if (!cachedEntry) {
+        console.error(
+          `No cached ${config.contentType} found with slug "${slugArg}". ` +
+          `Run without --slug to do a full cache refresh first.`
+        );
+        process.exit(1);
+      }
+      pages = allPages.filter((p) => p.id === cachedEntry.id);
+      if (pages.length === 0) {
+        console.error(`Page "${slugArg}" not found in Notion (may have been deleted or unpublished).`);
+        process.exit(1);
+      }
+      console.log(`Refreshing single entry: ${slugArg}`);
+    }
+
     let skipped = 0;
 
     // Process pages 3 at a time - Notion API allows ~3 req/s average
@@ -264,11 +287,26 @@ export async function buildCache<T extends { content: string; title: string; slu
       3
     );
 
-    const allContent = pageResults.filter((c): c is T => c !== null);
+    const freshContent = pageResults.filter((c): c is T => c !== null);
+
+    // When refreshing a single slug, merge with the rest of the existing cache
+    let allContent: T[];
+    if (slugArg) {
+      const freshById = new Map(freshContent.map((c) => [c.id, c]));
+      allContent = existingCache.map((c) => freshById.get(c.id) ?? c);
+      // If the slug wasn't in the existing cache (new entry), append it
+      for (const entry of freshContent) {
+        if (!existingCache.some((c) => c.id === entry.id)) {
+          allContent.push(entry);
+        }
+      }
+    } else {
+      allContent = freshContent;
+    }
 
     fs.writeFileSync(cachePath, JSON.stringify(allContent, null, 2));
 
-    const fresh = allContent.length - skipped;
+    const fresh = freshContent.length - skipped;
     console.log(
       `Successfully cached ${allContent.length} ${config.contentType} with local images` +
       (skipped > 0 ? ` (${fresh} fresh, ${skipped} kept from previous cache due to errors)` : '') +

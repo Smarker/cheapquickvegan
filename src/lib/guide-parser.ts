@@ -77,9 +77,15 @@ export function generateTOC(markdown: string): ContentSection[] {
 
 export type RoundupContentPart =
   | { type: "content"; text: string }
-  | { type: "recipes"; tag: string };
+  | { type: "recipes"; source: "method"; tag: string }       // [recipes:method:Air Fryer]
+  | { type: "recipes"; source: "ingredient"; slug: string }  // [recipes:ingredient:tofu]
+  | { type: "recipes"; source: "theme"; tag: string };       // [recipes:theme:protein]
 
-/** Split content on [recipes:Tag Name] placeholders, e.g. [recipes:Air Fryer] */
+/**
+ * Split content on [recipes:TYPE:VALUE] placeholders.
+ * Supported types: method, ingredient, theme.
+ * Unrecognised types or old-format [recipes:TagName] (no type prefix) are omitted.
+ */
 export function parseRoundupContent(content: string): RoundupContentPart[] {
   const placeholderRegex = /\[recipes:([^\]]+)\]/g;
   const parts: RoundupContentPart[] = [];
@@ -90,7 +96,23 @@ export function parseRoundupContent(content: string): RoundupContentPart[] {
     if (match.index > lastIndex) {
       parts.push({ type: "content", text: content.slice(lastIndex, match.index) });
     }
-    parts.push({ type: "recipes", tag: match[1].trim() });
+
+    const inner = match[1].trim();
+    const colonIdx = inner.indexOf(":");
+    if (colonIdx !== -1) {
+      const sourceType = inner.slice(0, colonIdx).trim();
+      const value = inner.slice(colonIdx + 1).trim();
+      if (sourceType === "method") {
+        parts.push({ type: "recipes", source: "method", tag: value });
+      } else if (sourceType === "ingredient") {
+        parts.push({ type: "recipes", source: "ingredient", slug: value });
+      } else if (sourceType === "theme") {
+        parts.push({ type: "recipes", source: "theme", tag: value });
+      }
+      // Unrecognised type: omit
+    }
+    // Old format without type prefix: omit
+
     lastIndex = match.index + match[0].length;
   }
 
