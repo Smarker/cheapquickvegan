@@ -29,6 +29,7 @@ Read the first word to determine the mode:
 - `title` → Title suggestions
 - `links` → Internal link suggestions
 - `faq` → Standalone FAQ generation + JSON-LD
+- `expand` → Thin content expansion suggestions
 
 ---
 
@@ -289,25 +290,76 @@ Then output the full FAQPage JSON-LD block:
 
 ## Mode: `links`
 
-Suggest **internal links** relevant to the topic after `links`.
+Suggest **related recipes and guide coverage** for the slug or topic after `links`.
 
 Steps:
-1. Read `recipes-cache.json` and `guides-cache.json` at the project root to get real slugs, titles, and categories.
-2. Select the most relevant matches for the stated topic.
-3. Return actual existing URLs only — never invent slugs.
+1. Read `recipes-cache.json` and `guides-cache.json` at the project root.
+2. If a slug is given, load that recipe and inspect its current `relatedRecipes` UUIDs (resolve them to slugs via the `id` field). Note which related recipes are already set and which primary category they belong to.
+3. Suggest recipes to add to `relatedRecipes` — prioritise same-category first, then thematically related. Always suggest real slugs and IDs from the cache. Never invent them.
+4. For guide coverage: check if the recipe's `tags` appear as `[recipes:TAG]` markers in any guide's content. If not, suggest which tags to add to the recipe, or which existing guides are most relevant.
 
-Output format — grouped, markdown-ready to paste into Notion:
+**How recipe cross-linking works (important context):**
+- Recipe cross-links are stored in the `relatedRecipes` field as Notion UUIDs (not as prose links).
+- The page renders these as a "Try these similar recipes" carousel via the `relatedRecipes` field in the cache.
+- To add a related recipe, the user needs the target recipe's `id` UUID from `recipes-cache.json`.
+
+Output format:
 
 ```
-**Most relevant:**
-- [Recipe Title](/recipes/slug) — one-line reason why it fits
-- [Guide Title](/guides/slug) — one-line reason
+**Current related recipes:** [list resolved slugs + categories]
 
-**Related category pages:**
-- [Category Name](/recipes/category/cat) — brief note
+**Suggested additions to relatedRecipes:**
+- [Recipe Title] (id: UUID) — [category] — reason it fits
+
+**Same-category gap:** [yes/no — if yes, which category and which recipes to add]
+
+**Guide coverage:**
+- Tags currently on this recipe: [tags]
+- Tags matched in guides: [matches or "none"]
+- Suggested: [add tag X to get coverage in guide Y, or "recipe already covered"]
 ```
 
-Aim for 3–6 specific page links and 1–3 category links. Prefer specificity over breadth.
+---
+
+## Mode: `expand`
+
+Expand thin content for the recipe slug after `expand`.
+
+Steps:
+1. Read `recipes-cache.json` and find the recipe by slug.
+2. Read the recipe's `content` field and identify what's already there (intro, What Is section, ingredient notes, storage, substitutions, serving suggestions, FAQs).
+3. Identify what's missing or thin. Count approximate words.
+4. Output ready-to-paste Notion markdown sections for the gaps, in this priority order:
+
+**Priority order for additions:**
+1. **FAQ section** — if no `**Q:` lines exist, generate 4–6 Q&As in the correct format (required by `generateFaqJsonLd`)
+2. **Ingredient notes** — for each key/unusual ingredient, 1–2 sentences on what it is, why it's used, or where to find it
+3. **Substitutions** — common swaps for the 2–3 most substitutable ingredients
+4. **Storage & make-ahead** — how long it keeps, fridge vs freezer, reheating tips
+5. **Serving suggestions** — what to pair it with (link to a relevant side/meal from the cache)
+6. **What Is section** — only if the dish is unfamiliar enough to warrant it
+
+For each section, output:
+- A `## Section Heading` label
+- The ready-to-paste markdown content
+- An approximate word count for the addition
+
+At the top, show a summary:
+
+```
+── Expand: [slug] ──────────────────────────────────────────
+Current word count: ~[N] words
+Target: 600+ words
+Gap: ~[N] words needed
+
+Sections to add:
+  ⚑ FAQ (missing) — +~120 words
+  ⚑ Storage (missing) — +~60 words
+  ✓ Ingredient intro (exists)
+────────────────────────────────────────────────────────────
+```
+
+Then output each missing section as ready-to-paste Notion markdown. Keep tone consistent with the existing recipe content: friendly, practical, direct.
 
 ---
 
@@ -322,5 +374,6 @@ If no mode matches, show:
   /recipe-copy alt [image]  — 3 alt text options at 150–160 chars
   /recipe-copy title [topic]— 5 title suggestions with keyword notes
   /recipe-copy faq [topic]  — 4–6 Q&As + FAQPage JSON-LD
-  /recipe-copy links [topic]— internal link suggestions from real slugs
+  /recipe-copy links [slug] — related recipe UUIDs + guide coverage for a specific recipe
+  /recipe-copy expand [slug]— suggested content additions for thin recipes
 ```

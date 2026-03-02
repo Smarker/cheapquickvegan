@@ -12,6 +12,7 @@ export interface Recipe {
   categories: string[];
   relatedRecipes: string[];
   recipeCuisine: string;
+  status?: string;
 }
 
 export interface RecipeInstruction {

@@ -93,8 +93,9 @@ function extractMediaUrls(markdown: string): string[] {
 
   while ((match = mediaRegex.exec(markdown)) !== null) {
     const url = match[1];
-    // Only process Notion/S3 URLs that will expire
-    if (url.includes('prod-files-secure.s3') || url.includes('notion.so')) {
+    // Only process Notion/S3 URLs that will expire, and only if they point to media files
+    const isMediaUrl = /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg|mov)(\?|$)/i.test(url);
+    if ((url.includes('prod-files-secure.s3') || url.includes('notion.so')) && isMediaUrl) {
       urls.push(url);
     }
   }

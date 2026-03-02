@@ -88,6 +88,8 @@ const ENRICHMENT: Record<string, {
   'white wine':               { categoryTags: ['condiment'], aliases: ['dry white wine'], noParent: true },
   'whole grain old style mustard': { categoryTags: ['condiment'], aliases: ['whole grain mustard', 'grainy mustard'], noParent: true },
 
+  'water':                    { noParent: true },
+
   // ── Already have tags/aliases but no parent decision ─────────────────────
   'arborio rice':             { noParent: true },
   'artichoke heart':          { noParent: true },

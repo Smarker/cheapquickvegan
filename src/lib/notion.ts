@@ -36,6 +36,7 @@ interface RecipePageProperties {
   Categories?: { multi_select: NotionSelectOption[] };
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
+  Status?: { status?: { name: string } };
 }
 
 interface GuidePageProperties {
@@ -222,6 +223,7 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       categories: properties.Categories?.multi_select?.map((cat) => cat.name) || [],
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
+      status: properties.Status?.status?.name || "Published",
     };
 
     return recipe;
@@ -283,7 +285,12 @@ export function getRelatedGuides(recipe: Recipe): Guide[] {
   return guides
     .filter((guide) => {
       const guideTags = [...guide.content.matchAll(/\[recipes:([^\]]+)\]/g)]
-        .map((m) => m[1].trim().toLowerCase());
+        .map((m) => {
+          const raw = m[1].trim().toLowerCase();
+          // Strip namespace prefix (method:, theme:, etc.) before matching
+          const colon = raw.indexOf(":");
+          return colon !== -1 ? raw.slice(colon + 1) : raw;
+        });
       return guideTags.some((tag) => recipeTags.includes(tag));
     })
     .slice(0, 3);

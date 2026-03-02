@@ -4,7 +4,7 @@ CheapQuickVegan is a Next.js-based vegan food and travel blog with a focus on SE
 
 ## Project Context
 
-This project uses TypeScript (Next.js) with content from Notion. Tests are located in the project — check for test directories before claiming none exist. When making data/parser changes, verify with existing tests.
+This is a Next.js + TypeScript vegan cooking site. Key areas: recipe pages, guide/listicle pages, SEO (JSON-LD), ingredient database, Notion CMS integration. Tests are in a test directory — check for it before saying no tests exist. When making data/parser changes, verify with existing tests.
 
 ## General Rules
 

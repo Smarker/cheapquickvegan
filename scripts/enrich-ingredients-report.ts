@@ -37,11 +37,14 @@ async function main() {
         LEFT JOIN ingredients p ON p.id = i.parent_id
         LEFT JOIN recipe_ingredients ri ON ri.ingredient_id = i.id
         WHERE
-          (i.parent_id IS NULL AND NOT i.no_parent)
-          OR i.category_tags IS NULL
-          OR i.category_tags = '{}'
-          OR i.aliases IS NULL
-          OR i.aliases = '{}'
+          i.name NOT IN ('water')
+          AND (
+            (i.parent_id IS NULL AND NOT i.no_parent)
+            OR i.category_tags IS NULL
+            OR i.category_tags = '{}'
+            OR i.aliases IS NULL
+            OR i.aliases = '{}'
+          )
         GROUP BY i.id, i.name, p.name, i.no_parent, i.category_tags, i.aliases
         ORDER BY recipe_count DESC, i.name
       `;
