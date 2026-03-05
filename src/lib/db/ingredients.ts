@@ -34,13 +34,21 @@ export async function findIngredientByName(name: string): Promise<Ingredient | n
   return rows[0] ? rowToIngredient(rows[0]) : null;
 }
 
-// Insert a new ingredient or return the existing one (matched by name).
+// Insert a new ingredient or return the existing one (matched by name or slug).
 // Nutrition fields are left NULL — filled later via USDA or manually.
 export async function upsertIngredient(data: {
   name: string;
   slug?: string;
 }): Promise<Ingredient> {
   const slug = data.slug ?? toIngredientSlug(data.name);
+  // Check by slug first — handles cases where a different-named ingredient already owns this slug.
+  const { rows: existing } = await sql`
+    SELECT id, name, slug, aliases, category_tags, parent_id, no_parent
+    FROM ingredients
+    WHERE slug = ${slug} OR LOWER(name) = LOWER(${data.name})
+    LIMIT 1
+  `;
+  if (existing.length > 0) return rowToIngredient(existing[0]);
   const { rows } = await sql`
     INSERT INTO ingredients (name, slug, source)
     VALUES (${data.name}, ${slug}, 'parsed')
