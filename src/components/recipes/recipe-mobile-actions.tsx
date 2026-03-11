@@ -25,7 +25,7 @@ export function RecipeMobileActions({
 
   if (variant === "save") {
     return (
-      <div className="lg:hidden flex items-center gap-2 mt-0.5 mb-1 print:hidden">
+      <div className="lg:hidden flex items-center justify-end gap-2 mt-0.5 mb-1 print:hidden">
         <button
           onClick={() => toggleFavorite(recipeId)}
           className={cn(
