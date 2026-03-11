@@ -46,7 +46,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navigation - Clean food blog style */}
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800 shadow-sm print:hidden">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" role="navigation" aria-label="Main navigation">
           <div className="flex justify-between items-center h-16 lg:h-20">
 
@@ -133,7 +133,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       {/* Footer - SEO-optimized food blog style */}
-      <footer className="bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 mt-16" role="contentinfo">
+      <footer className="bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 mt-16 print:hidden" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
           {/* Main Footer Content */}

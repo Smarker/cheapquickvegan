@@ -248,7 +248,7 @@ export function ShareButtons({
       ))}
 
       {/* Total Share Count (inline variant only) */}
-      {variant === "inline" && shareCounts && shareCounts.total > 0 && (
+      {variant === "inline" && !compact && shareCounts && shareCounts.total > 0 && (
         <span className="text-sm text-muted-foreground ml-1">
           {shareCounts.total} {shareCounts.total === 1 ? "share" : "shares"}
         </span>

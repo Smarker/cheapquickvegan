@@ -24,6 +24,7 @@ import { TableOfContents } from "@/components/guides/table-of-contents";
 import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
 import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
 import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
+import { RecipeMobileActions } from "@/components/recipes/recipe-mobile-actions";
 import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
 import { normalizeImageUrl } from "@/lib/utils";
 
@@ -267,6 +268,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   />
                   <JumpToRecipe></JumpToRecipe>
                 </div>
+
+                {/* Mobile: Save & Print — pre-cooking actions */}
+                <RecipeMobileActions
+                  variant="save"
+                  recipeId={recipe.id}
+                  recipeTitle={recipe.title}
+                  recipeDescription={recipe.description}
+                  recipeUrl={`${SITE_URL}/recipes/${recipe.slug}`}
+                />
               </header>
 
               <ReactMarkdown
@@ -305,6 +315,17 @@ export default async function RecipePage({ params }: RecipePageProps) {
               >
                 {cleanedContent}
               </ReactMarkdown>
+
+              {/* Mobile: Share & Rate — post-cooking actions */}
+              <div className="not-prose">
+                <RecipeMobileActions
+                  variant="engage"
+                  recipeId={recipe.id}
+                  recipeTitle={recipe.title}
+                  recipeDescription={recipe.description}
+                  recipeUrl={`${SITE_URL}/recipes/${recipe.slug}`}
+                />
+              </div>
 
               {/* --- Comment Section --- */}
               <div id="reviews" className="not-prose my-8 sm:my-12 print:hidden">
