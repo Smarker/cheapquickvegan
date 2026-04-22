@@ -11,12 +11,16 @@ This is a Next.js + TypeScript vegan cooking site. Key areas: recipe pages, guid
 - Always prefer the simplest solution. Do not edit types, refactor abstractions, or add infrastructure unless explicitly asked.
 - When the user says "just do X", do exactly X and nothing more.
 - Ask before refactoring. If you think something should be restructured, say so and wait for approval before changing it.
+- Before starting a dev server, check if one is already running on the expected port. Use `lsof -i :3000` or similar to verify.
+- This is a TypeScript/Next.js project. Tests are located in the test directory — always check for existing tests before claiming none exist. Run `npm test` or relevant test commands after making changes to catch regressions.
+- Before flagging missing features in audits or reviews, verify the feature doesn't already exist via dynamic generation, related fields, or other indirect implementations. Search the codebase thoroughly before reporting something as missing.
 
 ## UI & Styling
 
 - When making UI/styling changes, make minimal targeted edits first. Do not change multiple CSS properties at once.
 - After each change, describe exactly what was changed so the user can verify before proceeding.
 - When a user requests a visual change (e.g., "show 3 items", "move photo to the right"), clarify the exact behavior before coding. "Show 3" could mean slice to 3 or display 3 at a time. "Search results" could mean modal or dropdown. Ask if ambiguous.
+- When making UI/styling changes, make only the specific changes requested. Do not add extra UI elements (e.g., ratings, stars) or make assumptions about desired spacing/layout beyond what was explicitly asked.
 
 ## Git Workflow
 
