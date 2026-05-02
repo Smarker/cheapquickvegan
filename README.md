@@ -11,7 +11,7 @@ Visit `http://localhost:3000` to see the blog.
 
 By default, step names are auto-generated from the instruction text. To provide custom step names:
 
-**Format:** `**Step Name:** Instruction text here.`
+**Format:** `**Step Name:** Instruction text here`
 
 **Example:**
 
