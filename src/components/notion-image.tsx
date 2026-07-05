@@ -8,9 +8,10 @@ interface NotionImageProps {
   className?: string;
   inline?: boolean; // Use natural dimensions, safe for inline rendering
   sizes?: string;
+  priority?: boolean; // Only set for above-the-fold images (e.g. page cover / LCP)
 }
 
-export function NotionImage({ src, alt, className, inline, sizes }: NotionImageProps) {
+export function NotionImage({ src, alt, className, inline, sizes, priority }: NotionImageProps) {
   if (!src) return null;
 
   // Inline mode: natural dimensions, no stretching, safe inside <p> tags
@@ -47,7 +48,7 @@ export function NotionImage({ src, alt, className, inline, sizes }: NotionImageP
         placeholder="blur"
         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+"
         sizes={sizes ?? "(max-width: 768px) 100vw, 800px"}
-        priority
+        priority={priority}
       />
     </div>
   );

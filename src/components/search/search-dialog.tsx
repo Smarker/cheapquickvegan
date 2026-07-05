@@ -134,6 +134,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                               src={recipe.coverImage}
                               alt={recipe.alt || recipe.title}
                               className="object-cover w-full h-full"
+                              sizes="48px"
                             />
                           </div>
                         )}
@@ -171,6 +172,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                               src={guide.coverImage}
                               alt={guide.alt || guide.title}
                               className="object-cover w-full h-full"
+                              sizes="48px"
                             />
                           </div>
                         )}

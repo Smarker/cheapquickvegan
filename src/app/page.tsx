@@ -121,7 +121,7 @@ export default function HomePage() {
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-6">
-        {categories.map((cat) => (
+        {categories.map((cat, index) => (
           <Link
             key={cat.name}
             href={`/recipes/category/${cat.name.toLowerCase()}`}
@@ -136,6 +136,7 @@ export default function HomePage() {
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                  priority={index < 2}
                 />
               </div>
 

@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
+    // Serve AVIF where supported (falls back to WebP) — ~20-30% smaller for photos.
+    formats: ["image/avif", "image/webp"],
+    // Blog images are effectively immutable (new image = new filename), so cache
+    // optimized variants for 31 days instead of re-transforming them.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",

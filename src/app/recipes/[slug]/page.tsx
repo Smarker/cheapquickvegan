@@ -198,6 +198,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   src={recipe.coverImage}
                   alt={recipe.alt || recipe.title}
                   className="object-cover w-full h-full"
+                  priority
                 />
               </div>
             )}
