@@ -5,6 +5,7 @@ import {
   generateItemListSchema,
   buildArticleBreadcrumbs,
   buildCategoryBreadcrumbs,
+  buildRecipeImageVariants,
 } from "@/lib/seo/google-search-jsonld-builders";
 import type { Recipe } from "@/types/recipe";
 
@@ -372,5 +373,61 @@ describe("buildCategoryBreadcrumbs", () => {
       "quick-meals"
     );
     expect(result[2].path).toBe("/recipes/category/quick-meals");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildRecipeImageVariants
+// ---------------------------------------------------------------------------
+
+describe("buildRecipeImageVariants", () => {
+  const allExist = () => true;
+  const noneExist = () => false;
+
+  it("falls back to the OG image when coverImage is missing", () => {
+    expect(buildRecipeImageVariants(undefined, allExist)).toEqual([
+      `${SITE_URL}/opengraph-image.png`,
+    ]);
+  });
+
+  it("returns only the original for remote (Notion) URLs", () => {
+    const remote = "https://prod-files-secure.s3.us-west-2.amazonaws.com/img.jpg";
+    expect(buildRecipeImageVariants(remote, allExist)).toEqual([remote]);
+  });
+
+  it("returns only the original when no crop variants exist", () => {
+    expect(buildRecipeImageVariants("/images/gazpacho.jpg", noneExist)).toEqual([
+      `${SITE_URL}/images/gazpacho.jpg`,
+    ]);
+  });
+
+  it("returns 1:1, 4:3, 16:9 variants plus the original when crops exist", () => {
+    expect(buildRecipeImageVariants("/images/gazpacho.jpg", allExist)).toEqual([
+      `${SITE_URL}/images/gazpacho-1x1.jpg`,
+      `${SITE_URL}/images/gazpacho-4x3.jpg`,
+      `${SITE_URL}/images/gazpacho-16x9.jpg`,
+      `${SITE_URL}/images/gazpacho.jpg`,
+    ]);
+  });
+
+  it("includes only the variants that exist", () => {
+    const onlySquare = (p: string) => p.endsWith("-1x1.jpg");
+    expect(buildRecipeImageVariants("/images/gazpacho.jpg", onlySquare)).toEqual([
+      `${SITE_URL}/images/gazpacho-1x1.jpg`,
+      `${SITE_URL}/images/gazpacho.jpg`,
+    ]);
+  });
+
+  it("checks existence using the public-relative crop path", () => {
+    const seen: string[] = [];
+    buildRecipeImageVariants("/recipes/images/calzone.jpg", (p) => {
+      seen.push(p);
+      return false;
+    });
+    expect(seen).toEqual([
+      "/recipes/images/calzone-1x1.jpg",
+      "/recipes/images/calzone-4x3.jpg",
+      "/recipes/images/calzone-16x9.jpg",
+    ]);
   });
 });

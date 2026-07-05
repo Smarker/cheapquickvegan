@@ -25,8 +25,16 @@ import { CookModeToggle } from "@/components/recipes/cook-mode-toggle";
 import { JumpToRecipe } from "@/components/recipes/jump-to-recipe";
 import { generateArticleMetadata } from "@/lib/seo/nextjs-metadata-builders";
 import { RecipeMobileActions } from "@/components/recipes/recipe-mobile-actions";
-import { buildArticleBreadcrumbs } from "@/lib/seo/google-search-jsonld-builders";
+import { buildArticleBreadcrumbs, buildRecipeImageVariants } from "@/lib/seo/google-search-jsonld-builders";
 import { normalizeImageUrl } from "@/lib/utils";
+import fs from "fs";
+import path from "path";
+
+// Only include crop variants in JSON-LD when the generated file actually
+// exists, so a recipe published before the crop script runs never points
+// Google at a 404.
+const cropVariantExists = (publicPath: string) =>
+  fs.existsSync(path.join(process.cwd(), "public", publicPath));
 
 // Pre-render every published recipe at build time so the first visitor to any
 // recipe page gets a fully static response instead of a cold-start render.
@@ -119,7 +127,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
     "@type": "Recipe",
     name: recipe.title,
     description: recipe.description,
-    image: normalizeImageUrl(recipe.coverImage),
+    image: buildRecipeImageVariants(recipe.coverImage, cropVariantExists),
     author: { "@type": "Person", name: "Stephanie Marker" },
     datePublished: new Date(recipe.date).toISOString(),
     dateModified: new Date(recipe.lastUpdated || recipe.date).toISOString(),

@@ -50,3 +50,8 @@ next-env.d.ts
 
 # cache
 /cacheguides-dev-fixtures.json
+
+# generated rich-result image crops (regenerated on each build by scripts/generate-image-crops.ts)
+public/**/*-1x1.jpg
+public/**/*-4x3.jpg
+public/**/*-16x9.jpg
