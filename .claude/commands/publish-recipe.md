@@ -16,6 +16,16 @@ pnpm cache:recipes $ARGUMENTS
 
 Report: ✓ Cache refreshed for [slug], or surface any errors.
 
+Then read the refreshed entry in `recipes-cache.json` and check that its `coverImage` path (e.g. `/images/[slug].jpg`) exists under `public/`. If the file is missing from that exact path — e.g. it was committed to `public/recipes/images/` instead of `public/images/` — move it to the correct location and report the fix.
+
+Then run:
+
+```
+pnpm images:crops
+```
+
+This compresses oversized source images and generates the 1x1/4x3/16x9 crop variants Recipe rich results need. It's idempotent — already-optimized sources and up-to-date crops are skipped — so it's safe to run every time. Report the summary line it prints (compressed/skipped/generated counts).
+
 ---
 
 ## Step 2 — Preview ingredient extraction
@@ -29,7 +39,7 @@ pnpm sync:ingredients $ARGUMENTS --dry-run
 Capture the full output. Analyse each extracted line for the following issues. Flag any you find:
 
 ### ⚑ Multi-ingredient lines
-A single bullet that contains two ingredients joined by "and" or "/" that the parser will treat as one (e.g. `salt and pepper`, `olive oil / coconut oil`). These should be split into separate bullets in Notion.
+A single bullet that contains two ingredients joined by "and", "/", or "or" that the parser will treat as one (e.g. `salt and pepper`, `olive oil / coconut oil`, `gochugaru, or regular red pepper flakes`). These should be split into separate bullets in Notion.
 
 ### ⚑ Names that will create orphan ingredients
 A canonical name that looks like a renamed version of something that likely already exists under a cleaner name in the DB — e.g. `warm water` (should be `water`), `low-sodium soy sauce` if plain `soy sauce` already exists. The user prefers to fix these in Notion rather than rename post-sync.
