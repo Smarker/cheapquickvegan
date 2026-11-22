@@ -37,6 +37,7 @@ import {
   widerLimit,
 } from '../lib/recipes';
 import { journey, REGIONS } from '../lib/journeys';
+import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import type { DiscoverStack } from '../navigation';
 import { font, lift, space, spring, tintFor, type as t, usePalette, type Palette } from '../theme/tokens';
@@ -53,12 +54,13 @@ export function DiscoverScreen({ navigation }: Props) {
   const saved = useSaved();
   const cardW = Math.min(width * 0.62, 270);
   const net = useNetInfo();
+  const dataVersion = useDataVersion();
   const scroller = useRef<ScrollView>(null);
   const [limit, setLimit] = useState<TimeLimit>(30);
   const [gear, setGear] = useState<string | null>(null);
   const [meal, setMeal] = useState<Meal>(mealWord());
 
-  const matches = useMemo(() => tonight(limit, gear, meal), [limit, gear, meal]);
+  const matches = useMemo(() => tonight(limit, gear, meal), [limit, gear, meal, dataVersion]);
   // The trail is a timeline: every match, quickest on the left.
   const featured = matches;
   // A signpost stands between two cards wherever the time steps up (30 min, 45 min, 1 hr…).
@@ -74,7 +76,7 @@ export function DiscoverScreen({ navigation }: Props) {
   const limitLabel = TIME_OPTIONS.find((o) => o.value === limit)?.label;
   const widerLabel =
     wider === undefined ? undefined : wider === null ? 'See every recipe' : `See ${TIME_OPTIONS.find((o) => o.value === wider)?.label} recipes`;
-  const slow = useMemo(() => projects().slice(0, 8), []);
+  const slow = useMemo(() => projects().slice(0, 8), [dataVersion]);
   const open = (r: Recipe) => navigation.navigate('Recipe', { slug: r.slug });
 
   const otherMeal: Meal = meal === 'breakfast' ? 'dinner' : 'breakfast';

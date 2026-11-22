@@ -9,6 +9,7 @@ import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
 import { journey, REGIONS, STRETCH_LABEL, type Difficulty, type Stop } from '../lib/journeys';
 import { displayTitle } from '../lib/recipes';
+import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import { font, space, tintFor, type as t, usePalette, type Palette } from '../theme/tokens';
 
@@ -32,7 +33,8 @@ export function JourneyScreen({ route, navigation }: Props) {
   const reduce = useReducedMotion();
   const saved = useSaved();
   const region = REGIONS.find((r) => r.id === route.params.id)!;
-  const stops = useMemo(() => journey(region), [region]);
+  const dataVersion = useDataVersion();
+  const stops = useMemo(() => journey(region), [region, dataVersion]);
   const recipeStops = stops.filter((s) => s.kind === 'recipe');
   const cooked = recipeStops.filter((s) => s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0).length;
 

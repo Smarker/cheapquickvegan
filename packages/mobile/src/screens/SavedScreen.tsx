@@ -7,6 +7,7 @@ import { EmptyBowl } from '../components/Doodles';
 import { HeartButton } from '../components/HeartButton';
 import { Photo } from '../components/Photo';
 import { displayTitle, recipes } from '../lib/recipes';
+import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import type { SavedStack } from '../navigation';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<SavedStack, 'Saved'>;
 
 /** Recipes you've hearted, newest first. Stored on the phone, so they're here offline too. */
 export function SavedScreen({ navigation }: Props) {
+  useDataVersion(); // re-render when live recipe data arrives
   const p = usePalette();
   const insets = useSafeAreaInsets();
   const saved = useSaved();

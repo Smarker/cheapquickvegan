@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Photo } from '../components/Photo';
 import { guides } from '../lib/journeys';
+import { useDataVersion } from '../lib/data';
 import { space, type as t, usePalette } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<{ Guide: { slug: string } }, 'Guide'>;
@@ -33,6 +34,7 @@ function blocks(md: string): Block[] {
 
 /** A travel or how-to guide, read in the app. */
 export function GuideScreen({ route }: Props) {
+  useDataVersion(); // re-render when live recipe data arrives
   const p = usePalette();
   const { width } = useWindowDimensions();
   const g = guides.find((x) => x.slug === route.params.slug);

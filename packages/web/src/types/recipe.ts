@@ -13,6 +13,10 @@ export interface Recipe {
   relatedRecipes: string[];
   recipeCuisine: string;
   status?: string;
+  /** Short card title for the app, from Notion "Short Title". */
+  shortTitle?: string;
+  /** Easy / Medium / Challenge, from Notion "Difficulty". */
+  difficulty?: string;
 }
 
 export type { RecipeInstruction } from "@cheapquickvegan/shared";

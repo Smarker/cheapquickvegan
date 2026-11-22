@@ -23,6 +23,20 @@ function keywords(line: string): string[] {
 
 const stem = (w: string) => w.replace(/(es|s)$/, '');
 
+/**
+ * Ingredient words to highlight in step text, longest first so "coconut milk" wins over "milk".
+ * Two-word names are kept together when both words are meaningful ("peanut butter", "soy sauce").
+ */
+export function ingredientTerms(lines: string[]): string[] {
+  const terms = new Set<string>();
+  for (const line of lines) {
+    const kw = keywords(line);
+    if (kw.length >= 2) terms.add(kw.slice(0, 2).join(' '));
+    kw.forEach((w) => w.length > 2 && terms.add(stem(w)));
+  }
+  return [...terms].sort((a, b) => b.length - a.length);
+}
+
 /** Ingredients a set of steps mentions. Empty when a step uses none ("serve immediately"), so the sheet can stay out of the way. */
 export function ingredientsFor(stepText: string, all: string[]): string[] {
   const text = stepText.toLowerCase();
@@ -42,4 +56,30 @@ export function cookPages(r: Recipe): CookPage[] {
     ? r.steps.map((g, i) => ({ title: g.name ?? `Step ${i + 1}`, steps: g.items }))
     : r.steps.flatMap((g) => g.items).map((s, i) => ({ title: `Step ${i + 1}`, steps: [s] }));
   return pages.map((pg) => ({ ...pg, ingredients: ingredientsFor(pg.steps.join(' '), all) }));
+}
+
+// "1 (4 oz) can …", "2–3 tbsp …", "½ cup …", "200 g …", "1 block …"
+const AMOUNT = /^\s*((?:\d+(?:[.,]\d+)?|[½¼¾⅓⅔⅛])(?:\s*(?:[-–]|to)\s*\d+(?:[.,]\d+)?)?(?:\s+\d\/\d|\s*[½¼¾⅓⅔⅛]|\/\d+)?\s*(?:\([^)]*\)\s*)?(?:cups?|c\b|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|g\b|grams?|kg|ml|l\b|lbs?|pounds?|cans?|blocks?|packs?|packages?|cloves?|pinch(?:es)?|bunch(?:es)?|slices?|sheets?|sticks?|stalks?|heads?|jars?|handfuls?|large|small|medium)?)/i;
+
+/** The amount at the start of an ingredient line ("1 can", "2–3 tbsp"), or null for "Black pepper, to taste". */
+export function amountOf(line: string): string | null {
+  const m = line.match(AMOUNT);
+  const amount = m?.[1]?.replace(/\s*\([^)]*\)\s*/, ' ').replace(/\s+/g, ' ').trim();
+  return amount && /\d|[½¼¾⅓⅔⅛]/.test(amount) ? amount : null;
+}
+
+/**
+ * Highlight term → amount, so cook mode can say "coconut milk (1 can)" inline.
+ * The first ingredient line that mentions a term wins.
+ */
+export type IngredientAmount = { amount: string; line: string };
+
+export function ingredientAmounts(lines: string[]): Map<string, IngredientAmount> {
+  const out = new Map<string, IngredientAmount>();
+  for (const line of lines) {
+    const amount = amountOf(line);
+    if (!amount) continue;
+    for (const term of ingredientTerms([line])) if (!out.has(term)) out.set(term, { amount, line });
+  }
+  return out;
 }

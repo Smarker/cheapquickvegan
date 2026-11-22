@@ -1,27 +1,11 @@
+import type { AppRecipe, RecipeGroup } from '@cheapquickvegan/shared';
 import data from '../data/recipes.json';
 
-export type Group = { name: string | null; items: string[] };
+export type Group = RecipeGroup;
+export type Recipe = AppRecipe;
 
-export type Recipe = {
-  slug: string;
-  title: string;
-  shortTitle: string | null;
-  description: string;
-  category: string | null;
-  totalMinutes: number | null;
-  totalText: string | null;
-  yieldText: string | null;
-  equipment: string[];
-  image: string;
-  date: string | null;
-  ingredients: Group[];
-  steps: Group[];
-  tips: string[];
-  cuisine: string | null;
-  difficulty: string | null;
-};
-
-export const recipes = data as Recipe[];
+/** The recipe list. Starts as the bundled copy; DataProvider swaps in live data from the website in place. */
+export const recipes: Recipe[] = [...(data as Recipe[])];
 
 /** Until Notion has a "Short title" field: drop parentheticals and anything after a colon. */
 export function displayTitle(r: Recipe): string {

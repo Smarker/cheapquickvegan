@@ -39,3 +39,10 @@ export const ShareIcon = ({ color, size = 22 }: P) => (
     <Path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" stroke={color} {...base} />
   </Svg>
 );
+/** Grocery list: a little clipboard with two ticked lines. */
+export const ListIcon = ({ color, size = 24 }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M8 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H16" stroke={color} {...base} />
+    <Path d="M9 3.5h6v2.5H9z M8.5 11l1.5 1.5 2.5-2.5 M8.5 16l1.5 1.5 2.5-2.5 M14.5 11.5H16 M14.5 16.5H16" stroke={color} {...base} />
+  </Svg>
+);

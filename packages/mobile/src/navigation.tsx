@@ -6,14 +6,15 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { useSaved } from './lib/saved';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DiscoverIcon, SavedIcon, SearchIcon } from './components/Icons';
-import { ComingSoonScreen } from './screens/ComingSoonScreen';
+import { DiscoverIcon, ListIcon, SavedIcon, SearchIcon } from './components/Icons';
 import { DiscoverScreen } from './screens/DiscoverScreen';
+import { GroceryScreen } from './screens/GroceryScreen';
 import { GuideScreen } from './screens/GuideScreen';
 import { JourneyScreen } from './screens/JourneyScreen';
 import { CookScreen } from './screens/CookScreen';
 import { RecipeScreen } from './screens/RecipeScreen';
 import { SavedScreen } from './screens/SavedScreen';
+import { SearchScreen } from './screens/SearchScreen';
 import { font, spring, type as t, usePalette } from './theme/tokens';
 
 export type DiscoverStack = {
@@ -27,6 +28,8 @@ export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { s
 
 const Stack = createNativeStackNavigator<DiscoverStack>();
 const SavedNav = createNativeStackNavigator<SavedStack>();
+export type SearchStack = { Search: undefined; Recipe: { slug: string }; Cook: { slug: string }; Guide: { slug: string } };
+const SearchNav = createNativeStackNavigator<SearchStack>();
 
 function useStackOptions() {
   const p = usePalette();
@@ -52,6 +55,16 @@ function DiscoverTab() {
   );
 }
 
+function SearchTab() {
+  return (
+    <SearchNav.Navigator screenOptions={useStackOptions()}>
+      <SearchNav.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
+      <SearchNav.Screen name="Recipe" component={RecipeScreen} options={{ title: '' }} />
+      <SearchNav.Screen name="Guide" component={GuideScreen} options={{ title: '' }} />
+    </SearchNav.Navigator>
+  );
+}
+
 function SavedTab() {
   return (
     <SavedNav.Navigator screenOptions={useStackOptions()}>
@@ -61,7 +74,7 @@ function SavedTab() {
   );
 }
 
-const ICONS = { DiscoverTab: DiscoverIcon, SearchTab: SearchIcon, SavedTab: SavedIcon } as const;
+const ICONS = { DiscoverTab: DiscoverIcon, SearchTab: SearchIcon, SavedTab: SavedIcon, ListTab: ListIcon } as const;
 
 /** Docked bar on both OSes; the active tab gets a soft basil pill, like Material's indicator. */
 function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -122,10 +135,9 @@ function Tabbed() {
   return (
     <Tabs.Navigator screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="DiscoverTab" component={DiscoverTab} options={{ title: 'Discover' }} />
-      <Tabs.Screen name="SearchTab" options={{ title: 'Search' }}>
-        {() => <ComingSoonScreen title="Search" doodle="pot" line={'Search is still simmering.\nFor now, the time and equipment filters on Discover will get you there.'} />}
-      </Tabs.Screen>
+      <Tabs.Screen name="SearchTab" component={SearchTab} options={{ title: 'Search' }} />
       <Tabs.Screen name="SavedTab" component={SavedTab} options={{ title: 'Saved' }} />
+      <Tabs.Screen name="ListTab" component={GroceryScreen} options={{ title: 'List' }} />
     </Tabs.Navigator>
   );
 }
@@ -133,7 +145,7 @@ function Tabbed() {
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8 },
   tab: { flex: 1, alignItems: 'center', gap: 4, minHeight: 52 },
-  pill: { width: 60, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  pill: { width: 60, height: 32, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
 });
 
 type RootStack = { Tabs: undefined; Cook: { slug: string } };

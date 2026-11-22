@@ -6,9 +6,13 @@ import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
 import { CheckIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
+import { HighlightedText } from '../components/HighlightedText';
 import { PencilStrike } from '../components/PencilStrike';
 import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
+import { useDataVersion } from '../lib/data';
+import { ingredientTerms } from '../lib/cook';
+import { useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
@@ -18,9 +22,11 @@ type Props = NativeStackScreenProps<{ Recipe: { slug: string }; Cook: { slug: st
 type Tab = 'ingredients' | 'steps' | 'tips';
 
 export function RecipeScreen({ route, navigation }: Props) {
+  useDataVersion(); // re-render when live recipe data arrives
   const p = usePalette();
   const { width } = useWindowDimensions();
   const saved = useSaved();
+  const grocery = useGrocery();
   const [tab, setTab] = useState<Tab>('ingredients');
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const r = recipes.find((x) => x.slug === route.params.slug);
@@ -119,6 +125,23 @@ export function RecipeScreen({ route, navigation }: Props) {
             </View>
           ))}
 
+        {tab === 'ingredients' && (
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              grocery.addRecipe(r);
+            }}
+            accessibilityRole="button"
+            accessibilityHint="Adds this recipe's ingredients to your grocery list"
+            style={({ pressed }) => [styles.addList, { borderColor: p.green, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+          >
+            <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>
+              {grocery.hasRecipe(r.slug) ? 'On your grocery list' : 'Add to grocery list'}
+            </Text>
+            {grocery.hasRecipe(r.slug) && <CheckIcon color={p.greenDeep} size={16} />}
+          </Pressable>
+        )}
+
         {tab === 'steps' &&
           r.steps.map((g, gi) => (
             <View key={gi} style={styles.group}>
@@ -128,7 +151,12 @@ export function RecipeScreen({ route, navigation }: Props) {
                 return (
                   <View key={stepNo} style={styles.step}>
                     <Text style={[t.caps, { color: p.green, width: 22, fontFamily: font.sansBold, lineHeight: 24 }]}>{stepNo}</Text>
-                    <Text style={[t.body, { flex: 1, color: p.ink }]}>{step}</Text>
+                    <HighlightedText
+                      text={step}
+                      terms={ingredientTerms(r.ingredients.flatMap((g) => g.items))}
+                      style={[t.body, { flex: 1, color: p.ink }]}
+                      highlight={{ fontFamily: font.sansBold, color: p.greenDeep }}
+                    />
                   </View>
                 );
               })}
@@ -167,6 +195,7 @@ const styles = StyleSheet.create({
   heart: { position: 'absolute', right: 12, bottom: -18 },
   facts: { flexDirection: 'row', gap: space.s },
   fact: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: space.m, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.55)' },
+  addList: { flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, borderWidth: 2, marginTop: space.s },
   cookBar: { paddingHorizontal: space.xl, paddingVertical: space.m, borderTopWidth: StyleSheet.hairlineWidth },
   cookBtn: { minHeight: 56, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xl },
   sheet: { flexGrow: 1, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: space.xl, paddingTop: space.m, gap: space.l },

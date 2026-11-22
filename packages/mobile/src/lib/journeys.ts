@@ -1,20 +1,12 @@
+import type { AppGuide } from '@cheapquickvegan/shared';
 import guidesData from '../data/guides.json';
 import { recipes, type Recipe } from './recipes';
 
 export type Difficulty = 'Easy' | 'Medium' | 'Challenge';
-export type Guide = {
-  slug: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string | null;
-  country: string | null;
-  city: string | null;
-  readingTime: string | null;
-  content: string;
-};
+export type Guide = AppGuide;
 
-export const guides = guidesData as Guide[];
+/** Guides. Starts as the bundled copy; DataProvider swaps in live data from the website in place. */
+export const guides: Guide[] = [...(guidesData as Guide[])];
 
 type Technique = {
   id: string;

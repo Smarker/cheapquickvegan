@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, useAnimatedStyle, useReducedMotion, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line } from 'react-native-svg';
@@ -11,11 +11,14 @@ import { StirringPot } from '../components/Doodles';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
-import { cookPages, type CookPage } from '../lib/cook';
+import { cookPages, ingredientAmounts, ingredientTerms, type CookPage, type IngredientAmount } from '../lib/cook';
+import { HighlightedText } from '../components/HighlightedText';
 import { displayTitle, recipes } from '../lib/recipes';
+import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
 import { timersIn } from '../lib/timers';
+import { cancelTimerDone, scheduleTimerDone } from '../lib/timerNotifications';
 import { font, space, type as t } from '../theme/tokens';
 
 // Cook mode keeps its own low-glare kitchen palette in both themes: warm charcoal, cream ink and garden greens.
@@ -33,6 +36,7 @@ const k = {
 type Props = NativeStackScreenProps<{ Cook: { slug: string } }, 'Cook'>;
 
 export function CookScreen({ route, navigation }: Props) {
+  useDataVersion(); // re-render when live recipe data arrives
   useKeepAwake();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -41,10 +45,31 @@ export function CookScreen({ route, navigation }: Props) {
   const list = useRef<FlatList<CookPage>>(null);
   const r = recipes.find((x) => x.slug === route.params.slug);
   const pages = useMemo(() => (r ? cookPages(r) : []), [r]);
+  const terms = useMemo(() => (r ? ingredientTerms(r.ingredients.flatMap((g) => g.items)) : []), [r]);
+  // Amounts sit inline after each ingredient's first mention, so nobody taps a phone with messy hands.
+  const amounts = useMemo(() => (r ? ingredientAmounts(r.ingredients.flatMap((g) => g.items)) : new Map<string, IngredientAmount>()), [r]);
   const [index, setIndex] = useState(0);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [done, setDone] = useState(false);
   const [timer, setTimer] = useState<RunningTimer | null>(null);
+  const notification = useRef<string | null>(null);
+
+  // One timer at a time. Each change reschedules the background "time's up" notification.
+  const runTimer = (next: RunningTimer | null) => {
+    cancelTimerDone(notification.current);
+    notification.current = null;
+    setTimer(next);
+    if (next && r) scheduleTimerDone(next.label, displayTitle(r), next.endsAt).then((id) => (notification.current = id));
+  };
+
+  // Leaving with a timer still running: it keeps going as a notification, so say so before leaving.
+  const leave = () => {
+    if (timer && timer.endsAt > Date.now()) {
+      Alert.alert('Leave cook mode?', `Your ${timer.label} timer will keep running and ring as a notification.`, [
+        { text: 'Keep cooking', style: 'cancel' },
+        { text: 'Leave', onPress: () => navigation.goBack() },
+      ]);
+    } else navigation.goBack();
+  };
   const [timesCooked, setTimesCooked] = useState(0);
 
   const progress = useAnimatedStyle(() => ({
@@ -58,7 +83,6 @@ export function CookScreen({ route, navigation }: Props) {
 
   const go = (to: number) => {
     Haptics.selectionAsync();
-    setSheetOpen(false);
     list.current?.scrollToIndex({ index: to, animated: !reduce });
     setIndex(to);
   };
@@ -98,7 +122,7 @@ export function CookScreen({ route, navigation }: Props) {
       <StatusBar style="light" />
 
       <View style={styles.top}>
-        <Pressable onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Stop cooking" hitSlop={12} style={styles.close}>
+        <Pressable onPress={leave} accessibilityRole="button" accessibilityLabel="Stop cooking" hitSlop={12} style={styles.close}>
           <Text style={[t.label, { color: k.ink, fontSize: 16 }]}>Done</Text>
         </Pressable>
         <Text style={[t.label, { color: k.soft }]} accessibilityLiveRegion="polite">
@@ -126,8 +150,7 @@ export function CookScreen({ route, navigation }: Props) {
           const i = Math.round(e.nativeEvent.contentOffset.x / width);
           if (i !== index) {
             Haptics.selectionAsync();
-            setSheetOpen(false);
-            setIndex(i);
+                    setIndex(i);
           }
         }}
         renderItem={({ item, index: i }) => (
@@ -137,14 +160,21 @@ export function CookScreen({ route, navigation }: Props) {
             </Text>
             {item.steps.map((s: string, si: number) => (
               <Animated.View key={si} entering={reduce || i !== index ? undefined : FadeInDown.duration(350).delay(si * 70)} style={{ gap: space.s }}>
-                <Text style={[styles.step, { color: si === 0 ? k.ink : k.soft }]}>{s}</Text>
+                <HighlightedText
+                  text={s}
+                  terms={terms}
+                  style={[styles.step, { color: si === 0 ? k.ink : k.soft }]}
+                  highlight={{ fontFamily: font.sansBold, color: k.greenDeep }}
+                  amounts={amounts}
+                  amountStyle={{ color: k.soft, fontSize: 20 }}
+                />
                 {timersIn(s).map((tm) => (
                   <Pressable
                     key={tm.label}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       const ms = Math.round(tm.minutes * 60_000);
-                      setTimer({ label: tm.label, endsAt: Date.now() + ms, totalMs: ms });
+                      runTimer({ label: tm.label, endsAt: Date.now() + ms, totalMs: ms });
                     }}
                     accessibilityRole="button"
                     accessibilityLabel={`Start a ${tm.label} timer`}
@@ -164,32 +194,9 @@ export function CookScreen({ route, navigation }: Props) {
           <KitchenTimer
             timer={timer}
             colors={k}
-            onAddMinute={() => setTimer((tm) => tm && { ...tm, endsAt: tm.endsAt + 60_000, totalMs: tm.totalMs + 60_000 })}
-            onStop={() => setTimer(null)}
+            onAddMinute={() => runTimer({ ...timer, endsAt: timer.endsAt + 60_000, totalMs: timer.totalMs + 60_000 })}
+            onStop={() => runTimer(null)}
           />
-        )}
-        {page && page.ingredients.length > 0 && (
-          <Pressable
-            onPress={() => setSheetOpen((o) => !o)}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: sheetOpen }}
-            style={[styles.sheet, { backgroundColor: k.raised }]}
-          >
-            <View style={styles.sheetHead}>
-              <Text style={[t.label, { color: k.ink }]}>
-                {page.ingredients.length === r.ingredients.flatMap((g) => g.items).length ? 'All ingredients' : 'You need for this step'}
-              </Text>
-              <Text style={[t.hand, { color: k.greenDeep, fontSize: 18, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
-                {sheetOpen ? 'hide' : `${page.ingredients.length} ${page.ingredients.length === 1 ? 'item' : 'items'}`}
-              </Text>
-            </View>
-            {sheetOpen &&
-              page.ingredients.map((ing) => (
-                <Animated.Text key={ing} entering={reduce ? undefined : FadeIn.duration(200)} style={[t.body, { color: k.soft }]}>
-                  • {ing}
-                </Animated.Text>
-              ))}
-          </Pressable>
         )}
         <View style={styles.nav}>
           {index > 0 && (
@@ -202,7 +209,7 @@ export function CookScreen({ route, navigation }: Props) {
               if (last) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 setTimesCooked(saved.markCooked(r.slug));
-                setTimer(null);
+                runTimer(null);
                 setDone(true);
               } else go(index + 1);
             }}
@@ -227,8 +234,6 @@ const styles = StyleSheet.create({
   step: { fontFamily: font.sans, fontSize: 26, lineHeight: 36 },
   timerChip: { alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 2, justifyContent: 'center' },
   bottom: { paddingHorizontal: space.xl, gap: space.m },
-  sheet: { borderRadius: 22, padding: space.l, gap: 6 },
-  sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 28 },
   nav: { flexDirection: 'row', gap: space.m },
   back: { minHeight: 56, paddingHorizontal: space.xl, borderRadius: 28, borderWidth: 2, justifyContent: 'center' },
   primary: { minHeight: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xl },
