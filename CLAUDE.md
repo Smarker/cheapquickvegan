@@ -6,6 +6,10 @@ CheapQuickVegan is a Next.js-based vegan food and travel blog with a focus on SE
 
 This is a Next.js + TypeScript vegan cooking site. Key areas: recipe pages, guide/listicle pages, SEO (JSON-LD), ingredient database, Notion CMS integration. Tests are in a test directory — check for it before saying no tests exist. When making data/parser changes, verify with existing tests.
 
+## Repo Layout
+
+pnpm + turbo monorepo. The Next.js site lives in `packages/web` — all paths in these docs and in `.claude/commands` (`src/`, `scripts/`, `public/`, `recipes-cache.json`, `.env.local`) are relative to `packages/web`. Run app commands from there (`cd packages/web && pnpm tsx scripts/...`) or with `pnpm --filter @cheapquickvegan/web <script>` from the root.
+
 ## General Rules
 
 - Always prefer the simplest solution. Do not edit types, refactor abstractions, or add infrastructure unless explicitly asked.

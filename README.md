@@ -1,6 +1,6 @@
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev   # runs packages/web via turbo
 ```
 
 Visit `http://localhost:3000` to see the blog.
