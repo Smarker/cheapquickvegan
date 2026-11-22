@@ -19,6 +19,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@cheapquickvegan/shared": "workspace:*",
     "@hookform/resolvers": "^5.0.1",
     "@notion-render/client": "^0.0.2",
     "@notionhq/client": "^5.0.0",

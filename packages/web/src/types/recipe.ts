@@ -15,9 +15,4 @@ export interface Recipe {
   status?: string;
 }
 
-export interface RecipeInstruction {
-  text: string;
-  name: string;        // Auto-generated or manual
-  url: string;         // Fragment identifier (#step-1)
-  image?: string;      // Optional step image
-}
+export type { RecipeInstruction } from "@cheapquickvegan/shared";

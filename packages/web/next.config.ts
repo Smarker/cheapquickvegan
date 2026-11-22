@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@cheapquickvegan/shared"],
   images: {
     // Serve AVIF where supported (falls back to WebP) — ~20-30% smaller for photos.
     formats: ["image/avif", "image/webp"],

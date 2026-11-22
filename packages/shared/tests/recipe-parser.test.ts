@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRecipeContent } from "@/lib/recipe-parser";
+import { parseRecipeContent } from "../src/recipe-parser";
 
 // Mirrors the transformation applied in page.tsx when building recipeIngredient for JSON-LD
 const toJsonLdIngredients = (ingredients: string[]) =>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Recipe } from "@/types/recipe";
-import { parseRecipeContent } from "@/lib/recipe-parser";
+import { parseRecipeContent } from "@cheapquickvegan/shared";
 import { getAggregateRating } from "@/lib/db/comments";
 
 interface RoundupRecipeCardProps {
