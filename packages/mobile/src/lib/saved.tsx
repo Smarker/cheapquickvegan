@@ -1,0 +1,79 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+const SAVED_KEY = 'cqv:saved:v1';
+const COOKED_KEY = 'cqv:cooked:v1';
+
+type Saved = {
+  isSaved: (slug: string) => boolean;
+  toggle: (slug: string) => void;
+  slugs: string[];
+  /** Increments on every new save, so the Saved tab can bounce in reply. */
+  bounceTick: number;
+  bounce: () => void;
+  /** How many times each recipe has been cooked to the end in cook mode. */
+  cookedCount: (slug: string) => number;
+  markCooked: (slug: string) => number;
+};
+
+const Ctx = createContext<Saved | null>(null);
+
+function usePersisted<T>(key: string, initial: T) {
+  const [value, setValue] = useState<T>(initial);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(key)
+      .then((raw) => {
+        if (raw) setValue(JSON.parse(raw));
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, [key]);
+  useEffect(() => {
+    if (loaded) AsyncStorage.setItem(key, JSON.stringify(value)).catch(() => {});
+  }, [key, value, loaded]);
+  return [value, setValue] as const;
+}
+
+/** Saved recipes (newest first) and cooked counts, kept on the device so they survive restarts. */
+export function SavedProvider({ children }: { children: React.ReactNode }) {
+  const [slugs, setSlugs] = usePersisted<string[]>(SAVED_KEY, []);
+  const [cooked, setCooked] = usePersisted<Record<string, number>>(COOKED_KEY, {});
+  const [bounceTick, setBounceTick] = useState(0);
+
+  const toggle = useCallback(
+    (slug: string) => setSlugs((s) => (s.includes(slug) ? s.filter((x) => x !== slug) : [slug, ...s])),
+    [setSlugs],
+  );
+  const bounce = useCallback(() => setBounceTick((n) => n + 1), []);
+  const markCooked = useCallback(
+    (slug: string) => {
+      const next = (cooked[slug] ?? 0) + 1;
+      setCooked((c) => ({ ...c, [slug]: (c[slug] ?? 0) + 1 }));
+      return next;
+    },
+    [cooked, setCooked],
+  );
+
+  const value = useMemo(
+    () => ({
+      slugs,
+      toggle,
+      isSaved: (slug: string) => slugs.includes(slug),
+      bounceTick,
+      bounce,
+      cookedCount: (slug: string) => cooked[slug] ?? 0,
+      markCooked,
+    }),
+    [slugs, toggle, bounceTick, bounce, cooked, markCooked],
+  );
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
+export function useSaved(): Saved {
+  const v = useContext(Ctx);
+  if (!v) throw new Error('useSaved must be used inside SavedProvider');
+  return v;
+}
+
+export const useSavedBounce = () => useSaved().bounce;
