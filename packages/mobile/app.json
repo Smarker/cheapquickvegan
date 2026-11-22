@@ -6,7 +6,26 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": false, "bundleIdentifier": "com.cheapquickvegan.app" },
-    "android": { "package": "com.cheapquickvegan.app", "edgeToEdgeEnabled": true, "predictiveBackGestureEnabled": true }
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cheapquickvegan.app"
+    },
+    "android": {
+      "package": "com.cheapquickvegan.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow CheapQuickVegan to hear voice commands like \"next step\" while you cook.",
+          "speechRecognitionPermission": "Allow CheapQuickVegan to understand voice commands while you cook.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
+      ]
+    ]
   }
 }

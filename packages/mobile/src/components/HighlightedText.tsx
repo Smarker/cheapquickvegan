@@ -1,4 +1,4 @@
-import { Text, type TextStyle } from 'react-native';
+import { Text, View, type TextStyle, type ViewStyle } from 'react-native';
 import type { IngredientAmount } from '../lib/cook';
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -11,6 +11,8 @@ type Props = {
   /** Term → amount. When given, the first mention of each ingredient reads "coconut milk (1 can)". */
   amounts?: Map<string, IngredientAmount>;
   amountStyle?: TextStyle;
+  /** Draws each amount as a small rounded tag, so it's findable by shape, not just colour. */
+  amountTag?: ViewStyle;
 };
 
 type Part = { s: string; terms: string[] };
@@ -20,7 +22,7 @@ type Part = { s: string; terms: string[] };
  * name ("Thai red curry paste"), and each ingredient's amount appears once, after its first mention,
  * unless the sentence already gives a quantity right before it ("Heat 1–2 tablespoons of coconut oil").
  */
-export function HighlightedText({ text, terms, style, highlight, amounts, amountStyle }: Props) {
+export function HighlightedText({ text, terms, style, highlight, amounts, amountStyle, amountTag }: Props) {
   if (!terms.length) return <Text style={style}>{text}</Text>;
   const re = new RegExp(`\\b(${terms.map(escape).join('|')})(?:e?s|ed)?\\b`, 'gi');
   const parts: Part[] = [];
@@ -55,7 +57,16 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
         return (
           <Text key={i}>
             <Text style={highlight}>{part.s}</Text>
-            {show ? <Text style={amountStyle}>{` (${found.amount})`}</Text> : null}
+            {show && amountTag ? (
+              <Text>
+                {' '}
+                <View style={amountTag} accessible accessibilityLabel={found.amount}>
+                  <Text style={amountStyle}>{found.amount}</Text>
+                </View>
+              </Text>
+            ) : show ? (
+              <Text style={amountStyle}>{` (${found.amount})`}</Text>
+            ) : null}
           </Text>
         );
       })}

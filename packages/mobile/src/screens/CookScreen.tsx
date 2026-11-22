@@ -166,7 +166,8 @@ export function CookScreen({ route, navigation }: Props) {
                   style={[styles.step, { color: si === 0 ? k.ink : k.soft }]}
                   highlight={{ fontFamily: font.sansBold, color: k.greenDeep }}
                   amounts={amounts}
-                  amountStyle={{ color: k.soft, fontSize: 20 }}
+                  amountStyle={styles.amountText}
+                  amountTag={styles.amountTag}
                 />
                 {timersIn(s).map((tm) => (
                   <Pressable
@@ -232,6 +233,9 @@ const styles = StyleSheet.create({
   fill: { height: 4, borderRadius: 2 },
   page: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xxl, gap: space.l },
   step: { fontFamily: font.sans, fontSize: 26, lineHeight: 36 },
+  // Amounts as tags: findable by shape (not colour), with even-width digits for quick scanning.
+  amountTag: { backgroundColor: k.raised, borderColor: k.line, borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 1, transform: [{ translateY: 5 }] },
+  amountText: { fontFamily: font.sansMedium, fontSize: 19, lineHeight: 26, color: k.ink, fontVariant: ['tabular-nums'] },
   timerChip: { alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 2, justifyContent: 'center' },
   bottom: { paddingHorizontal: space.xl, gap: space.m },
   nav: { flexDirection: 'row', gap: space.m },
