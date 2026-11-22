@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnpm-store/
 /.pnp
 .pnp.*
@@ -12,17 +12,17 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
 
 # cached recipes and guides (regenerated on each build)
 *-cache.json
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
 
 # misc
 .DS_Store
@@ -41,6 +41,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# turbo
+.turbo
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -52,6 +55,6 @@ next-env.d.ts
 /cacheguides-dev-fixtures.json
 
 # generated rich-result image crops (regenerated on each build by scripts/generate-image-crops.ts)
-public/**/*-1x1.jpg
-public/**/*-4x3.jpg
-public/**/*-16x9.jpg
+packages/web/public/**/*-1x1.jpg
+packages/web/public/**/*-4x3.jpg
+packages/web/public/**/*-16x9.jpg
