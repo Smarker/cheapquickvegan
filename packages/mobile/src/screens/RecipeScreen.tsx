@@ -8,6 +8,7 @@ import { CheckIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../compone
 import { Photo } from '../components/Photo';
 import { HighlightedText } from '../components/HighlightedText';
 import { PencilStrike } from '../components/PencilStrike';
+import { GroceryPicker } from '../components/GroceryPicker';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
@@ -35,6 +36,7 @@ export function RecipeScreen({ route, navigation }: Props) {
   const { units, setUnits } = useUnits();
   const prefs = usePrefs();
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [picking, setPicking] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
   const tint = tintFor(p, r?.category ?? null);
 
@@ -54,10 +56,8 @@ export function RecipeScreen({ route, navigation }: Props) {
   const title = displayTitle(r);
   const photo = width - 48;
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
-  // Ticked means "I have this": the grocery button adds only the rest (never plain water).
-  const lines = r.ingredients.flatMap((g, gi) => g.items.map((item, ii) => ({ item, key: `${gi}-${ii}` }))).filter((x) => !isJustWater(x.item));
-  const toBuy = lines.filter((x) => !checked.has(x.key)).map((x) => x.item);
-  const have = lines.length - toBuy.length;
+  // What can go on a grocery list (never plain water). The picker asks which ones the cook needs.
+  const shoppable = r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map((l) => (units ? convertLine(l, units) : l));
   const tabs: { key: Tab; label: string }[] = [
     { key: 'ingredients', label: `Ingredients · ${ingredientCount}` },
     { key: 'steps', label: 'Directions' },
@@ -93,7 +93,15 @@ export function RecipeScreen({ route, navigation }: Props) {
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
-        <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
+        <View style={styles.planRow}>
+          <Pill
+            label={saved.inWeek(r.slug) ? 'On this week' : 'Cook this week'}
+            selected={saved.inWeek(r.slug)}
+            onPress={() => saved.toggleWeek(r.slug)}
+            accessibilityLabel={saved.inWeek(r.slug) ? 'Remove from this week' : 'Add to this week'}
+          />
+          <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
+        </View>
         <View style={styles.facts}>
           {facts.map(({ icon: Icon, text }) => (
             <View key={text} style={styles.fact}>
@@ -116,6 +124,16 @@ export function RecipeScreen({ route, navigation }: Props) {
             <Pill key={x.key} label={x.label} selected={tab === x.key} onPress={() => setTab(x.key)} role="tab" />
           ))}
         </ScrollView>
+      <GroceryPicker
+        visible={picking}
+        groups={[{ slug: r.slug, title, lines: shoppable }]}
+        onClose={() => setPicking(false)}
+        onAdd={(picked) => {
+          if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
+          picked.forEach((g) => grocery.addRecipe(r, g.lines));
+          setPicking(false);
+        }}
+      />
 
         {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (
           <View style={styles.units} accessibilityRole="radiogroup" accessibilityLabel="Measurements">
@@ -153,35 +171,17 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
 
         {tab === 'ingredients' && (
-          <Text style={[t.small, { color: p.muted, marginTop: space.s }]} accessibilityLiveRegion="polite">
-            {grocery.hasRecipe(r.slug)
-              ? 'Added. Tick off more and tap again to update.'
-              : have === 0
-                ? "Already have some? Tick them and I'll leave them off the list."
-                : toBuy.length === 0
-                  ? 'You have everything. Happy cooking!'
-                  : `Leaving off the ${have} you ticked.`}
-          </Text>
-        )}
-        {tab === 'ingredients' && (
           <Pressable
             onPress={() => {
-              if (!toBuy.length) return;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
-              grocery.addRecipe(r, toBuy);
+              Haptics.selectionAsync();
+              setPicking(true);
             }}
-            disabled={!toBuy.length}
             accessibilityRole="button"
-            accessibilityHint="Adds the ingredients you haven't ticked to your grocery list"
-            style={({ pressed }) => [styles.addList, { borderColor: p.green, opacity: toBuy.length ? 1 : 0.5, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+            accessibilityHint="Choose which ingredients you need, then add them to your grocery list"
+            style={({ pressed }) => [styles.addList, { borderColor: p.green, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
           >
             <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>
-              {grocery.hasRecipe(r.slug)
-                ? 'On your grocery list'
-                : have === 0
-                  ? 'Add to grocery list'
-                  : `Add ${toBuy.length} to grocery list`}
+              {grocery.hasRecipe(r.slug) ? 'On your grocery list' : 'Add to grocery list'}
             </Text>
             {grocery.hasRecipe(r.slug) && <CheckIcon color={p.greenDeep} size={16} />}
           </Pressable>
@@ -217,6 +217,16 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
       </View>
     </ScrollView>
+      <GroceryPicker
+        visible={picking}
+        groups={[{ slug: r.slug, title, lines: shoppable }]}
+        onClose={() => setPicking(false)}
+        onAdd={(picked) => {
+          if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
+          picked.forEach((g) => grocery.addRecipe(r, g.lines));
+          setPicking(false);
+        }}
+      />
       <View style={[styles.cookBar, { backgroundColor: p.ground, borderTopColor: p.hairline }]}>
         <Pressable
           onPress={() => {
@@ -261,6 +271,7 @@ const styles = StyleSheet.create({
   heart: { position: 'absolute', right: 12, bottom: -18 },
   facts: { flexDirection: 'row', gap: space.s },
   fact: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: space.m, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.55)' },
+  planRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, flexWrap: 'wrap' },
   addList: { flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, borderWidth: 2, marginTop: space.s },
   cookBar: { paddingHorizontal: space.xl, paddingVertical: space.m, borderTopWidth: StyleSheet.hairlineWidth },
   cookBtn: { minHeight: 56, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xl },

@@ -3,6 +3,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 const SAVED_KEY = 'cqv:saved:v1';
 const COOKED_KEY = 'cqv:cooked:v1';
+const WEEK_KEY = 'cqv:week:v1';
+
+/** A recipe planned for this week, and how many times it had been cooked when it was added. */
+export type WeekEntry = { slug: string; cookedAtAdd: number };
 
 type Saved = {
   isSaved: (slug: string) => boolean;
@@ -14,6 +18,13 @@ type Saved = {
   /** How many times each recipe has been cooked to the end in cook mode. */
   cookedCount: (slug: string) => number;
   markCooked: (slug: string) => number;
+  /** Recipes planned for this week, in the order they were added. */
+  week: WeekEntry[];
+  inWeek: (slug: string) => boolean;
+  toggleWeek: (slug: string) => void;
+  /** Cooked since it was added to this week. */
+  cookedThisWeek: (slug: string) => boolean;
+  clearCookedFromWeek: () => void;
 };
 
 const Ctx = createContext<Saved | null>(null);
@@ -39,6 +50,7 @@ function usePersisted<T>(key: string, initial: T) {
 export function SavedProvider({ children }: { children: React.ReactNode }) {
   const [slugs, setSlugs] = usePersisted<string[]>(SAVED_KEY, []);
   const [cooked, setCooked] = usePersisted<Record<string, number>>(COOKED_KEY, {});
+  const [week, setWeek] = usePersisted<WeekEntry[]>(WEEK_KEY, []);
   const [bounceTick, setBounceTick] = useState(0);
 
   const toggle = useCallback(
@@ -64,8 +76,17 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
       bounce,
       cookedCount: (slug: string) => cooked[slug] ?? 0,
       markCooked,
+      week,
+      inWeek: (slug: string) => week.some((w) => w.slug === slug),
+      toggleWeek: (slug: string) =>
+        setWeek((w) => (w.some((x) => x.slug === slug) ? w.filter((x) => x.slug !== slug) : [...w, { slug, cookedAtAdd: cooked[slug] ?? 0 }])),
+      cookedThisWeek: (slug: string) => {
+        const w = week.find((x) => x.slug === slug);
+        return !!w && (cooked[slug] ?? 0) > w.cookedAtAdd;
+      },
+      clearCookedFromWeek: () => setWeek((w) => w.filter((x) => (cooked[x.slug] ?? 0) <= x.cookedAtAdd)),
     }),
-    [slugs, toggle, bounceTick, bounce, cooked, markCooked],
+    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
