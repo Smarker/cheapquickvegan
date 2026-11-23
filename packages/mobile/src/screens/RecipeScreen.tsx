@@ -13,6 +13,8 @@ import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { ingredientTerms } from '../lib/cook';
+import { canConvert, convertLine, writtenIn } from '../lib/units';
+import { useUnits } from '../lib/unitsPref';
 import { useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
@@ -29,6 +31,7 @@ export function RecipeScreen({ route, navigation }: Props) {
   const saved = useSaved();
   const grocery = useGrocery();
   const [tab, setTab] = useState<Tab>('ingredients');
+  const { units, setUnits } = useUnits();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const r = recipes.find((x) => x.slug === route.params.slug);
   const tint = tintFor(p, r?.category ?? null);
@@ -107,6 +110,19 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
         </ScrollView>
 
+        {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (
+          <View style={styles.units} accessibilityRole="radiogroup" accessibilityLabel="Measurements">
+            {(['volume', 'grams'] as const).map((u) => (
+              <Pill
+                key={u}
+                label={u === 'volume' ? 'Cups & spoons' : 'Grams'}
+                selected={(units ?? writtenIn(r.ingredients.flatMap((g) => g.items))) === u}
+                onPress={() => setUnits(u)}
+                accessibilityLabel={u === 'volume' ? 'Show cups and spoons' : 'Show grams, small amounts stay in spoons'}
+              />
+            ))}
+          </View>
+        )}
         {tab === 'ingredients' &&
           r.ingredients.map((g, gi) => (
             <View key={gi} style={styles.group}>
@@ -122,7 +138,7 @@ export function RecipeScreen({ route, navigation }: Props) {
                     <View style={[styles.art, { opacity: done ? 0.4 : 1 }]}>
                       <IngredientDoodle line={item} color={p.ink} size={26} />
                     </View>
-                    <PencilStrike text={item} done={done} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
+                    <PencilStrike text={units ? convertLine(item, units) : item} done={done} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
                   </Pressable>
                 );
               })}
@@ -207,6 +223,7 @@ const styles = StyleSheet.create({
   group: { gap: space.s },
   ing: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },
   art: { width: 28, alignItems: 'center' },
+  units: { flexDirection: 'row', gap: space.s, marginTop: space.s },
   box: { width: 22, height: 22, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   step: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
   dot: { width: 7, height: 7, borderRadius: 4, marginTop: 9 },

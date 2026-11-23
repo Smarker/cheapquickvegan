@@ -17,6 +17,8 @@ type Props = {
   /** Equipment names ("air fryer", "blender"), underlined so they read differently from ingredients. */
   tools?: string[];
   toolStyle?: TextStyle;
+  /** Rewrites an amount in the step ("2 cups" before "flour") into the cook's units. */
+  convertAmount?: (amount: string, after: string) => string;
 };
 
 type Part = { s: string; kind: 'text' | 'ingredient' | 'tool' | 'measure' };
@@ -26,7 +28,7 @@ type Part = { s: string; kind: 'text' | 'ingredient' | 'tool' | 'measure' };
  * tools underlined, and temperatures and times as tags. Neighbouring ingredient words merge into
  * one name ("Thai red curry paste").
  */
-export function HighlightedText({ text, terms, style, highlight, amounts, amountStyle, amountTag, tools = [], toolStyle }: Props) {
+export function HighlightedText({ text, terms, style, highlight, amounts, amountStyle, amountTag, tools = [], toolStyle, convertAmount }: Props) {
   // Numbered groups, not named ones: Hermes (the app's JS engine) doesn't fill in named groups.
   const kinds: Part['kind'][] = [];
   const alternatives: string[] = [];
@@ -69,7 +71,7 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
               {part.s}
             </Text>
           );
-        if (part.kind === 'measure') return <Text key={i}>{tag(part.s)}</Text>;
+        if (part.kind === 'measure') return <Text key={i}>{tag(convertAmount ? convertAmount(part.s, parts.slice(i + 1).map((x) => x.s).join('')) : part.s)}</Text>;
         // "Heat 1–2 tablespoons of coconut oil": the step already gives the quantity.
         const between = parts[i - 1]?.kind === 'text' ? parts[i - 1].s : '';
         const statedAlready = parts[i - 1]?.kind === 'measure' || (parts[i - 2]?.kind === 'measure' && /^\s*(of\s+)?(the\s+)?$/i.test(between));

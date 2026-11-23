@@ -12,6 +12,8 @@ import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
 import { handsFreeAvailable, useHandsFree } from '../lib/handsFree';
+import { convertInStep, linesIn } from '../lib/units';
+import { useUnits } from '../lib/unitsPref';
 import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
 import { HighlightedText } from '../components/HighlightedText';
@@ -50,7 +52,10 @@ export function CookScreen({ route, navigation }: Props) {
   const terms = useMemo(() => (r ? ingredientTerms(r.ingredients.flatMap((g) => g.items)) : []), [r]);
   // Amounts sit inline after each ingredient's first mention, so nobody taps a phone with messy hands.
   const tools = useMemo(() => (r ? toolTerms(r.equipment) : []), [r]);
-  const amounts = useMemo(() => (r ? ingredientAmounts(r.ingredients.flatMap((g) => g.items)) : []), [r]);
+  const { units } = useUnits();
+  // Amounts follow the cups-or-grams choice made on the recipe page.
+  const lines = useMemo(() => (r ? linesIn(r.ingredients.flatMap((g) => g.items), units) : []), [r, units]);
+  const amounts = useMemo(() => ingredientAmounts(lines), [lines]);
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
   const [timer, setTimer] = useState<RunningTimer | null>(null);
@@ -118,7 +123,7 @@ export function CookScreen({ route, navigation }: Props) {
   // Hands-free: what a cook might ask with their hands full, answered out loud.
   function handleVoice(cmd: VoiceCommand) {
     if (!r) return;
-    const allLines = r.ingredients.flatMap((g) => g.items);
+    const allLines = lines;
     setHeard(null);
     switch (cmd.type) {
       case 'next':
@@ -161,7 +166,7 @@ export function CookScreen({ route, navigation }: Props) {
         return voice.say(line ?? `I can't find ${cmd.item} in this recipe.`);
       }
       case 'ingredients': {
-        const need = page?.ingredients.length ? page.ingredients : allLines;
+        const need = page?.ingredients.length ? linesIn(page.ingredients, units) : allLines;
         return voice.say(need.join('. '));
       }
     }
@@ -279,6 +284,7 @@ export function CookScreen({ route, navigation }: Props) {
                   amountTag={styles.amountTag}
                   tools={tools}
                   toolStyle={styles.tool}
+                  convertAmount={(amount, after) => convertInStep(amount, after, units)}
                 />
                 {timersIn(s).map((tm) => (
                   <Pressable
