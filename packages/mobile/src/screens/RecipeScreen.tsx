@@ -16,7 +16,7 @@ import { ingredientTerms } from '../lib/cook';
 import { canConvert, convertLine, writtenIn } from '../lib/units';
 import { allergenLabel } from '../lib/allergens';
 import { usePrefs, useUnits } from '../lib/prefs';
-import { useGrocery } from '../lib/grocery';
+import { isJustWater, useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
@@ -54,6 +54,10 @@ export function RecipeScreen({ route, navigation }: Props) {
   const title = displayTitle(r);
   const photo = width - 48;
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
+  // Ticked means "I have this": the grocery button adds only the rest (never plain water).
+  const lines = r.ingredients.flatMap((g, gi) => g.items.map((item, ii) => ({ item, key: `${gi}-${ii}` }))).filter((x) => !isJustWater(x.item));
+  const toBuy = lines.filter((x) => !checked.has(x.key)).map((x) => x.item);
+  const have = lines.length - toBuy.length;
   const tabs: { key: Tab; label: string }[] = [
     { key: 'ingredients', label: `Ingredients · ${ingredientCount}` },
     { key: 'steps', label: 'Directions' },
@@ -149,17 +153,35 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
 
         {tab === 'ingredients' && (
+          <Text style={[t.small, { color: p.muted, marginTop: space.s }]} accessibilityLiveRegion="polite">
+            {grocery.hasRecipe(r.slug)
+              ? 'Added. Tick off more and tap again to update.'
+              : have === 0
+                ? "Already have some? Tick them and I'll leave them off the list."
+                : toBuy.length === 0
+                  ? 'You have everything. Happy cooking!'
+                  : `Leaving off the ${have} you ticked.`}
+          </Text>
+        )}
+        {tab === 'ingredients' && (
           <Pressable
             onPress={() => {
+              if (!toBuy.length) return;
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              grocery.addRecipe(r);
+              if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
+              grocery.addRecipe(r, toBuy);
             }}
+            disabled={!toBuy.length}
             accessibilityRole="button"
-            accessibilityHint="Adds this recipe's ingredients to your grocery list"
-            style={({ pressed }) => [styles.addList, { borderColor: p.green, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+            accessibilityHint="Adds the ingredients you haven't ticked to your grocery list"
+            style={({ pressed }) => [styles.addList, { borderColor: p.green, opacity: toBuy.length ? 1 : 0.5, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
           >
             <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>
-              {grocery.hasRecipe(r.slug) ? 'On your grocery list' : 'Add to grocery list'}
+              {grocery.hasRecipe(r.slug)
+                ? 'On your grocery list'
+                : have === 0
+                  ? 'Add to grocery list'
+                  : `Add ${toBuy.length} to grocery list`}
             </Text>
             {grocery.hasRecipe(r.slug) && <CheckIcon color={p.greenDeep} size={16} />}
           </Pressable>

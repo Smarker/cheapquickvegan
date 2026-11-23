@@ -168,7 +168,7 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const reach = useSharedValue(0);
   const knead = useSharedValue(0);
   const roll = useSharedValue(0);
-  const spin = useSharedValue(1);
+  const orbit = useSharedValue(0);
 
   /** Something happened: reset the quiet clock, and get up if lying down (with a stretch after a nap). */
   const wake = (stretch = true) => {
@@ -238,11 +238,12 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
         busy.current = true;
         setPose('walk');
         stride.value = withRepeat(withTiming(1, { duration: 140, easing: Easing.inOut(Easing.sin) }), 14, true);
-        // Turning round and round: squash through 0 to face the other way, six times.
-        spin.value = withRepeat(withSequence(withTiming(-1, { duration: 170 }), withTiming(1, { duration: 170 })), 3, false);
+        // Round and round a little loop after its tail, three times.
+        orbit.value = 0;
+        orbit.value = withTiming(3, { duration: 2000, easing: Easing.inOut(Easing.sin) });
         chase = setTimeout(() => {
           stride.value = withTiming(0, { duration: 120 });
-          spin.value = 1;
+          orbit.value = 0;
           setPose('sit');
           busy.current = false;
         }, 2100);
@@ -351,9 +352,23 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pose, reduce]);
 
-  const whole = useAnimatedStyle(() => ({
-    transform: [{ translateX: posX.value }, { translateY: bob.value + hop.value }, { scaleX: (facing === 'left' ? -1 : 1) * spin.value }],
-  }));
+  const whole = useAnimatedStyle(() => {
+    // Chasing its tail: once round the loop per unit of orbit. Side to side with x, a little up and
+    // smaller on the far side, and it turns at the ends of the loop, where it's narrowest.
+    const a = orbit.value * Math.PI * 2;
+    const chasing = orbit.value > 0 && orbit.value < 3;
+    const far = chasing ? (1 - Math.cos(a)) / 2 : 0;
+    const c = Math.cos(a);
+    const turn = chasing ? Math.sign(c || 1) * (0.62 + 0.38 * Math.abs(c)) : 1;
+    return {
+      transform: [
+        { translateX: posX.value + (chasing ? Math.sin(a) * size * 0.14 : 0) },
+        { translateY: bob.value + hop.value - far * 3 },
+        { scale: 1 - far * 0.1 },
+        { scaleX: (facing === 'left' ? -1 : 1) * turn },
+      ],
+    };
+  });
   const rot = (v: SharedValue<number>, k: number) => useAnimatedStyle(() => ({ transform: [{ rotate: `${v.value * k}deg` }] }));
   const tipStyle = rot(tail, -28);
   const tiltStyle = rot(tilt, 1);
@@ -507,10 +522,12 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
               {svg(
                 <>
                   {/* rolled onto its back: paws in the air, fluffy white belly up */}
-                  <Limb d="M18.6 33 C17 30 15.6 28.6 14.6 26.6" w={3.6} outline={outline} end={<Paw cx={14.4} cy={25.6} outline={outline} />} />
-                  <Limb d="M23 32 C23 29.6 22.6 27.6 23.2 25.6" w={3.6} outline={outline} end={<Paw cx={23.4} cy={24.6} outline={outline} />} />
-                  <Limb d="M36 32 C36.4 29.6 36.2 27.6 37 25.8" w={3.4} outline={outline} end={<Paw cx={37.2} cy={24.8} outline={outline} />} />
-                  <Limb d="M40 32.6 C41.6 30.4 42.6 28.6 44 27" w={3.4} outline={outline} end={<Paw cx={44.6} cy={26.2} outline={outline} />} />
+                  {/* back legs: knees up and flopped outward */}
+                  <Limb d="M17.6 33.4 C14.6 31.6 12.4 28.6 13.4 26.4 C14 25.2 15.6 25.4 16.6 26.2" w={3.8} outline={outline} end={<Paw cx={17.4} cy={26.6} outline={outline} />} />
+                  <Limb d="M23 32.4 C22.2 29.4 22.8 26.6 24.8 25.8 C26 25.4 26.8 26.4 26.6 27.4" w={3.8} outline={outline} end={<Paw cx={26.6} cy={28.2} outline={outline} />} />
+                  {/* front paws: bent at the wrist and curled down toward the chest */}
+                  <Limb d="M35.6 32.4 C35.6 29.6 37 27.6 39 27.4 C40.2 27.4 40.6 28.6 40 29.6" w={3.2} outline={outline} end={<Paw cx={39.6} cy={30.4} outline={outline} />} />
+                  <Limb d="M40.6 33 C41.4 30.4 43.2 28.8 45 29 C46 29.2 46.2 30.4 45.4 31.2" w={3.2} outline={outline} end={<Paw cx={45} cy={32} outline={outline} />} />
                   <Path d="M11 39.6 C11 34 19 31 29.6 31 C40 31 47 34 47 39.6 C47 44.6 40.6 46.6 29.6 46.6 C18.6 46.6 11 44.6 11 39.6 Z" fill={FUR} {...line} />
                   <Path d="M16.6 34.6 L18 33.2 L19.4 34.2 L21 32.6 L22.6 33.6 L24.4 32.2 L26.2 33.2 L28 31.8 L29.8 33 L31.6 31.8 L33.4 33 L35.2 32 L37 33.2 L38.6 32.4 L40.2 33.6 L41.6 33 L42.6 34.6 C39 37 21 37 16.6 34.6 Z" fill={CREAM} />
                   <Limb d="M11.4 42 C6 43.4 3.6 39.6 5.6 35.6" w={4.2} outline={outline} />

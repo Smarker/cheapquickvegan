@@ -24,11 +24,12 @@ const RULES: [Aisle, RegExp][] = [
 export const aisleFor = (line: string): Aisle => RULES.find(([, re]) => re.test(line))?.[0] ?? 'Other';
 
 /** Tap water isn't something you shop for. */
-const isJustWater = (line: string) => /^[\d\s\/½¼¾⅓⅔.–-]*\s*(cups?|c|tbsp|tsp|ml|l|g)?\s*(of\s+)?(cold|warm|hot|boiling|lukewarm|room[- ]temperature)?\s*water\b(?!\s*chestnut)/i.test(line.trim());
+export const isJustWater = (line: string) => /^[\d\s\/½¼¾⅓⅔.–-]*\s*(cups?|c|tbsp|tsp|ml|l|g)?\s*(of\s+)?(cold|warm|hot|boiling|lukewarm|room[- ]temperature)?\s*water\b(?!\s*chestnut)/i.test(line.trim());
 
 type Grocery = {
   items: GroceryItem[];
-  addRecipe: (r: Recipe) => number;
+  /** Adds a recipe's ingredients, or just the lines given (the ones the cook doesn't already have). */
+  addRecipe: (r: Recipe, only?: string[]) => number;
   hasRecipe: (slug: string) => boolean;
   toggle: (id: string) => void;
   removeRecipe: (slug: string) => void;
@@ -55,8 +56,8 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
     if (loaded) AsyncStorage.setItem(KEY, JSON.stringify(items)).catch(() => {});
   }, [items, loaded]);
 
-  const addRecipe = useCallback((r: Recipe) => {
-    const lines = r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l));
+  const addRecipe = useCallback((r: Recipe, only?: string[]) => {
+    const lines = (only ?? r.ingredients.flatMap((g) => g.items)).filter((l) => !isJustWater(l));
     setItems((prev) => {
       const have = new Set(prev.filter((i) => i.recipeSlug === r.slug).map((i) => i.text));
       const fresh = lines
