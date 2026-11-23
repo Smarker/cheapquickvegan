@@ -17,11 +17,13 @@ type Stored = {
   missingGear: string[];
   avoid: Allergen[];
   autoHandsFree: boolean;
+  /** Hands-free reads each step out loud; off, it just names the step so it can listen again sooner. */
+  readAloud: boolean;
   helper: boolean;
   theme: Theme;
 };
 
-const DEFAULTS: Stored = { units: null, missingGear: [], avoid: [], autoHandsFree: false, helper: true, theme: 'system' };
+const DEFAULTS: Stored = { units: null, missingGear: [], avoid: [], autoHandsFree: false, readAloud: true, helper: true, theme: 'system' };
 
 export type RecipeWarnings = { contains: Allergen[]; needs: string[] };
 

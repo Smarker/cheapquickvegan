@@ -143,7 +143,8 @@ export function CookScreen({ route, navigation }: Props) {
 
   const readPage = (i: number) => {
     const pg = pages[i];
-    if (pg) voice.say([pg.title, ...pg.steps].join('. '));
+    if (!pg) return;
+    voice.say(prefs.readAloud ? [pg.title, ...pg.steps].join('. ') : `Step ${i + 1}. ${pg.title}.`);
   };
 
   // Hands-free: what a cook might ask with their hands full, answered out loud.

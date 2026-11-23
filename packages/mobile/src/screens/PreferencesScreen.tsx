@@ -101,6 +101,13 @@ export function PreferencesScreen() {
           onChange={(v) => prefs.set('autoHandsFree', v)}
           disabled={!canVoice}
         />
+        <Toggle
+          label="Read steps aloud"
+          hint={prefs.readAloud ? 'Reads each step when you say "next". Turn off to just hear the step name, so it listens again sooner.' : 'Says the step name only. Say "repeat" to hear the whole step.'}
+          value={prefs.readAloud}
+          onChange={(v) => prefs.set('readAloud', v)}
+          disabled={!canVoice}
+        />
         <Toggle label="Cat helper" hint="Walks along your steps and cheers when you finish." value={prefs.helper} onChange={(v) => prefs.set('helper', v)} />
       </Section>
 
