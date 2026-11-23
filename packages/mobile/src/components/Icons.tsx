@@ -40,6 +40,13 @@ export const ShareIcon = ({ color, size = 22 }: P) => (
   </Svg>
 );
 /** Grocery list: a little clipboard with two ticked lines. */
+/** This week: a little calendar page. */
+export const CalendarIcon = ({ color, size = 24 }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M5.5 6h13A1.5 1.5 0 0 1 20 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6z M4 10.5h16 M8.5 4v3.5 M15.5 4v3.5" stroke={color} {...base} />
+    <Path d="M8.5 14.5h.01 M12 14.5h.01 M15.5 14.5h.01" stroke={color} {...base} strokeWidth={2.4} />
+  </Svg>
+);
 export const ListIcon = ({ color, size = 24 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path d="M8 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H16" stroke={color} {...base} />

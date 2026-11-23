@@ -35,7 +35,7 @@ export function GroceryScreen() {
         ) : (
           <>
             <Text style={[t.hand, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
-              {left === 0 ? 'All done. Happy cooking!' : `${left} to get, for ${recipes.map(([, title]) => title).join(', ')}`}
+              {left === 0 ? 'All done. Happy cooking!' : `${left} to get${recipes.length > 1 ? ` for ${recipes.length} recipes` : `, for ${recipes[0][1]}`}`}
             </Text>
 
             <View style={styles.actions}>
@@ -84,7 +84,6 @@ export function GroceryScreen() {
                         </View>
                         <View style={{ flex: 1 }}>
                           <PencilStrike text={item.text} done={item.checked} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
-                          {recipes.length > 1 && <Text style={[t.small, { color: p.muted }]}>{item.recipeTitle}</Text>}
                         </View>
                       </Pressable>
                     </Animated.View>

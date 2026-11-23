@@ -4,7 +4,7 @@ import { useLayoutEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
-import { CheckIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
+import { CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
 import { HighlightedText } from '../components/HighlightedText';
 import { PencilStrike } from '../components/PencilStrike';
@@ -20,7 +20,7 @@ import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
-import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
+import { font, lift, space, tintFor, type as t, usePalette } from '../theme/tokens';
 
 /** Shared by the Discover and Saved stacks; both define Recipe with the same params. */
 type Props = NativeStackScreenProps<{ Recipe: { slug: string }; Cook: { slug: string } }, 'Recipe'>;
@@ -84,33 +84,40 @@ export function RecipeScreen({ route, navigation }: Props) {
     <View style={{ flex: 1, backgroundColor: p.ground }}>
     <ScrollView style={{ backgroundColor: tint }} contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.top}>
-        <View>
-          <Photo uri={r.image.replace('-1x1', '-4x3')} width={photo} height={photo * 0.75} radius={28} floating />
-          <View style={styles.heart}>
-            <HeartButton saved={saved.isSaved(r.slug)} onToggle={() => saved.toggle(r.slug)} label={title} size={48} />
-          </View>
-        </View>
+        <Photo uri={r.image.replace('-1x1', '-4x3')} width={photo} height={photo * 0.75} radius={28} floating />
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
-        <View style={styles.planRow}>
-          <Pill
-            label={saved.inWeek(r.slug) ? 'On this week' : 'Cook this week'}
-            selected={saved.inWeek(r.slug)}
-            onPress={() => saved.toggleWeek(r.slug)}
-            accessibilityLabel={saved.inWeek(r.slug) ? 'Remove from this week' : 'Add to this week'}
-          />
-          <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
-        </View>
         <View style={styles.facts}>
           {facts.map(({ icon: Icon, text }) => (
             <View key={text} style={styles.fact}>
-              <Icon color={p.green} />
-              <Text style={[t.small, { color: p.ink, textAlign: 'center' }]} numberOfLines={2}>
-                {text}
-              </Text>
+              <Icon color={p.green} size={18} />
+              <Text style={[t.small, { color: p.ink }]}>{text}</Text>
             </View>
           ))}
+          <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
+        </View>
+
+        {/* Keep it for later, plan it, shop for it: three quiet actions. Cooking is the one big button. */}
+        <View style={styles.actions}>
+          <View style={styles.action}>
+            <HeartButton saved={saved.isSaved(r.slug)} onToggle={() => saved.toggle(r.slug)} label={title} size={48} />
+            <Text style={[t.small, { color: p.ink }]}>{saved.isSaved(r.slug) ? 'Saved' : 'Save'}</Text>
+          </View>
+          <ActionButton
+            label="This week"
+            on={saved.inWeek(r.slug)}
+            onPress={() => saved.toggleWeek(r.slug)}
+            a11y={saved.inWeek(r.slug) ? 'Remove from this week' : 'Cook this week'}
+            Icon={CalendarIcon}
+          />
+          <ActionButton
+            label={grocery.hasRecipe(r.slug) ? 'On your list' : 'Grocery list'}
+            on={grocery.hasRecipe(r.slug)}
+            onPress={() => setPicking(true)}
+            a11y={grocery.hasRecipe(r.slug) ? 'Update what this recipe adds to your grocery list' : 'Choose ingredients to add to your grocery list'}
+            Icon={ListIcon}
+          />
         </View>
       </View>
 
@@ -124,30 +131,18 @@ export function RecipeScreen({ route, navigation }: Props) {
             <Pill key={x.key} label={x.label} selected={tab === x.key} onPress={() => setTab(x.key)} role="tab" />
           ))}
         </ScrollView>
-      <GroceryPicker
-        visible={picking}
-        groups={[{ slug: r.slug, title, lines: shoppable }]}
-        onClose={() => setPicking(false)}
-        onAdd={(picked) => {
-          if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
-          picked.forEach((g) => grocery.addRecipe(r, g.lines));
-          setPicking(false);
-        }}
-      />
 
-        {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (
-          <View style={styles.units} accessibilityRole="radiogroup" accessibilityLabel="Measurements">
-            {(['volume', 'grams'] as const).map((u) => (
-              <Pill
-                key={u}
-                label={u === 'volume' ? 'Cups & spoons' : 'Grams'}
-                selected={(units ?? writtenIn(r.ingredients.flatMap((g) => g.items))) === u}
-                onPress={() => setUnits(u)}
-                accessibilityLabel={u === 'volume' ? 'Show cups and spoons' : 'Show grams, small amounts stay in spoons'}
-              />
-            ))}
-          </View>
-        )}
+        {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (() => {
+          const shown = units ?? writtenIn(r.ingredients.flatMap((g) => g.items));
+          const other = shown === 'grams' ? 'volume' : 'grams';
+          return (
+            <Pressable onPress={() => setUnits(other)} accessibilityRole="button" hitSlop={8} style={styles.units}>
+              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>
+                {other === 'grams' ? 'Show in grams' : 'Show in cups & spoons'}
+              </Text>
+            </Pressable>
+          );
+        })()}
         {tab === 'ingredients' &&
           r.ingredients.map((g, gi) => (
             <View key={gi} style={styles.group}>
@@ -170,22 +165,6 @@ export function RecipeScreen({ route, navigation }: Props) {
             </View>
           ))}
 
-        {tab === 'ingredients' && (
-          <Pressable
-            onPress={() => {
-              Haptics.selectionAsync();
-              setPicking(true);
-            }}
-            accessibilityRole="button"
-            accessibilityHint="Choose which ingredients you need, then add them to your grocery list"
-            style={({ pressed }) => [styles.addList, { borderColor: p.green, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
-          >
-            <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>
-              {grocery.hasRecipe(r.slug) ? 'On your grocery list' : 'Add to grocery list'}
-            </Text>
-            {grocery.hasRecipe(r.slug) && <CheckIcon color={p.greenDeep} size={16} />}
-          </Pressable>
-        )}
 
         {tab === 'steps' &&
           r.steps.map((g, gi) => (
@@ -265,13 +244,36 @@ function RecipeWarning({ warnings }: { warnings: ReturnType<ReturnType<typeof us
   );
 }
 
+/** A round action with a label under it, matching the heart: ground when off, green when on. */
+function ActionButton({ label, on, onPress, a11y, Icon }: { label: string; on: boolean; onPress: () => void; a11y: string; Icon: (p: { color: string; size?: number }) => React.ReactElement }) {
+  const p = usePalette();
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={a11y}
+      accessibilityState={{ selected: on }}
+      style={({ pressed }) => [styles.action, { transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+    >
+      <View style={[styles.actionCircle, { backgroundColor: on ? p.green : p.ground }, lift(p)]}>
+        <Icon color={on ? '#FFFFFF' : p.green} size={22} />
+      </View>
+      <Text style={[t.small, { color: p.ink }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },
   top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
-  heart: { position: 'absolute', right: 12, bottom: -18 },
-  facts: { flexDirection: 'row', gap: space.s },
-  fact: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: space.m, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.55)' },
-  planRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, flexWrap: 'wrap' },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.l, rowGap: space.s },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  actions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: space.xs },
+  action: { alignItems: 'center', gap: 6, minWidth: 88 },
+  actionCircle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   addList: { flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, borderWidth: 2, marginTop: space.s },
   cookBar: { paddingHorizontal: space.xl, paddingVertical: space.m, borderTopWidth: StyleSheet.hairlineWidth },
   cookBtn: { minHeight: 56, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xl },
