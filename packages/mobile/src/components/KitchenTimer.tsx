@@ -101,8 +101,8 @@ export function KitchenTimer({ timer, onAddMinute, onStop, colors: c }: Props) {
       </Animated.View>
 
       <View style={{ flex: 1 }}>
-        <Text style={[t.hand, { color: done ? '#1D1E19' : c.soft, fontSize: 18 }]} numberOfLines={1}>
-          {done ? "Time's up! Go check it." : `${timer.label} timer`}
+        <Text style={[t.hand, { color: done ? '#1D1E19' : c.soft, fontSize: 18, paddingRight: 6 }]} numberOfLines={2} textBreakStrategy="simple">
+          {done ? "Time's up! Go check it." : timer.label}
         </Text>
         <Text style={[styles.clock, { color: done ? '#1D1E19' : c.ink }]}>{done ? '0:00' : formatClock(remaining)}</Text>
       </View>

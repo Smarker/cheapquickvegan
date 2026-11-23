@@ -68,18 +68,57 @@ export function amountOf(line: string): string | null {
   return amount && /\d|[½¼¾⅓⅔⅛]/.test(amount) ? amount : null;
 }
 
-/**
- * Highlight term → amount, so cook mode can say "coconut milk (1 can)" inline.
- * The first ingredient line that mentions a term wins.
- */
+/** An ingredient line's amount, so cook mode can say "coconut milk (1 can)" inline. */
 export type IngredientAmount = { amount: string; line: string };
 
-export function ingredientAmounts(lines: string[]): Map<string, IngredientAmount> {
-  const out = new Map<string, IngredientAmount>();
-  for (const line of lines) {
+/** Every ingredient line that starts with an amount. */
+export function ingredientAmounts(lines: string[]): IngredientAmount[] {
+  return lines.flatMap((line) => {
     const amount = amountOf(line);
-    if (!amount) continue;
-    for (const term of ingredientTerms([line])) if (!out.has(term)) out.set(term, { amount, line });
+    return amount ? [{ amount, line }] : [];
+  });
+}
+
+// Words that can follow an ingredient's name without being part of it ("olive oil, for frying").
+const AFTER_NAME = new Set('for or to and plus divided optional about if as at from in with of cut chopped minced diced sliced drained rinsed pressed melted softened cooked thinly finely roughly freshly packed more extra'.split(' '));
+
+const escapeRe = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * The amount for a name as it appears in a step ("rice", "Thai red curry paste"). Only a line where that
+ * name is the whole ingredient counts: "rice" matches "1 C jasmine rice (cooked)" but not
+ * "2 tbsp rice wine vinegar". No clean match means no amount, never a wrong one.
+ */
+export function amountFor(name: string, amounts: IngredientAmount[]): IngredientAmount | null {
+  const words = name.toLowerCase().split(/\s+/).map(stem);
+  const re = new RegExp(`\\b${words.map(escapeRe).join('(?:e?s)?\\s+')}(?:e?s)?\\b\\s*([a-z]+)?`, 'i');
+  for (const a of amounts) {
+    const m = a.line.toLowerCase().match(re);
+    if (!m) continue;
+    const next = m[1];
+    if (!next || AFTER_NAME.has(next)) return a;
   }
-  return out;
+  return null;
+}
+
+// Numbers worth finding at a glance in a step: temperatures, times and stated quantities.
+// "400°F", "180 °C", "350 degrees", "15–20 minutes", "1 hour", "30 sec", "1–2 tablespoons", "½ cup".
+const NUM = String.raw`(?:\d+(?:[.,]\d+)?(?:\s*[½¼¾⅓⅔])?|[½¼¾⅓⅔])(?:\s*(?:[-–]|to)\s*\d+(?:[.,]\d+)?)?`;
+export const MEASURE = new RegExp(
+  String.raw`${NUM}\s*(?:°\s*[FC]?\b|degrees(?:\s*[FC]\b)?|(?:minutes?|mins?|hours?|hrs?|seconds?|secs?)\b|(?:cups?|tablespoons?|teaspoons?|tbsp|tsp|oz|ounces?|grams?|g|ml|lbs?|pounds?|inch(?:es)?|cm)\b)`,
+  'gi',
+);
+
+/** Words a step might use for a recipe's equipment tags: "Air Fryer" → air fryer, air fry; "Tall Skillet" → skillet. */
+export function toolTerms(equipment: string[]): string[] {
+  const out = new Set<string>();
+  for (const tag of equipment) {
+    const name = tag.toLowerCase().trim();
+    out.add(name.replace(/s$/, ''));
+    const lastWord = name.split(/\s+/).pop()!.replace(/s$/, '');
+    if (lastWord.length > 3 && !['can', 'opener'].includes(lastWord)) out.add(lastWord);
+    if (name === 'air fryer') out.add('air fry');
+    if (name === 'immersion blender') out.add('blender');
+  }
+  return [...out].sort((a, b) => b.length - a.length);
 }
