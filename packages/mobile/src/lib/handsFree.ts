@@ -94,8 +94,9 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
       // and then return empty results. Google's service already goes on-device when the pack is there.
       // iPhone: record and play on one session, replies through the loudspeaker (not the earpiece).
       iosCategory: { category: 'playAndRecord', categoryOptions: ['defaultToSpeaker', 'allowBluetooth'], mode: 'default' },
-      // Decide a phrase is over after a short pause rather than the default couple of seconds.
-      androidIntentOptions: { EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 700, EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 500 },
+      // Default silence timings on purpose: shorter ones make Android give up after about a second with
+      // no speech, so it restarts constantly, chiming and grabbing audio focus, and drops commands said
+      // across a restart. Speed comes from acting on partial results instead.
     });
   }, []);
 
