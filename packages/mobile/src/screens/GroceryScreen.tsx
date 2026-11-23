@@ -38,7 +38,7 @@ export function GroceryScreen() {
           </View>
         ) : (
           <>
-            <Text style={[t.hand, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
+            <Text style={[t.label, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
               {left === 0 ? 'All done. Happy cooking!' : `${left} to get${recipes.length > 1 ? ` for ${recipes.length} recipes` : `, for ${recipes[0][1]}`}`}
             </Text>
 

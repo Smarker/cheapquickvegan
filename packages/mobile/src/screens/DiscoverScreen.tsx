@@ -108,10 +108,10 @@ export function DiscoverScreen({ navigation }: Props) {
           hitSlop={10}
           style={{ alignSelf: 'flex-start' }}
         >
-          <Text style={[t.hand, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Want {otherMeal} instead?</Text>
+          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Want {otherMeal} instead?</Text>
         </Pressable>
         {net.isConnected === false && (
-          <Text style={[t.hand, { color: p.greenDeep, marginTop: space.s }]}>You're offline. Saved recipes still open.</Text>
+          <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>You're offline. Saved recipes still open.</Text>
         )}
       </View>
 
@@ -131,7 +131,7 @@ export function DiscoverScreen({ navigation }: Props) {
       ) : (
         <>
           <View style={[styles.pad, styles.note]} accessible={false}>
-            <Text style={[t.hand, { color: p.greenDeep, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
+            <Text style={[t.label, { color: p.greenDeep, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
               {featured.length} {featured.length === 1 ? 'recipe' : 'recipes'}, quickest first
             </Text>
             <Svg width={44} height={14} viewBox="0 0 44 14">
@@ -235,7 +235,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 <Text style={[t.label, { color: p.ink, textAlign: 'center', alignSelf: 'stretch' }]} numberOfLines={1}>
                   {label}
                 </Text>
-                <Text style={[t.hand, { color: p.greenDeep, fontSize: 16, lineHeight: 18, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1}>
+                <Text style={[t.label, { color: p.greenDeep, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1}>
                   {count === 0 ? `none this quick` : `${count} ${count === 1 ? 'recipe' : 'recipes'}`}
                 </Text>
               </GearTile>
@@ -265,7 +265,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
                   {displayTitle(r)}
                 </Text>
-                <Text style={[t.hand, { color: p.greenDeep, fontSize: 18, lineHeight: 20 }]}>{r.totalText}</Text>
+                <Text style={[t.label, { color: p.greenDeep }]}>{r.totalText}</Text>
               </Pressable>
             ))}
           </ScrollView>

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T00:00:00Z",
+  "title": "Design System: CheapQuickVegan",
+  "extensions": {
+    "colorMeta": {
+      "green": { "role": "primary", "displayName": "Garden Green" },
+      "green-deep": { "role": "primary", "displayName": "Deep Moss" },
+      "sage": { "role": "secondary", "displayName": "Sage Leaf" },
+      "tape": { "role": "secondary", "displayName": "Washi Tape" },
+      "ground": { "role": "neutral", "displayName": "Sand Paper" },
+      "mist": { "role": "neutral", "displayName": "Morning Mist" },
+      "sand": { "role": "neutral", "displayName": "Dry Sand" },
+      "ink": { "role": "neutral", "displayName": "Pencil Ink" },
+      "muted": { "role": "neutral", "displayName": "Graphite" },
+      "cook-ground": { "role": "neutral", "displayName": "Cook Charcoal" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one question at the top of Discover." },
+      "cook-step": { "displayName": "Cook step", "purpose": "Step text in cook mode, read from arm's length." },
+      "hand": { "displayName": "Hand", "purpose": "Warm notes only: greetings, signposts, encouragement, empty states." }
+    },
+    "shadows": [
+      { "name": "lift", "value": "0px 10px 22px -12px rgba(60,52,32,0.14)", "purpose": "Photos, round actions, the heart and the pinned bar only." }
+    ],
+    "motion": [
+      { "name": "spring", "value": "damping 12, stiffness 220, mass 0.8", "purpose": "Press feedback with a small overshoot." },
+      { "name": "glide", "value": "damping 20, stiffness 240, mass 0.9", "purpose": "Settling highlights and layout, no overshoot." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one big action per screen.",
+      "html": "<button class=\"ds-btn-primary\">Start cooking</button>",
+      "css": ".ds-btn-primary { background: #B7D3A0; color: #2B2A24; font-family: Rubik, sans-serif; font-weight: 600; font-size: 16px; min-height: 56px; padding: 0 24px; border: none; border-radius: 999px; transition: transform .15s; } .ds-btn-primary:active { transform: scale(.97); } .ds-btn-primary:focus-visible { outline: 2px solid #3A5E30; outline-offset: 2px; }"
+    },
+    {
+      "name": "Pill",
+      "kind": "chip",
+      "refersTo": "pill-selected",
+      "description": "Tabs, time limits and filters.",
+      "html": "<span class=\"ds-pill\">15 min</span><span class=\"ds-pill ds-pill-on\">30 min</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 18px; background: #EDE7DA; color: #59574C; font: 500 15px Rubik, sans-serif; margin-right: 8px; } .ds-pill-on { background: #B7D3A0; color: #2B2A24; font-weight: 600; }"
+    },
+    {
+      "name": "Amount Tag",
+      "kind": "custom",
+      "refersTo": "amount-tag",
+      "description": "Amounts, times and temperatures inside step text.",
+      "html": "<p class=\"ds-step\">Stir in the <b>coconut milk</b> <span class=\"ds-tag\">1 can</span> and simmer <span class=\"ds-tag\">10 min</span>.</p>",
+      "css": ".ds-step { font: 16px/24px Rubik, sans-serif; color: #2B2A24; } .ds-step b { color: #3A5E30; } .ds-tag { display: inline-block; padding: 0 6px; border: 1.5px solid rgba(43,42,36,.1); border-radius: 8px; background: #EFE6D3; font: 500 15px Rubik, sans-serif; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Round Action",
+      "kind": "button",
+      "refersTo": "action-round",
+      "description": "Save, This week, Grocery list under a recipe title.",
+      "html": "<button class=\"ds-round\">♡</button><button class=\"ds-round ds-round-on\">✓</button>",
+      "css": ".ds-round { width: 48px; height: 48px; border-radius: 50%; border: none; background: #F7F3EA; color: #5E8B4E; box-shadow: 0px 10px 22px -12px rgba(60,52,32,.14); margin-right: 12px; } .ds-round-on { background: #5E8B4E; color: #fff; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Garden Trail",
+    "overview": "Cooking is a walk, not a test: recipes along a trail, journeys hiked from easy to summit, sand paper with garden greens and ink drawings, a small tuxedo cat for company in cook mode and on journeys. A calm kitchen tool, not a feed.",
+    "keyCharacteristics": ["Sand paper with garden greens", "Serif names, Rubik facts, handwriting for warmth", "Ink-line drawings", "Photos float, UI flat", "Soft tactile controls", "One helper cat"],
+    "rules": [
+      { "name": "The Food Comes First Rule", "body": "No blues or saturated accents near food.", "section": "colors" },
+      { "name": "The Ink On Fill Rule", "body": "Small text is dark ink; Deep Moss is the only colored text.", "section": "colors" },
+      { "name": "The Feelings, Not Facts Rule", "body": "Handwriting only for warmth; anything to act on is in Rubik.", "section": "typography" },
+      { "name": "The Photos Float Rule", "body": "Only photos and floating controls get a shadow.", "section": "elevation" }
+    ],
+    "dos": ["Do keep one primary action per screen", "Do put amounts, times and temperatures in tags", "Do give every motion a Reduce Motion fallback"],
+    "donts": ["Don't use blue near food", "Don't set facts in handwriting", "Don't show the cat outside cook mode and journeys", "Don't add streaks, badges or rewards"]
+  }
+}

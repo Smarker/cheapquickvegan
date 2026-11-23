@@ -77,7 +77,7 @@ export function SavedScreen({ navigation }: Props) {
         <Text style={[t.body, { color: p.muted }]}>Planning a few meals? Tap "Cook this week" on any recipe and they'll gather here.</Text>
       ) : (
         <>
-          <Text style={[t.hand, { color: p.greenDeep }]}>
+          <Text style={[t.label, { color: p.greenDeep }]}>
             {toCook.length === 0 ? 'All cooked. Nice week!' : `${toCook.length} to cook${week.length > toCook.length ? `, ${week.length - toCook.length} done` : ''}`}
           </Text>
           {week.map((r) => {
@@ -95,7 +95,7 @@ export function SavedScreen({ navigation }: Props) {
                   {displayTitle(r)}
                 </Text>
                 {done ? (
-                  <Text style={[t.hand, { color: p.greenDeep, fontSize: 18, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
+                  <Text style={[t.label, { color: p.greenDeep, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
                     cooked
                   </Text>
                 ) : (
@@ -145,7 +145,7 @@ export function SavedScreen({ navigation }: Props) {
         </View>
       ) : (
         <>
-          <Text style={[t.hand, { color: p.greenDeep }]}>
+          <Text style={[t.label, { color: p.greenDeep }]}>
             {list.length === 1 ? '1 saved recipe. It opens even without signal.' : `${list.length} saved recipes. They open even without signal.`}
           </Text>
           {list.map((r) => (

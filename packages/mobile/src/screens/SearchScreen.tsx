@@ -161,7 +161,7 @@ export function SearchScreen({ navigation }: Props) {
               {picked.length > 0 && (
                 <View style={{ gap: space.m, marginTop: space.s }}>
                   <View style={styles.fridgeHead}>
-                    <Text style={[t.hand, { color: p.greenDeep, flex: 1 }]} accessibilityLiveRegion="polite">
+                    <Text style={[t.label, { color: p.greenDeep, flex: 1 }]} accessibilityLiveRegion="polite">
                       {fridgeHits.length
                         ? `${fridgeHits.length} ${fridgeHits.length === 1 ? 'recipe uses' : 'recipes use'} what you have`
                         : limit != null
@@ -198,7 +198,7 @@ export function SearchScreen({ navigation }: Props) {
           </View>
         ) : (
           <View style={{ gap: space.m }}>
-            <Text style={[t.hand, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
+            <Text style={[t.label, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
               {hits.length} {hits.length === 1 ? 'recipe' : 'recipes'}
               {guideHits.length ? ` and ${guideHits.length} ${guideHits.length === 1 ? 'guide' : 'guides'}` : ''}
             </Text>
@@ -224,7 +224,7 @@ export function SearchScreen({ navigation }: Props) {
               >
                 <Photo uri={g.image} width={72} radius={18} />
                 <View style={{ flex: 1, gap: 3 }}>
-                  <Text style={[t.hand, { color: p.greenDeep, fontSize: 16 }]}>Guide</Text>
+                  <Text style={[t.label, { color: p.greenDeep }]}>Guide</Text>
                   <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
                     {g.title.split(':')[0]}
                   </Text>
@@ -260,7 +260,7 @@ function RecipeRow({ recipe: r, note, index, onPress }: { recipe: Recipe; note?:
             {note ?? [r.category, r.totalText].filter(Boolean).join(' · ')}
           </Text>
         </View>
-        <Text style={[t.hand, { color: p.greenDeep, fontSize: 17, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
+        <Text style={[t.label, { color: p.greenDeep, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
           {r.totalMinutes != null ? `${r.totalMinutes} min` : ''}
         </Text>
       </Pressable>

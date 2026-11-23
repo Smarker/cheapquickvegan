@@ -299,7 +299,7 @@ export function CookScreen({ route, navigation }: Props) {
         )}
       </View>
       {(voice.on || !!heard) && (
-        <Text style={[t.hand, styles.voiceHint]} accessibilityLiveRegion="polite" numberOfLines={2} textBreakStrategy="simple">
+        <Text style={[t.label, styles.voiceHint]} accessibilityLiveRegion="polite" numberOfLines={2} textBreakStrategy="simple">
           {heard ?? 'Say “next step”, “repeat” or “how much garlic?”'}
         </Text>
       )}
