@@ -18,6 +18,7 @@ import { usePrefs, useUnits } from '../lib/prefs';
 import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
 import { HighlightedText } from '../components/HighlightedText';
+import { StepBadge } from '../components/StepBadge';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -84,6 +85,15 @@ export function CookScreen({ route, navigation }: Props) {
   };
   const [timesCooked, setTimesCooked] = useState(0);
   const [heard, setHeard] = useState<string | null>(null);
+  // Steps ticked off, as "page:step". Numbers run across the whole recipe, like the Directions tab.
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
+  const firstNumber = useMemo(() => pages.reduce<number[]>((acc, pg, i) => [...acc, i === 0 ? 1 : acc[i - 1] + pages[i - 1].steps.length], []), [pages]);
+  const tick = (keys: string[], on = true) =>
+    setTicked((prev) => {
+      const next = new Set(prev);
+      keys.forEach((key) => (on ? next.add(key) : next.delete(key)));
+      return next;
+    });
   const [trailW, setTrailW] = useState(0);
   const [perk, setPerk] = useState(0);
   const [timerDone, setTimerDone] = useState(false);
@@ -126,6 +136,14 @@ export function CookScreen({ route, navigation }: Props) {
   const title = displayTitle(r);
   const page = pages[index];
   const last = index === pages.length - 1;
+  const cursor = page ? page.steps.findIndex((_, si) => !ticked.has(`${index}:${si}`)) : -1;
+  const pageKeys = (i: number) => (pages[i]?.steps ?? []).map((_, si) => `${i}:${si}`);
+  /** "Next step": tick off this page and move on (or finish). */
+  const advance = () => {
+    tick(pageKeys(index));
+    if (last) finish();
+    else go(index + 1);
+  };
   const catMood: CatMood = timer && timerDone ? 'alert' : voice.on ? 'listening' : 'idle';
 
   const go = (to: number) => {
@@ -155,10 +173,19 @@ export function CookScreen({ route, navigation }: Props) {
     setHeard(null);
     setPerk((n) => n + 1);
     switch (cmd.type) {
-      case 'next':
+      case 'next': {
+        const remaining = page ? page.steps.filter((_, si) => !ticked.has(`${index}:${si}`)).length : 0;
+        if (remaining > 1 && cursor >= 0) {
+          tick([`${index}:${cursor}`]);
+          Haptics.selectionAsync();
+          const upcoming = page!.steps[cursor + 1];
+          return voice.say(prefs.readAloud && upcoming ? upcoming : `Step ${firstNumber[index] + cursor + 1}.`);
+        }
+        tick(pageKeys(index));
         if (last) return finish();
         go(index + 1);
         return readPage(index + 1);
+      }
       case 'back':
         if (index === 0) return voice.say("You're on the first step.");
         go(index - 1);
@@ -317,12 +344,31 @@ export function CookScreen({ route, navigation }: Props) {
             <Text style={[t.hand, { color: k.greenDeep, fontSize: 22 }]} accessibilityRole="header">
               {item.title}
             </Text>
-            {item.steps.map((s: string, si: number) => (
-              <Animated.View key={si} entering={reduce || i !== index ? undefined : FadeInDown.duration(350).delay(si * 70)} style={{ gap: space.s }}>
+            {item.steps.map((s: string, si: number) => {
+              const key = `${i}:${si}`;
+              const isDone = ticked.has(key);
+              const isCurrent = i === index && si === cursor;
+              const n = firstNumber[i] + si;
+              return (
+              <Animated.View key={si} entering={reduce || i !== index ? undefined : FadeInDown.duration(350).delay(si * 70)} style={[styles.stepRow, { opacity: isDone ? 0.45 : 1 }]}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    tick([key], !isDone);
+                  }}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isDone }}
+                  accessibilityLabel={`Step ${n}${isDone ? ', done' : ''}`}
+                  hitSlop={10}
+                  style={styles.badgeHit}
+                >
+                  <StepBadge n={n} done={isDone} current={isCurrent && !isDone} colors={{ ink: k.ink, green: k.green, line: k.line, onGreen: '#1D1E19' }} />
+                </Pressable>
+                <View style={{ flex: 1, gap: space.s }}>
                 <HighlightedText
                   text={s}
                   terms={terms}
-                  style={[styles.step, { color: si === 0 ? k.ink : k.soft }]}
+                  style={[styles.step, { color: isCurrent || isDone ? k.ink : k.soft, textDecorationLine: isDone ? 'line-through' : 'none' }]}
                   highlight={{ fontFamily: font.sansBold, color: k.greenDeep }}
                   amounts={amounts}
                   amountStyle={styles.amountText}
@@ -346,8 +392,10 @@ export function CookScreen({ route, navigation }: Props) {
                     <Text style={[t.label, { color: k.greenDeep }]}>Start {tm.label} timer</Text>
                   </Pressable>
                 ))}
+                </View>
               </Animated.View>
-            ))}
+              );
+            })}
           </ScrollView>
         )}
       />
@@ -361,6 +409,11 @@ export function CookScreen({ route, navigation }: Props) {
             onStop={() => runTimer(null)}
           />
         )}
+        {!last && pages[index + 1] && (
+          <Text style={[t.small, { color: k.soft }]} numberOfLines={1}>
+            Up next: <Text style={{ color: k.ink, fontFamily: font.sansMedium }}>{pages[index + 1].title}</Text>
+          </Text>
+        )}
         <View style={styles.nav}>
           {index > 0 && (
             <Pressable onPress={() => go(index - 1)} accessibilityRole="button" accessibilityLabel="Previous step" style={[styles.back, { borderColor: k.line }]}>
@@ -369,8 +422,7 @@ export function CookScreen({ route, navigation }: Props) {
           )}
           <Pressable
             onPress={() => {
-              if (last) finish();
-              else go(index + 1);
+              advance();
             }}
             accessibilityRole="button"
             style={[styles.primary, { backgroundColor: k.accent, flex: 1 }]}
@@ -397,6 +449,8 @@ const styles = StyleSheet.create({
   fill: { height: 4, borderRadius: 2 },
   page: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xxl, gap: space.l },
   step: { fontFamily: font.sans, fontSize: 26, lineHeight: 36 },
+  stepRow: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
+  badgeHit: { paddingTop: 3 },
   // Amounts as tags: findable by shape (not colour), with even-width digits for quick scanning.
   amountTag: { backgroundColor: k.raised, borderColor: k.line, borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 1, transform: [{ translateY: 5 }] },
   // Tools read as underlined ink: different from ingredients (bold green) and numbers (tags) without relying on colour.

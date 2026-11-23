@@ -7,6 +7,7 @@ import { HeartButton } from '../components/HeartButton';
 import { CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
 import { HighlightedText } from '../components/HighlightedText';
+import { StepBadge } from '../components/StepBadge';
 import { PencilStrike } from '../components/PencilStrike';
 import { GroceryPicker } from '../components/GroceryPicker';
 import { IngredientDoodle } from '../components/IngredientDoodle';
@@ -175,7 +176,7 @@ export function RecipeScreen({ route, navigation }: Props) {
                 stepNo += 1;
                 return (
                   <View key={stepNo} style={styles.step}>
-                    <Text style={[t.caps, { color: p.green, width: 22, fontFamily: font.sansBold, lineHeight: 24 }]}>{stepNo}</Text>
+                    <StepBadge n={stepNo} colors={{ ink: p.ink, green: p.green, line: p.hairline }} size={26} />
                     <HighlightedText
                       text={step}
                       terms={ingredientTerms(r.ingredients.flatMap((g) => g.items))}
