@@ -30,10 +30,7 @@ export function SavedScreen({ navigation }: Props) {
   const list = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
   const cooks = recipes.reduce((n, r) => n + saved.cookedCount(r.slug), 0);
   const cookedRecipes = recipes.filter((r) => saved.cookedCount(r.slug) > 0).length;
-  const summits = REGIONS.filter((region) => {
-    const stops = journey(region).filter((s) => s.kind === 'recipe');
-    return stops.length > 0 && stops.every((s) => s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0);
-  }).length;
+  const summits = REGIONS.filter((region) => saved.summits[region.id]).length;
   const grocery = useGrocery();
   const { units } = useUnits();
   const [picking, setPicking] = useState(false);

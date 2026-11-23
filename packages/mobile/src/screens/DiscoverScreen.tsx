@@ -29,6 +29,7 @@ import {
   isWeekend,
   mealWord,
   projects,
+  recipes,
   timeStep,
   TIME_OPTIONS,
   tonight,
@@ -63,6 +64,11 @@ export function DiscoverScreen({ navigation }: Props) {
   const [meal, setMeal] = useState<Meal>(mealWord());
 
   const prefs = usePrefs();
+  // What's planned for this week and not cooked yet, so the plan you made is the first thing you see.
+  const weekToCook = saved.week
+    .filter((w) => !saved.cookedThisWeek(w.slug))
+    .map((w) => recipes.find((r) => r.slug === w.slug))
+    .filter((r): r is Recipe => !!r);
   // Hikes you've started come first, then the easy ones, so there's always a gentle place to begin.
   const gradeOrder = { Easy: 0, Medium: 1, Challenge: 2 } as const;
   const hikeCards = openHikes()
@@ -125,6 +131,35 @@ export function DiscoverScreen({ navigation }: Props) {
           <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>You're offline. Saved recipes still open.</Text>
         )}
       </View>
+
+      {weekToCook.length > 0 && (
+        <View style={styles.week}>
+          <View style={[styles.pad, styles.weekHead]}>
+            <Text style={[t.label, { color: p.ink }]} accessibilityRole="header">
+              This week · {weekToCook.length} to cook
+            </Text>
+            <Pressable onPress={() => navigation.getParent()?.navigate('SavedTab')} accessibilityRole="link" accessibilityLabel="See this week in Kitchen" hitSlop={10}>
+              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>See all</Text>
+            </Pressable>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weekRow}>
+            {weekToCook.map((r) => (
+              <Pressable
+                key={r.slug}
+                onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
+                accessibilityRole="button"
+                accessibilityLabel={`${displayTitle(r)}, planned this week`}
+                style={({ pressed }) => [styles.weekChip, { backgroundColor: p.sand, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+              >
+                <Photo uri={r.image} width={40} height={40} radius={20} />
+                <Text style={[t.label, { color: p.ink, maxWidth: 170 }]} numberOfLines={1}>
+                  {displayTitle(r)}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
         <TimePicker value={limit} onChange={setLimit} />
@@ -443,6 +478,10 @@ const styles = StyleSheet.create({
   endStop: { alignItems: 'center', justifyContent: 'center', gap: space.s, paddingBottom: 40 },
   statusBand: { position: 'absolute', top: 0, left: 0, right: 0 },
   filters: { paddingHorizontal: space.xl, gap: space.s, marginTop: space.m },
+  week: { marginTop: space.l, gap: space.s },
+  weekHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  weekRow: { paddingHorizontal: space.xl, gap: space.s },
+  weekChip: { flexDirection: 'row', alignItems: 'center', gap: space.s, padding: 6, paddingRight: space.l, borderRadius: 26, minHeight: 52 },
   note: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.l },
   card: { borderRadius: 26, padding: 10 },
   cardBody: { paddingHorizontal: 8, paddingTop: space.m, paddingBottom: space.s, gap: 4 },
