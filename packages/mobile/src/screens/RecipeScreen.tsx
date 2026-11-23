@@ -40,6 +40,8 @@ export function RecipeScreen({ route, navigation }: Props) {
   const prefs = usePrefs();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [picking, setPicking] = useState(false);
+  // Cooked it without cook mode (from Directions, or from memory): one tap counts it, and it can be undone.
+  const [justMarked, setJustMarked] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
   // How many it's being made for. Every amount below follows it, then the grams/cups choice.
   const scale = useScale(route.params.slug, r?.yieldText);
@@ -110,6 +112,36 @@ export function RecipeScreen({ route, navigation }: Props) {
             </View>
           ))}
         </View>
+        {justMarked ? (
+          <View style={styles.marked}>
+            <Text style={[t.small, { color: p.greenDeep }]}>Marked as cooked.</Text>
+            <Pressable
+              onPress={() => {
+                saved.unmarkCooked(r.slug);
+                setJustMarked(false);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Undo marking as cooked"
+              hitSlop={10}
+            >
+              <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              saved.markCooked(r.slug);
+              setJustMarked(true);
+            }}
+            accessibilityRole="button"
+            accessibilityHint="Counts this recipe as cooked without going through cook mode"
+            hitSlop={10}
+            style={styles.marked}
+          >
+            <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Made it already? Mark it cooked</Text>
+          </Pressable>
+        )}
 
         {/* Keep it for later, plan it, shop for it: three quiet actions. Cooking is the one big button. */}
         <View style={styles.actions}>
@@ -335,6 +367,7 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
 }
 
 const styles = StyleSheet.create({
+  marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 32 },
   servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, marginTop: space.l, flexWrap: 'wrap' },
   stepper: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },

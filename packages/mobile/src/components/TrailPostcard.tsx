@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { CookCat } from './CookCat';
-import { Peaks } from './Doodles';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { CheckIcon } from './Icons';
 import { journey, type Region } from '../lib/journeys';
 import { Photo } from './Photo';
@@ -49,9 +49,20 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
       style={({ pressed }) => [styles.card, { backgroundColor: p.sand, opacity: pressed ? 0.92 : 1 }]}
     >
       <View style={[styles.tape, { backgroundColor: p.tape }]} />
-      {photo && <Photo uri={photo} width={300} height={150} radius={16} style={styles.photo} />}
+      {photo ? (
+        <Photo uri={photo} width={300} height={150} radius={16} style={styles.photo} />
+      ) : (
+        // Placeholder until there's a real photo of the area: the same frame, drawn in ink.
+        <View style={[styles.scene, { backgroundColor: p.greenSoft }]} accessible={false}>
+          <Svg width="100%" height="100%" viewBox="0 0 300 150" preserveAspectRatio="xMidYMax slice">
+            <Circle cx={236} cy={40} r={16} fill="none" stroke={p.ink} strokeWidth={2} />
+            <Path d="M0 150 L70 62 L104 98 L150 40 L214 120 L244 92 L300 150 Z" fill={p.ground} stroke={p.ink} strokeWidth={2} strokeLinejoin="round" />
+            <Path d="M132 62 L150 40 L166 60 M60 74 L70 62 L80 74" fill="none" stroke={p.ink} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            <Path d="M40 150 C80 132 120 140 150 124 C180 108 214 120 250 150" fill="none" stroke={p.greenDeep} strokeWidth={2.5} strokeDasharray="1 8" strokeLinecap="round" />
+          </Svg>
+        </View>
+      )}
       <View style={styles.head}>
-        {!photo && <Peaks color={p.ink} width={84} />}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[t.cardTitle, { color: p.ink }]}>{region.trail}</Text>
           {summited && <Text style={[t.label, { color: p.greenDeep }]}>Summited {day(summited)}</Text>}
@@ -83,6 +94,7 @@ const styles = StyleSheet.create({
   tape: { position: 'absolute', top: -8, alignSelf: 'center', width: 72, height: 20, opacity: 0.85, transform: [{ rotate: '2deg' }] },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.m },
   photo: { alignSelf: 'stretch', width: '100%' },
+  scene: { alignSelf: 'stretch', height: 150, borderRadius: 16, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   foot: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   share: { minHeight: 44, justifyContent: 'center' },

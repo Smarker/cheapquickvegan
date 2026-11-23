@@ -151,6 +151,8 @@ const hike = (area: string, grade: Difficulty, id: string, trail: string, blurb:
   return { id, area, name: a.name, trail, blurb, grade, cuisines: a.cuisines, guideSlugs };
 };
 
+// Postcard photos: Italy and Asia are waiting on Stephanie's photos. Until then their postcards
+// show a drawn placeholder scene; add `postcardPhoto: 'https://www.cheapquickvegan.com/images/…'` to a hike to swap one in.
 export const REGIONS: Region[] = [
   hike('italy', 'Easy', 'italy-lakes', 'Stroll Lake Como', 'Quick, fresh starts: few ingredients and nothing fussy.'),
   hike('italy', 'Medium', 'italy-coast', 'Walk the Cinque Terre', 'A little more time at the stove, village by village.'),

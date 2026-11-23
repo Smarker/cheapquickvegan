@@ -21,6 +21,8 @@ type Saved = {
   /** How many times each recipe has been cooked to the end in cook mode. */
   cookedCount: (slug: string) => number;
   markCooked: (slug: string) => number;
+  /** Take back the last "cooked" (an accidental tap). */
+  unmarkCooked: (slug: string) => void;
   /** Recipes planned for this week, in the order they were added. */
   week: WeekEntry[];
   inWeek: (slug: string) => boolean;
@@ -91,6 +93,7 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
       bounce,
       cookedCount: (slug: string) => cooked[slug] ?? 0,
       markCooked,
+      unmarkCooked: (slug: string) => setCooked((c) => ((c[slug] ?? 0) > 0 ? { ...c, [slug]: c[slug] - 1 } : c)),
       week,
       inWeek: (slug: string) => week.some((w) => w.slug === slug),
       toggleWeek: (slug: string) =>
