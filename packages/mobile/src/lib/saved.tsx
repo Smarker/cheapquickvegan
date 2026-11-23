@@ -4,6 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 const SAVED_KEY = 'cqv:saved:v1';
 const COOKED_KEY = 'cqv:cooked:v1';
 const WEEK_KEY = 'cqv:week:v1';
+const FIRST_COOKED_KEY = 'cqv:first-cooked:v1';
+const SUMMITS_KEY = 'cqv:summits:v1';
 
 /** A recipe planned for this week, and how many times it had been cooked when it was added. */
 export type WeekEntry = { slug: string; cookedAtAdd: number };
@@ -25,6 +27,11 @@ type Saved = {
   /** Cooked since it was added to this week. */
   cookedThisWeek: (slug: string) => boolean;
   clearCookedFromWeek: () => void;
+  /** When a recipe was first cooked to the end (ISO date), for journey postcards. */
+  firstCookedOn: (slug: string) => string | undefined;
+  /** Journeys summited, by region id, with the date. */
+  summits: Record<string, string>;
+  markSummit: (regionId: string) => void;
 };
 
 const Ctx = createContext<Saved | null>(null);
@@ -51,6 +58,8 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
   const [slugs, setSlugs] = usePersisted<string[]>(SAVED_KEY, []);
   const [cooked, setCooked] = usePersisted<Record<string, number>>(COOKED_KEY, {});
   const [week, setWeek] = usePersisted<WeekEntry[]>(WEEK_KEY, []);
+  const [firstCooked, setFirstCooked] = usePersisted<Record<string, string>>(FIRST_COOKED_KEY, {});
+  const [summits, setSummits] = usePersisted<Record<string, string>>(SUMMITS_KEY, {});
   const [bounceTick, setBounceTick] = useState(0);
 
   const toggle = useCallback(
@@ -62,9 +71,10 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
     (slug: string) => {
       const next = (cooked[slug] ?? 0) + 1;
       setCooked((c) => ({ ...c, [slug]: (c[slug] ?? 0) + 1 }));
+      setFirstCooked((f) => (f[slug] ? f : { ...f, [slug]: new Date().toISOString() }));
       return next;
     },
-    [cooked, setCooked],
+    [cooked, setCooked, setFirstCooked],
   );
 
   const value = useMemo(
@@ -85,8 +95,11 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
         return !!w && (cooked[slug] ?? 0) > w.cookedAtAdd;
       },
       clearCookedFromWeek: () => setWeek((w) => w.filter((x) => (cooked[x.slug] ?? 0) <= x.cookedAtAdd)),
+      firstCookedOn: (slug: string) => firstCooked[slug],
+      summits,
+      markSummit: (regionId: string) => setSummits((s) => (s[regionId] ? s : { ...s, [regionId]: new Date().toISOString() })),
     }),
-    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek],
+    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek, firstCooked, summits, setSummits],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

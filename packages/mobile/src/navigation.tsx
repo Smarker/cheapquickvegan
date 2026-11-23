@@ -25,7 +25,7 @@ export type DiscoverStack = {
   Journey: { id: string };
   Guide: { slug: string };
 };
-export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined };
+export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string } };
 
 const Stack = createNativeStackNavigator<DiscoverStack>();
 const SavedNav = createNativeStackNavigator<SavedStack>();
@@ -72,6 +72,8 @@ function SavedTab() {
       <SavedNav.Screen name="Saved" component={SavedScreen} options={{ headerShown: false }} />
       <SavedNav.Screen name="Recipe" component={RecipeScreen} options={{ title: '' }} />
       <SavedNav.Screen name="Preferences" component={PreferencesScreen} options={{ title: 'Preferences' }} />
+      <SavedNav.Screen name="Journey" component={JourneyScreen as never} options={{ title: '' }} />
+      <SavedNav.Screen name="Guide" component={GuideScreen as never} options={{ title: '' }} />
     </SavedNav.Navigator>
   );
 }

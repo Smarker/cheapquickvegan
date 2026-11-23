@@ -7,6 +7,7 @@ import { CookedStamp } from '../components/CookedStamp';
 import { EmptyBowl } from '../components/Doodles';
 import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
 import { HeartButton } from '../components/HeartButton';
+import { TrailPostcard } from '../components/TrailPostcard';
 import { Photo } from '../components/Photo';
 import { journey, REGIONS } from '../lib/journeys';
 import { displayTitle, recipes } from '../lib/recipes';
@@ -39,6 +40,11 @@ export function SavedScreen({ navigation }: Props) {
   const week = saved.week.map((w) => recipes.find((r) => r.slug === w.slug)).filter((r): r is (typeof recipes)[number] => !!r);
   const toCook = week.filter((r) => !saved.cookedThisWeek(r.slug));
   const pickerGroups: PickerGroup[] = toCook.map((r) => ({ slug: r.slug, title: displayTitle(r), lines: linesIn(r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)), units) }));
+  // Finished journeys, kept as postcards.
+  const summitedRegions = REGIONS.filter((region) => saved.summits[region.id]).map((region) => ({
+    region,
+    recipes: journey(region).flatMap((s) => (s.kind === 'recipe' ? [s.recipe] : [])),
+  }));
   const stats = [
     { n: cooks, label: cooks === 1 ? 'meal cooked' : 'meals cooked' },
     { n: cookedRecipes, label: cookedRecipes === 1 ? 'recipe tried' : 'recipes tried' },
@@ -132,6 +138,17 @@ export function SavedScreen({ navigation }: Props) {
           setPicking(false);
         }}
       />
+
+      {summitedRegions.length > 0 && (
+        <>
+          <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
+            Your journeys
+          </Text>
+          {summitedRegions.map(({ region, recipes: trail }) => (
+            <TrailPostcard key={region.id} region={region} recipes={trail} onPress={() => navigation.navigate('Journey', { id: region.id })} />
+          ))}
+        </>
+      )}
 
       <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
         Saved recipes

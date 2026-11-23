@@ -37,6 +37,7 @@ Stephanie's own cheap, quick recipes, shaped by her partner's Italian family, wi
 - Calm everywhere, with whimsy only in moments the cook has earned or is waiting through: empty, loading and done. No streaks, badges, reminder notifications, confetti or autoplay video.
 - One helper: a small tuxedo cat (after the site's tab icon). It lives only in cook mode (on the progress trail and the finish screen) and on journey pages (waiting at your next stop). It never appears elsewhere, never blocks content, and goes still under Reduce Motion.
 - Cooked counts and journey progress are quiet records of what you've done, never streaks, rewards or nudges to come back.
+- Finishing a journey leaves a **trail postcard**: a keepsake of the trail, the summit date and the recipes cooked along the way, kept in Kitchen under "Your journeys" and shareable. A memory, not a badge.
 - Stephanie will draw the SVG illustrations. Screens leave marked slots for them.
 - Small text is always dark ink. Bright world colors are for filled shapes only.
 

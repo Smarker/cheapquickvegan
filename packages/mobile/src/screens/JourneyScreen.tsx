@@ -1,10 +1,11 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
 import { CookedStamp } from '../components/CookedStamp';
 import { CookCat } from '../components/CookCat';
+import { TrailPostcard } from '../components/TrailPostcard';
 import { Hut, SummitFlag } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
@@ -42,6 +43,13 @@ export function JourneyScreen({ route, navigation }: Props) {
 
   // The helper cat waits on your next uncooked stop, or at the summit once the trail is done.
   const nextSlug = recipeStops.map((s) => (s.kind === 'recipe' ? s.recipe.slug : '')).find((slug) => slug && saved.cookedCount(slug) === 0);
+
+  const allCooked = recipeStops.length > 0 && !nextSlug;
+  // Remember the day the trail was finished, for its postcard.
+  useEffect(() => {
+    if (allCooked) saved.markSummit(region.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allCooked, region.id]);
 
   let recipeIndex = 0;
 
@@ -140,7 +148,12 @@ export function JourneyScreen({ route, navigation }: Props) {
             <SummitFlag color={p.ink} />
             {!nextSlug && recipeStops.length > 0 && <CookCat outline={p.ink} size={56} mood="happy" />}
           </View>
-          <Text style={[t.hand, { color: p.ink, fontSize: 22 }]}>The summit</Text>
+          <Text style={[t.hand, { color: p.ink, fontSize: 22 }]} textBreakStrategy="simple">The summit</Text>
+          {allCooked && (
+            <View style={styles.postcard}>
+              <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' ? [s.recipe] : []))} />
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -212,6 +225,7 @@ const styles = StyleSheet.create({
   shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
   shelfItem: { width: 72, alignItems: 'center', gap: 2 },
   nextStop: { marginTop: 30 },
+  postcard: { alignSelf: 'stretch', marginTop: space.l, marginLeft: 30 },
   summitRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s },
   waitingCat: { position: 'absolute', right: 14, top: -36, zIndex: 1 },
   summit: { alignItems: 'center', gap: space.s, marginTop: space.l, marginLeft: -30 },
