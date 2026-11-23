@@ -77,8 +77,28 @@ function amount(n: number, unit: string | null, rest = ''): string {
 }
 
 /** One ingredient line made `factor` times bigger. Lines without a leading amount stay as written. */
+// "A pinch of salt": about 1/16 teaspoon. Pinches add up (2 pinches), and once there are enough to
+// measure, they become teaspoons (4 pinches is ¼ tsp). Scaling down, a pinch stays a pinch.
+const PINCH = /^(\s*)(?:an?\s+|(\d+)\s+)?(pinch(?:es)?|dash(?:es)?)\b/i;
+const PINCH_ML = 5 / 16;
+function scalePinch(line: string, factor: number): string | null {
+  const m = line.match(PINCH);
+  if (!m) return null;
+  const [whole, lead, count, word] = m;
+  const n = (count ? +count : 1) * factor;
+  const rest = line.slice(whole.length);
+  const kind = /^dash/i.test(word) ? 'dash' : 'pinch';
+  if (n < 1.5) return `${lead}a ${kind}${rest}`;
+  if (n * PINCH_ML >= 5 / 4 - 1e-9) return `${lead}${spoonText(n * PINCH_ML)}${rest.replace(/^\s+of\b/i, '')}`;
+  const k = Math.round(n);
+  return `${lead}${k} ${kind === 'dash' ? 'dashes' : 'pinches'}${rest}`;
+}
+
 export function scaleLine(line: string, factor: number): string {
   if (factor === 1) return line;
+  const pinch = scalePinch(line, factor);
+  // Keep the recipe's capital letter ("A pinch").
+  if (pinch != null) return /^\s*[A-Z]/.test(line) ? pinch.replace(/^(\s*)([a-z])/, (_, sp: string, c: string) => sp + c.toUpperCase()) : pinch;
   const m = line.match(LEAD);
   if (!m) return line;
   const [whole, lead, lowText, dash, highText, unitText] = m;

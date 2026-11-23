@@ -24,3 +24,15 @@ describe('hikes', () => {
     }
   });
 });
+
+describe('started hikes', () => {
+  it('keep their stops when new recipes arrive, and list the new ones as side trips', async () => {
+    const { sideTrips } = await import('../src/lib/journeys');
+    const h = openHikes().find((x) => recipesFor(x).length >= 3)!;
+    const all = recipesFor(h).map((r) => r.slug);
+    const pinned = all.slice(0, all.length - 1); // pretend the last recipe was published after starting
+    const stops = journey(h, pinned).flatMap((s) => (s.kind === 'recipe' ? [s.recipe.slug] : []));
+    expect(stops.sort()).toEqual([...pinned].sort());
+    expect(sideTrips(h, pinned).map((r) => r.slug)).toEqual([all[all.length - 1]]);
+  });
+});

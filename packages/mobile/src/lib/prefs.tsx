@@ -21,9 +21,11 @@ type Stored = {
   readAloud: boolean;
   helper: boolean;
   theme: Theme;
+  /** How far ahead the cook plans and shops: a week, or a month for a big monthly shop. */
+  planSpan: 'week' | 'month';
 };
 
-const DEFAULTS: Stored = { units: null, missingGear: [], avoid: [], autoHandsFree: false, readAloud: true, helper: true, theme: 'system' };
+const DEFAULTS: Stored = { units: null, missingGear: [], avoid: [], autoHandsFree: false, readAloud: true, helper: true, theme: 'system', planSpan: 'week' };
 
 export type RecipeWarnings = { contains: Allergen[]; needs: string[] };
 

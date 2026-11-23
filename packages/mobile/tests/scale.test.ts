@@ -30,7 +30,7 @@ describe('scaleLine', () => {
   });
   it('leaves untouchable lines as written', () => {
     expect(scaleLine('Salt and pepper to taste', 2)).toBe('Salt and pepper to taste');
-    expect(scaleLine('Pinch of chili flakes', 3)).toBe('Pinch of chili flakes');
+    expect(scaleLine('Pinch of chili flakes', 3)).toBe('3 pinches of chili flakes');
   });
 });
 
@@ -75,5 +75,13 @@ describe('minFactor', () => {
     expect(minFactor(['1/2 shallot, chopped', '1 cup cilantro'])).toBe(0.5);
     expect(minFactor(['1 egg', '2 cups flour'])).toBe(1);
     expect(minFactor(['1/4 tsp salt'])).toBe(0.5);
+  });
+});
+
+describe('pinches', () => {
+  it('stay a pinch when scaled down, add up when scaled up, and become spoons when measurable', () => {
+    expect(scaleLine('A pinch of salt', 0.5)).toBe('A pinch of salt');
+    expect(scaleLine('A pinch of salt', 2)).toBe('2 pinches of salt');
+    expect(scaleLine('a pinch of cayenne', 4)).toBe('¼ tsp cayenne');
   });
 });

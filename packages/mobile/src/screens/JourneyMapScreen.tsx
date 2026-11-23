@@ -74,9 +74,9 @@ export function JourneyMapScreen({ navigation }: Props) {
 
   const hikes = useMemo(() => {
     const open = openHikes();
-    return new Map(open.map((h) => [h.id, journey(h).flatMap((s) => (s.kind === 'recipe' ? [s.recipe.slug] : []))]));
+    return new Map(open.map((h) => [h.id, journey(h, saved.trailFor(h.id)).flatMap((s) => (s.kind === 'recipe' ? [s.recipe.slug] : []))]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataVersion]);
+  }, [dataVersion, saved]);
 
   const behind = (h: Region, slug: string) => saved.cookedCount(slug) > 0 || saved.isPassed(h.id, slug);
   // The cat waits on the first hike you've started but not finished.

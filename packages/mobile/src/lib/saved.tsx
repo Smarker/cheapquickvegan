@@ -7,6 +7,7 @@ const WEEK_KEY = 'cqv:week:v1';
 const FIRST_COOKED_KEY = 'cqv:first-cooked:v1';
 const SUMMITS_KEY = 'cqv:summits:v1';
 const PASSED_KEY = 'cqv:passed:v1';
+const TRAILS_KEY = 'cqv:trails:v1';
 
 /** A recipe planned for this week, and how many times it had been cooked when it was added. */
 export type WeekEntry = { slug: string; cookedAtAdd: number };
@@ -38,6 +39,9 @@ type Saved = {
   /** Journey stops the cook chose to walk past ("take another path"), as "region:slug". */
   isPassed: (regionId: string, slug: string) => boolean;
   togglePassed: (regionId: string, slug: string) => void;
+  /** A hike's stops as they were when the cook started it, so new recipes never make their hike longer. */
+  trailFor: (hikeId: string) => string[] | undefined;
+  pinTrail: (hikeId: string, slugs: string[]) => void;
 };
 
 const Ctx = createContext<Saved | null>(null);
@@ -67,6 +71,7 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
   const [firstCooked, setFirstCooked] = usePersisted<Record<string, string>>(FIRST_COOKED_KEY, {});
   const [summits, setSummits] = usePersisted<Record<string, string>>(SUMMITS_KEY, {});
   const [passed, setPassed] = usePersisted<string[]>(PASSED_KEY, []);
+  const [trails, setTrails] = usePersisted<Record<string, string[]>>(TRAILS_KEY, {});
   const [bounceTick, setBounceTick] = useState(0);
 
   const toggle = useCallback(
@@ -107,12 +112,14 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
       summits,
       markSummit: (regionId: string) => setSummits((s) => (s[regionId] ? s : { ...s, [regionId]: new Date().toISOString() })),
       isPassed: (regionId: string, slug: string) => passed.includes(`${regionId}:${slug}`),
+      trailFor: (hikeId: string) => trails[hikeId],
+      pinTrail: (hikeId: string, list: string[]) => setTrails((t) => (t[hikeId] ? t : { ...t, [hikeId]: list })),
       togglePassed: (regionId: string, slug: string) => {
         const key = `${regionId}:${slug}`;
         setPassed((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
       },
     }),
-    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek, firstCooked, summits, setSummits, passed, setPassed],
+    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek, firstCooked, summits, setSummits, passed, setPassed, trails, setTrails],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

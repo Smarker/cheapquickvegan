@@ -11,7 +11,7 @@ import { Hut, SummitFlag } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
-import { gradeLabel, hikeById, journey, STRETCH_LABEL, type Stop } from '../lib/journeys';
+import { gradeLabel, hikeById, journey, sideTrips, STRETCH_LABEL, type Stop } from '../lib/journeys';
 import { displayTitle } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -43,7 +43,10 @@ export function JourneyScreen({ route, navigation }: Props) {
   const saved = useSaved();
   const region = hikeById(route.params.id)!;
   const dataVersion = useDataVersion();
-  const stops = useMemo(() => journey(region), [region, dataVersion]);
+  // Once started, the hike keeps its stops; recipes published later become side trips below the summit.
+  const pinned = saved.trailFor(region.id);
+  const stops = useMemo(() => journey(region, pinned), [region, dataVersion, pinned]);
+  const extras = useMemo(() => sideTrips(region, pinned), [region, dataVersion, pinned]);
   const recipeStops = stops.filter((s) => s.kind === 'recipe');
   const cooked = recipeStops.filter((s) => s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0).length;
   // A stop is behind you once it's cooked, or once you chose another path past it.
@@ -54,6 +57,12 @@ export function JourneyScreen({ route, navigation }: Props) {
 
   // The trail is done once every stop is behind you. A postcard needs at least one cooked memory on it.
   const allCooked = recipeStops.length > 0 && !nextSlug;
+  // The first stop cooked or passed starts the hike: remember its stops from here on.
+  const started = recipeStops.some((s) => s.kind === 'recipe' && behind(s.recipe.slug));
+  useEffect(() => {
+    if (started && !pinned) saved.pinTrail(region.id, recipeStops.flatMap((s) => (s.kind === 'recipe' ? [s.recipe.slug] : [])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, pinned, region.id]);
   const hasPostcard = allCooked && cooked > 0;
   // Remember the day the trail was finished, for its postcard.
   useEffect(() => {
@@ -190,6 +199,29 @@ export function JourneyScreen({ route, navigation }: Props) {
               <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : []))} />
             </View>
           )}
+          {extras.length > 0 && (
+            <View style={styles.extras}>
+              <Text style={[t.hand, { color: p.greenDeep }]} textBreakStrategy="simple">
+                New since you started
+              </Text>
+              <Text style={[t.small, { color: p.muted }]}>Optional side trips. Your trail and your summit stay as they are.</Text>
+              {extras.map((r) => (
+                <Pressable
+                  key={r.slug}
+                  onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Side trip: ${displayTitle(r)}`}
+                  style={({ pressed }) => [styles.extra, { borderColor: p.hairline, opacity: pressed ? 0.85 : 1 }]}
+                >
+                  <Photo uri={r.image} width={52} radius={14} />
+                  <Text style={[t.rowTitle, { color: p.ink, flex: 1, fontSize: 16 }]} numberOfLines={2}>
+                    {displayTitle(r)}
+                  </Text>
+                  {saved.cookedCount(r.slug) > 0 && <CheckIcon color={p.green} size={18} />}
+                </Pressable>
+              ))}
+            </View>
+          )}
           <Pressable
             onPress={() =>
               Linking.openURL(`mailto:cheapquickvegan@gmail.com?subject=${encodeURIComponent(`Recipe idea for "${region.trail}"`)}`).catch(() => {})
@@ -274,6 +306,8 @@ const styles = StyleSheet.create({
   shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
   shelfItem: { width: 72, alignItems: 'center', gap: 2 },
   nextStop: { marginTop: 30 },
+  extras: { alignSelf: 'stretch', marginLeft: 30, marginTop: space.xl, gap: space.s },
+  extra: { flexDirection: 'row', alignItems: 'center', gap: space.m, borderWidth: 1.5, borderRadius: 18, padding: space.s, minHeight: 52 },
   grade: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   pathLink: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },
   suggest: { marginTop: space.l, marginLeft: 30, minHeight: 44, justifyContent: 'center', paddingHorizontal: space.l },

@@ -16,6 +16,8 @@ import { isJustWater, useGrocery } from '../lib/grocery';
 import { useUnits } from '../lib/prefs';
 import { useSaved } from '../lib/saved';
 import { linesIn } from '../lib/units';
+import { planWords } from '../lib/plan';
+import { usePrefs } from '../lib/prefs';
 import { factorFor, scaleLine } from '../lib/scale';
 import type { SavedStack } from '../navigation';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
@@ -28,6 +30,7 @@ export function SavedScreen({ navigation }: Props) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
   const saved = useSaved();
+  const words = planWords(usePrefs().planSpan);
   const list = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
   const cooks = recipes.reduce((n, r) => n + saved.cookedCount(r.slug), 0);
   const cookedRecipes = recipes.filter((r) => saved.cookedCount(r.slug) > 0).length;
@@ -43,7 +46,7 @@ export function SavedScreen({ navigation }: Props) {
   // Finished journeys, kept as postcards.
   const summitedRegions = allHikes.filter((region) => saved.summits[region.id]).map((region) => ({
     region,
-    recipes: journey(region).flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : [])),
+    recipes: journey(region, saved.trailFor(region.id)).flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : [])),
   }));
   const stats = [
     { n: cooks, label: cooks === 1 ? 'meal cooked' : 'meals cooked' },
@@ -77,14 +80,14 @@ export function SavedScreen({ navigation }: Props) {
       </View>
 
       <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.s }]} accessibilityRole="header">
-        This week
+        {words.title}
       </Text>
       {week.length === 0 ? (
-        <Text style={[t.body, { color: p.muted }]}>Planning a few meals? Tap "Cook this week" on any recipe and they'll gather here.</Text>
+        <Text style={[t.body, { color: p.muted }]}>{words.empty}</Text>
       ) : (
         <>
           <Text style={[t.label, { color: p.greenDeep }]}>
-            {toCook.length === 0 ? 'All cooked. Nice week!' : `${toCook.length} to cook${week.length > toCook.length ? `, ${week.length - toCook.length} done` : ''}`}
+            {toCook.length === 0 ? words.allCooked : `${toCook.length} to cook${week.length > toCook.length ? `, ${week.length - toCook.length} done` : ''}`}
           </Text>
           {week.map((r) => {
             const done = saved.cookedThisWeek(r.slug);

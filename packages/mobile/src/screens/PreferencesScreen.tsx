@@ -111,6 +111,14 @@ export function PreferencesScreen() {
         <Toggle label="Cat helper" hint="Walks along your steps and cheers when you finish." value={prefs.helper} onChange={(v) => prefs.set('helper', v)} />
       </Section>
 
+      <Section title="Planning" note="Plan and shop by the week, or by the month if you do one big shop.">
+        <View style={styles.row}>
+          {(['week', 'month'] as const).map((span) => (
+            <Pill key={span} label={span === 'week' ? 'Week' : 'Month'} selected={prefs.planSpan === span} onPress={() => prefs.set('planSpan', span)} role="tab" />
+          ))}
+        </View>
+      </Section>
+
       <Section title="Look">
         <View style={styles.row}>
           {themes.map((x) => (

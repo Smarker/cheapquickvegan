@@ -39,6 +39,7 @@ import {
   widerLimit,
 } from '../lib/recipes';
 import { gradeLabel, journey, openHikes } from '../lib/journeys';
+import { planWords } from '../lib/plan';
 import { Blazes } from '../components/Blazes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -73,7 +74,7 @@ export function DiscoverScreen({ navigation }: Props) {
   const gradeOrder = { Easy: 0, Medium: 1, Challenge: 2 } as const;
   const hikeCards = openHikes()
     .map((region) => {
-      const stops = journey(region).filter((st) => st.kind === 'recipe');
+      const stops = journey(region, saved.trailFor(region.id)).filter((st) => st.kind === 'recipe');
       const done = stops.filter((st) => st.kind === 'recipe' && saved.cookedCount(st.recipe.slug) > 0).length;
       const started = done > 0 && done < stops.length;
       return { region, stops, done, rank: (started ? 0 : 10) + gradeOrder[region.grade] };
@@ -136,9 +137,9 @@ export function DiscoverScreen({ navigation }: Props) {
         <View style={styles.week}>
           <View style={[styles.pad, styles.weekHead]}>
             <Text style={[t.label, { color: p.ink, flexShrink: 1, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple" accessibilityRole="header">
-              This week · {weekToCook.length} to cook
+              {planWords(prefs.planSpan).title} · {weekToCook.length} to cook
             </Text>
-            <Pressable onPress={() => navigation.getParent()?.navigate('SavedTab')} accessibilityRole="link" accessibilityLabel="See this week in Kitchen" hitSlop={10}>
+            <Pressable onPress={() => navigation.getParent()?.navigate('SavedTab')} accessibilityRole="link" accessibilityLabel={`See ${planWords(prefs.planSpan).title.toLowerCase()} in Kitchen`} hitSlop={10}>
               <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>See all</Text>
             </Pressable>
           </View>
@@ -148,7 +149,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 key={r.slug}
                 onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                 accessibilityRole="button"
-                accessibilityLabel={`${displayTitle(r)}, planned this week`}
+                accessibilityLabel={`${displayTitle(r)}, ${planWords(prefs.planSpan).planned}`}
                 style={({ pressed }) => [styles.weekChip, { backgroundColor: p.sand, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
               >
                 <Photo uri={r.image} width={40} height={40} radius={20} />

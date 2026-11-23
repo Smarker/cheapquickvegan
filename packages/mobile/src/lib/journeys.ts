@@ -199,12 +199,14 @@ const areaRecipes = (cuisines: string[]) => recipes.filter((r) => r.cuisine != n
 const ORDER: Difficulty[] = ['Easy', 'Medium', 'Challenge'];
 
 /** Each of a hike's recipes with its grade, easier stretches first, easiest first within one. Grades are rated across the whole area. */
-function gradedFor(region: Region): { recipe: Recipe; grade: Difficulty }[] {
+function gradedFor(region: Region, pinned?: string[]): { recipe: Recipe; grade: Difficulty }[] {
   const list = areaRecipes(region.cuisines);
   const rated = rateTrail(list);
   const grades = region.grades ?? [region.grade];
+  // A hike the cook has started keeps exactly the stops it had then (minus any recipe since removed).
+  const keep = pinned ? (r: Recipe) => pinned.includes(r.slug) : (r: Recipe) => grades.includes(rated.get(r.slug)!);
   return list
-    .filter((r) => grades.includes(rated.get(r.slug)!))
+    .filter(keep)
     .map((recipe) => ({ recipe, grade: rated.get(recipe.slug)! }))
     .sort((x, y) => ORDER.indexOf(x.grade) - ORDER.indexOf(y.grade) || effort(x.recipe) - effort(y.recipe));
 }
@@ -255,14 +257,30 @@ export function openHikes(): Region[] {
 }
 
 /** A hike by id, including an area's mixed hike. */
-export const hikeById = (id: string): Region | undefined => openHikes().find((h) => h.id === id) ?? REGIONS.find((h) => h.id === id);
+export const hikeById = (id: string): Region | undefined =>
+  openHikes().find((h) => h.id === id) ?? REGIONS.find((h) => h.id === id) ?? mixedHike(id);
+
+/** An area's "easy to hard" hike by id, even after the area grew enough for separate hikes (a cook may have started it). */
+function mixedHike(id: string): Region | undefined {
+  const area = AREAS.find((a) => `${a.id}-trail` === id);
+  if (!area) return undefined;
+  const hikes = REGIONS.filter((h) => h.area === area.id);
+  const flagship = hikes.find((h) => h.grade === 'Medium') ?? hikes[0];
+  return { ...flagship, id, grade: 'Medium', grades: [...ORDER], guideSlugs: hikes.flatMap((h) => h.guideSlugs), mixed: true, blurb: 'Easy to hard in one trail.' };
+}
+
+/** Recipes added to a hike since the cook started it: optional side trips, never extra stops. */
+export function sideTrips(region: Region, pinned?: string[]): Recipe[] {
+  if (!pinned) return [];
+  return recipesFor(region).filter((r) => !pinned.includes(r.slug));
+}
 
 /**
  * A hike: a rest stop at base camp (a technique lesson when its recipes need one, otherwise a
  * pantry stop), a signpost, then the recipes, easiest first. Travel guides are spread along the way.
  */
-export function journey(region: Region): Stop[] {
-  const graded = gradedFor(region);
+export function journey(region: Region, pinned?: string[]): Stop[] {
+  const graded = gradedFor(region, pinned);
   const stops: Stop[] = [];
   const taught = new Set<string>();
   // One stretch per grade on the hike, each behind its own signpost.

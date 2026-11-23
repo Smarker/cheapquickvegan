@@ -18,6 +18,7 @@ import { useDataVersion } from '../lib/data';
 import { ingredientAmounts, ingredientTerms, toolTerms } from '../lib/cook';
 import { canConvert, convertInStep, convertLine, linesIn, writtenIn } from '../lib/units';
 import { scaleInStep, scaleLine, scaleYield, useScale } from '../lib/scale';
+import { planWords } from '../lib/plan';
 import { allergenLabel } from '../lib/allergens';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
@@ -148,10 +149,10 @@ export function RecipeScreen({ route, navigation }: Props) {
             <Text style={[t.small, { color: p.ink }]}>{saved.isSaved(r.slug) ? 'Saved' : 'Save'}</Text>
           </View>
           <ActionButton
-            label="This week"
+            label={planWords(prefs.planSpan).title}
             on={saved.inWeek(r.slug)}
             onPress={() => saved.toggleWeek(r.slug)}
-            a11y={saved.inWeek(r.slug) ? 'Remove from this week' : 'Cook this week'}
+            a11y={saved.inWeek(r.slug) ? planWords(prefs.planSpan).remove : planWords(prefs.planSpan).add}
             Icon={CalendarIcon}
           />
           <ActionButton
