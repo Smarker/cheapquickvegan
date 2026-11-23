@@ -11,6 +11,7 @@ import { DiscoverScreen } from './screens/DiscoverScreen';
 import { GroceryScreen } from './screens/GroceryScreen';
 import { GuideScreen } from './screens/GuideScreen';
 import { JourneyScreen } from './screens/JourneyScreen';
+import { JourneyMapScreen } from './screens/JourneyMapScreen';
 import { CookScreen } from './screens/CookScreen';
 import { RecipeScreen } from './screens/RecipeScreen';
 import { PreferencesScreen } from './screens/PreferencesScreen';
@@ -23,6 +24,7 @@ export type DiscoverStack = {
   Recipe: { slug: string };
   Cook: { slug: string };
   Journey: { id: string };
+  JourneyMap: undefined;
   Guide: { slug: string };
 };
 export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string } };
@@ -51,6 +53,7 @@ function DiscoverTab() {
       <Stack.Screen name="Discover" component={DiscoverScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Recipe" component={RecipeScreen} options={{ title: '' }} />
       <Stack.Screen name="Journey" component={JourneyScreen} options={{ title: '' }} />
+      <Stack.Screen name="JourneyMap" component={JourneyMapScreen} options={{ title: '' }} />
       <Stack.Screen name="Guide" component={GuideScreen} options={{ title: '' }} />
     </Stack.Navigator>
   );

@@ -112,50 +112,58 @@ function rateTrail(list: Recipe[]): Map<string, Difficulty> {
   return out;
 }
 
+/** A part of the world on the trail map. Each area has a few hikes, graded as a whole. */
+export type Area = {
+  id: string;
+  name: string;
+  cuisines: string[];
+  /** What's drawn on its island. */
+  scenery: 'peaks' | 'terraces' | 'mesa' | 'andes';
+};
+
+export const AREAS: Area[] = [
+  { id: 'italy', name: 'Italy & the Mediterranean', cuisines: ['Italian', 'Mediterranean', 'Spanish'], scenery: 'peaks' },
+  { id: 'asia', name: 'Asia', cuisines: ['Asian', 'Thai', 'Japanese'], scenery: 'terraces' },
+  { id: 'americas', name: 'American classics', cuisines: ['American'], scenery: 'mesa' },
+  { id: 'latin', name: 'Latin America', cuisines: ['Mexican', 'Tex-Mex', 'South American'], scenery: 'andes' },
+];
+
+/** One hike: an area's recipes at one grade. (Kept as "Region" so screens and saved progress keep working.) */
 export type Region = {
   id: string;
+  /** The area's id. */
+  area: string;
+  /** The area's name, shown above the hike's title. */
   name: string;
   trail: string;
   blurb: string;
+  grade: Difficulty;
   cuisines: string[];
   guideSlugs: string[];
   /** Optional photo of the area for the finished-trail postcard. Defaults to the first travel guide's photo. */
   postcardPhoto?: string;
 };
 
+export const GRADE_LABEL: Record<Difficulty, string> = { Easy: 'Easy', Medium: 'Medium', Challenge: 'Hard' };
+
+const hike = (area: string, grade: Difficulty, id: string, trail: string, blurb: string, guideSlugs: string[] = []): Region => {
+  const a = AREAS.find((x) => x.id === area)!;
+  return { id, area, name: a.name, trail, blurb, grade, cuisines: a.cuisines, guideSlugs };
+};
+
 export const REGIONS: Region[] = [
-  {
-    id: 'italy',
-    name: 'Italy & the Mediterranean',
-    trail: 'Hike the Dolomites',
-    blurb: 'From a cool tzatziki to an overnight sourdough focaccia.',
-    cuisines: ['Italian', 'Mediterranean', 'Spanish'],
-    guideSlugs: [],
-  },
-  {
-    id: 'asia',
-    name: 'Asia',
-    trail: 'Walk the tea terraces',
-    blurb: 'Noodles, stir-fries and crispy tofu, one terrace at a time.',
-    cuisines: ['Asian', 'Thai', 'Japanese'],
-    guideSlugs: [],
-  },
-  {
-    id: 'americas',
-    name: 'American classics',
-    trail: 'Ramble the Appalachian Trail',
-    blurb: 'Diner comfort food, made vegan and made easy.',
-    cuisines: ['American'],
-    guideSlugs: [],
-  },
-  {
-    id: 'latin',
-    name: 'Latin America',
-    trail: 'Trek the Inca Trail',
-    blurb: 'Tacos and street corn, with my Peru and Patagonia guides as rest stops.',
-    cuisines: ['Mexican', 'Tex-Mex', 'South American'],
-    guideSlugs: ['cusco-peru-vegan-food', 'ollantaytambo-vegan-food-travel-guide', 'aguas-calientes-vegan-food', 'vegan-torres-del-paine-day-hikes-and-meals'],
-  },
+  hike('italy', 'Easy', 'italy-lakes', 'Stroll Lake Como', 'Quick, fresh starts: few ingredients and nothing fussy.'),
+  hike('italy', 'Medium', 'italy-coast', 'Walk the Cinque Terre', 'A little more time at the stove, village by village.'),
+  hike('italy', 'Challenge', 'italy-dolomites', 'Summit the Dolomites', 'Patient doughs and showpieces, for a slow weekend.'),
+  hike('asia', 'Easy', 'asia-market', 'Wander a night market', 'Noodles and quick bowls to find your feet.'),
+  hike('asia', 'Medium', 'asia-terraces', 'Walk the tea terraces', 'Stir-fries and crispy tofu, one terrace at a time.'),
+  hike('asia', 'Challenge', 'asia-fuji', 'Climb Mount Fuji', 'Bigger cooks with more steps, worth the climb.'),
+  hike('americas', 'Easy', 'americas-blueridge', 'Amble the Blue Ridge', 'Diner comfort food, made vegan and made easy.'),
+  hike('americas', 'Medium', 'americas-appalachian', 'Ramble the Appalachian Trail', 'Weekend favourites with a few more moving parts.'),
+  hike('americas', 'Challenge', 'americas-canyon', 'Hike the Grand Canyon', 'The big ones: long cooks and proud results.'),
+  hike('latin', 'Easy', 'latin-cusco', 'Wander the streets of Cusco', 'Tacos and street corn, with my Cusco guide along the way.', ['cusco-peru-vegan-food']),
+  hike('latin', 'Medium', 'latin-inca', 'Trek the Inca Trail', 'A steadier climb, resting in Ollantaytambo and Aguas Calientes.', ['ollantaytambo-vegan-food-travel-guide', 'aguas-calientes-vegan-food']),
+  hike('latin', 'Challenge', 'latin-paine', 'Hike Torres del Paine', 'The hardest recipes, with my Patagonia day hikes for company.', ['vegan-torres-del-paine-day-hikes-and-meals']),
 ];
 
 export type Stop =
@@ -177,41 +185,40 @@ function pantryFor(stretch: Recipe[]): string[] {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([w]) => w);
 }
 
+const areaRecipes = (cuisines: string[]) => recipes.filter((r) => r.cuisine != null && cuisines.includes(r.cuisine));
+
+/** The recipes on a hike: its area's recipes at the hike's grade, easiest first. Grades are rated across the whole area. */
 export function recipesFor(region: Region): Recipe[] {
-  return recipes.filter((r) => r.cuisine != null && region.cuisines.includes(r.cuisine));
+  const list = areaRecipes(region.cuisines);
+  const rated = rateTrail(list);
+  return list.filter((r) => rated.get(r.slug) === region.grade).sort((x, y) => effort(x) - effort(y));
+}
+
+/** Hikes that have at least one recipe yet. */
+export function openHikes(): Region[] {
+  return REGIONS.filter((h) => recipesFor(h).length > 0);
 }
 
 /**
- * The trail, easy to hard. Each new stretch starts with a signpost and, after the first,
- * a rest stop: a technique lesson when the next recipes need one, otherwise a pantry stop.
- * Travel guides are spread evenly along the way.
+ * A hike: a rest stop at base camp (a technique lesson when its recipes need one, otherwise a
+ * pantry stop), a signpost, then the recipes, easiest first. Travel guides are spread along the way.
  */
 export function journey(region: Region): Stop[] {
-  const list = recipesFor(region);
-  const rated = rateTrail(list);
-  const level = (r: Recipe) => rated.get(r.slug)!;
-  const stretches = (['Easy', 'Medium', 'Challenge'] as Difficulty[])
-    .map((d) => ({ d, items: list.filter((r) => level(r) === d).sort((a, b) => effort(a) - effort(b)) }))
-    .filter((s) => s.items.length);
-
+  const items = recipesFor(region);
   const stops: Stop[] = [];
-  const taught = new Set<string>();
-  stretches.forEach(({ d, items }, si) => {
-    if (si > 0) {
-      const lesson = items.flatMap(techniquesIn).find((t) => !taught.has(t.id));
-      if (lesson) {
-        taught.add(lesson.id);
-        const guide = guideBySlug(lesson.guide);
-        stops.push({ kind: 'lesson', title: lesson.title, body: guide ? guideIntro(guide) : lesson.body, guide });
-      }
-      else {
-        const pantry = pantryFor(items);
-        if (pantry.length) stops.push({ kind: 'pantry', items: pantry, guide: guideBySlug(PANTRY_GUIDE) });
-      }
+  if (items.length) {
+    // Easy hikes start with a pantry stop; harder ones with a lesson in the technique they need, if any.
+    const lesson = region.grade === 'Easy' ? undefined : items.flatMap(techniquesIn)[0];
+    if (lesson) {
+      const guide = guideBySlug(lesson.guide);
+      stops.push({ kind: 'lesson', title: lesson.title, body: guide ? guideIntro(guide) : lesson.body, guide });
+    } else {
+      const pantry = pantryFor(items);
+      if (pantry.length > 1) stops.push({ kind: 'pantry', items: pantry, guide: guideBySlug(PANTRY_GUIDE) });
     }
-    stops.push({ kind: 'section', difficulty: d });
-    items.forEach((recipe) => stops.push({ kind: 'recipe', recipe, difficulty: d }));
-  });
+    stops.push({ kind: 'section', difficulty: region.grade });
+    items.forEach((recipe) => stops.push({ kind: 'recipe', recipe, difficulty: region.grade }));
+  }
 
   // Spread guides between recipes: after recipe #2, #4, … (never before the first recipe).
   const regionGuides = region.guideSlugs.map((s) => guides.find((g) => g.slug === s)).filter((g): g is Guide => !!g);
@@ -230,7 +237,7 @@ export function journey(region: Region): Stop[] {
 }
 
 export const STRETCH_LABEL: Record<Difficulty, string> = {
-  Easy: 'The easy stretch',
-  Medium: 'Getting steeper',
+  Easy: 'An easy stroll',
+  Medium: 'A steady climb',
   Challenge: 'The summit climb',
 };

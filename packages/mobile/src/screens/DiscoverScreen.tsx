@@ -37,7 +37,8 @@ import {
   type TimeLimit,
   widerLimit,
 } from '../lib/recipes';
-import { journey, REGIONS } from '../lib/journeys';
+import { GRADE_LABEL, journey, openHikes } from '../lib/journeys';
+import { Blazes } from '../components/Blazes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import type { DiscoverStack } from '../navigation';
@@ -62,6 +63,16 @@ export function DiscoverScreen({ navigation }: Props) {
   const [meal, setMeal] = useState<Meal>(mealWord());
 
   const prefs = usePrefs();
+  // Hikes you've started come first, then the easy ones, so there's always a gentle place to begin.
+  const gradeOrder = { Easy: 0, Medium: 1, Challenge: 2 } as const;
+  const hikeCards = openHikes()
+    .map((region) => {
+      const stops = journey(region).filter((st) => st.kind === 'recipe');
+      const done = stops.filter((st) => st.kind === 'recipe' && saved.cookedCount(st.recipe.slug) > 0).length;
+      const started = done > 0 && done < stops.length;
+      return { region, stops, done, rank: (started ? 0 : 10) + gradeOrder[region.grade] };
+    })
+    .sort((x, y) => x.rank - y.rank);
   const matches = useMemo(() => tonight(limit, gear, meal).filter(prefs.fits), [limit, gear, meal, dataVersion, prefs.fits]);
   // The trail is a timeline: every match, quickest on the left.
   const featured = matches;
@@ -183,12 +194,20 @@ export function DiscoverScreen({ navigation }: Props) {
           <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
             Cooking journeys
           </Text>
-          <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>New to a cuisine? Start easy and work your way to the summit.</Text>
+          <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>New to a cuisine? Pick a hike, from an easy stroll to a summit climb.</Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
-          {REGIONS.map((region, i) => {
-            const stops = journey(region).filter((st) => st.kind === 'recipe');
-            const done = stops.filter((st) => st.kind === 'recipe' && saved.cookedCount(st.recipe.slug) > 0).length;
+          <Pressable
+            onPress={() => navigation.navigate('JourneyMap')}
+            accessibilityRole="button"
+            accessibilityLabel="Open the trail map"
+            style={({ pressed }) => [styles.journey, styles.mapCard, { borderColor: p.ink, backgroundColor: p.ground, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+          >
+            <Peaks color={p.ink} width={130} />
+            <Text style={[t.hand, { color: p.greenDeep, fontSize: 17 }]}>All the hikes</Text>
+            <Text style={[t.rowTitle, { color: p.ink }]}>Open the trail map</Text>
+          </Pressable>
+          {hikeCards.map(({ region, stops, done }, i) => {
             return (
               <Pressable
                 key={region.id}
@@ -200,14 +219,16 @@ export function DiscoverScreen({ navigation }: Props) {
                   { backgroundColor: [p.greenSoft, p.sand, p.sageSoft, p.mist][i % 4], transform: [{ scale: pressed ? 0.97 : 1 }] },
                 ]}
               >
-                <Peaks color={p.ink} width={130} />
                 <Text style={[t.hand, { color: p.greenDeep, fontSize: 17 }]}>{region.name}</Text>
                 <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
                   {region.trail}
                 </Text>
-                <Text style={[t.small, { color: p.muted }]}>
-                  {done ? `${done} of ${stops.length} cooked` : `${stops.length} stops, easy to summit`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s }}>
+                  <Blazes level={region.grade} color={p.green} />
+                  <Text style={[t.small, { color: p.muted }]}>
+                    {done ? `${done} of ${stops.length} cooked` : `${GRADE_LABEL[region.grade]}, ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
+                  </Text>
+                </View>
               </Pressable>
             );
           })}
@@ -438,5 +459,6 @@ const styles = StyleSheet.create({
   board: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, transform: [{ rotate: '-4deg' }] },
   post: { width: 2.5, height: 34, borderRadius: 2 },
   journey: { width: 190, borderRadius: 24, padding: space.l, gap: 6 },
+  mapCard: { borderWidth: 2, borderStyle: 'dashed' },
   slowRow: { paddingHorizontal: space.xl, gap: space.l, paddingTop: space.l },
 });

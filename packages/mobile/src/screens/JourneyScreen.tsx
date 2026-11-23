@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, Ellipse, Line } from 'react-native-svg';
+import { Blazes } from '../components/Blazes';
 import { CookedStamp } from '../components/CookedStamp';
 import { CookCat } from '../components/CookCat';
 import { TrailPostcard } from '../components/TrailPostcard';
@@ -10,15 +11,13 @@ import { Hut, SummitFlag } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
-import { journey, REGIONS, STRETCH_LABEL, type Difficulty, type Stop } from '../lib/journeys';
+import { GRADE_LABEL, journey, REGIONS, STRETCH_LABEL, type Difficulty, type Stop } from '../lib/journeys';
 import { displayTitle } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import { font, space, tintFor, type as t, usePalette, type Palette } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<{ Journey: { id: string }; Recipe: { slug: string }; Guide: { slug: string } }, 'Journey'>;
-
-const BLAZES: Record<Difficulty, number> = { Easy: 1, Medium: 2, Challenge: 3 };
 
 /** Two small footprints: a stop you walked past. Not a cross, not a miss, just another path. */
 function Footprints({ color }: { color: string }) {
@@ -35,17 +34,6 @@ function Footprints({ color }: { color: string }) {
       <Circle cx="13.8" cy="3.2" r="0.8" fill={color} />
       <Circle cx="15.3" cy="3.8" r="0.75" fill={color} />
     </Svg>
-  );
-}
-
-/** Trail blazes, like the painted marks on trees: one for easy, three for the summit climb. */
-function Blazes({ level, color }: { level: Difficulty; color: string }) {
-  return (
-    <View style={{ flexDirection: 'row', gap: 3 }} accessibilityLabel={level}>
-      {[1, 2, 3].map((i) => (
-        <View key={i} style={{ width: 9, height: 14, borderRadius: 2, backgroundColor: color, opacity: i <= BLAZES[level] ? 1 : 0.18 }} />
-      ))}
-    </View>
   );
 }
 
@@ -81,6 +69,10 @@ export function JourneyScreen({ route, navigation }: Props) {
       <Text style={[t.title, { color: p.ink, fontSize: 34, lineHeight: 40 }]} accessibilityRole="header">
         {region.trail}
       </Text>
+      <View style={styles.grade}>
+        <Blazes level={region.grade} color={p.green} />
+        <Text style={[t.label, { color: p.ink }]}>{GRADE_LABEL[region.grade]} hike</Text>
+      </View>
       <Text style={[t.body, { color: p.muted }]}>{region.blurb}</Text>
       <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>
         {allCooked
@@ -282,6 +274,7 @@ const styles = StyleSheet.create({
   shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
   shelfItem: { width: 72, alignItems: 'center', gap: 2 },
   nextStop: { marginTop: 30 },
+  grade: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   pathLink: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },
   suggest: { marginTop: space.l, marginLeft: 30, minHeight: 44, justifyContent: 'center', paddingHorizontal: space.l },
   postcard: { alignSelf: 'stretch', marginTop: space.l, marginLeft: 30 },

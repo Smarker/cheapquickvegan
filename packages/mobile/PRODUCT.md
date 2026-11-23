@@ -29,7 +29,7 @@ Stephanie's own cheap, quick recipes, shaped by her partner's Italian family, wi
 - Cost per serving: not shown until a real data field exists. Planned for later.
 - No shop, Notion meal planners or upsells in the app.
 - Planned: Stephanie's own cooking videos and reels in the app, tap to play (never autoplay), shown beside the steps they demonstrate.
-- Planned: cooking journeys, a trail per cuisine (Italian, Asian, American…) from easy to harder recipes, with rest stops and travel guides along the way, to help cooks try styles outside their comfort zone.
+- Cooking journeys: each area (Italy & the Mediterranean, Asia, American classics, Latin America) has a few hikes graded as a whole (easy, medium, hard), with rest stops and travel guides along the way. A hand-drawn trail map shows every hike; cooks start wherever they like.
 
 ## Brand Commitments
 
