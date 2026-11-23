@@ -1,8 +1,8 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
-import Svg, { Line } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Line } from 'react-native-svg';
 import { CookedStamp } from '../components/CookedStamp';
 import { CookCat } from '../components/CookCat';
 import { TrailPostcard } from '../components/TrailPostcard';
@@ -19,6 +19,24 @@ import { font, space, tintFor, type as t, usePalette, type Palette } from '../th
 type Props = NativeStackScreenProps<{ Journey: { id: string }; Recipe: { slug: string }; Guide: { slug: string } }, 'Journey'>;
 
 const BLAZES: Record<Difficulty, number> = { Easy: 1, Medium: 2, Challenge: 3 };
+
+/** Two small footprints: a stop you walked past. Not a cross, not a miss, just another path. */
+function Footprints({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      {/* left print, lower */}
+      <Ellipse cx="6" cy="14" rx="1.9" ry="3" fill={color} />
+      <Circle cx="4.6" cy="9.6" r="0.8" fill={color} />
+      <Circle cx="6.3" cy="9.2" r="0.8" fill={color} />
+      <Circle cx="7.8" cy="9.8" r="0.75" fill={color} />
+      {/* right print, a step ahead */}
+      <Ellipse cx="13.5" cy="8" rx="1.9" ry="3" fill={color} />
+      <Circle cx="12.1" cy="3.6" r="0.8" fill={color} />
+      <Circle cx="13.8" cy="3.2" r="0.8" fill={color} />
+      <Circle cx="15.3" cy="3.8" r="0.75" fill={color} />
+    </Svg>
+  );
+}
 
 /** Trail blazes, like the painted marks on trees: one for easy, three for the summit climb. */
 function Blazes({ level, color }: { level: Difficulty; color: string }) {
@@ -40,16 +58,20 @@ export function JourneyScreen({ route, navigation }: Props) {
   const stops = useMemo(() => journey(region), [region, dataVersion]);
   const recipeStops = stops.filter((s) => s.kind === 'recipe');
   const cooked = recipeStops.filter((s) => s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0).length;
+  // A stop is behind you once it's cooked, or once you chose another path past it.
+  const behind = (slug: string) => saved.cookedCount(slug) > 0 || saved.isPassed(region.id, slug);
 
-  // The helper cat waits on your next uncooked stop, or at the summit once the trail is done.
-  const nextSlug = recipeStops.map((s) => (s.kind === 'recipe' ? s.recipe.slug : '')).find((slug) => slug && saved.cookedCount(slug) === 0);
+  // The helper cat waits on your next stop, or at the summit once the trail is done.
+  const nextSlug = recipeStops.map((s) => (s.kind === 'recipe' ? s.recipe.slug : '')).find((slug) => slug && !behind(slug));
 
+  // The trail is done once every stop is behind you. A postcard needs at least one cooked memory on it.
   const allCooked = recipeStops.length > 0 && !nextSlug;
+  const hasPostcard = allCooked && cooked > 0;
   // Remember the day the trail was finished, for its postcard.
   useEffect(() => {
-    if (allCooked) saved.markSummit(region.id);
+    if (hasPostcard) saved.markSummit(region.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allCooked, region.id]);
+  }, [hasPostcard, region.id]);
 
   let recipeIndex = 0;
 
@@ -61,10 +83,12 @@ export function JourneyScreen({ route, navigation }: Props) {
       </Text>
       <Text style={[t.body, { color: p.muted }]}>{region.blurb}</Text>
       <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>
-        {cooked === 0
-          ? `${recipeStops.length} stops. Start at the bottom and take your time.`
-          : cooked === recipeStops.length
+        {allCooked
+          ? cooked === recipeStops.length
             ? `You've cooked the whole trail. Summit reached!`
+            : `Summit reached, your way. ${cooked} cooked along the trail.`
+          : cooked === 0
+            ? `${recipeStops.length} stops. Start at the bottom and take your time.`
             : `${cooked} of ${recipeStops.length} cooked. Keep going!`}
       </Text>
 
@@ -80,7 +104,7 @@ export function JourneyScreen({ route, navigation }: Props) {
             return (
               <Animated.View key={key} entering={enter} style={styles.signRow}>
                 <View style={[styles.signBoard, { borderColor: p.ink, backgroundColor: p.sand }]}>
-                  <Text style={[t.hand, { color: p.ink, fontSize: 18 }]}>{STRETCH_LABEL[stop.difficulty]}</Text>
+                  <Text style={[t.hand, { color: p.ink, fontSize: 18, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">{STRETCH_LABEL[stop.difficulty]}</Text>
                 </View>
                 <Blazes level={stop.difficulty} color={p.green} />
               </Animated.View>
@@ -91,17 +115,24 @@ export function JourneyScreen({ route, navigation }: Props) {
             const n = ++recipeIndex;
             const count = saved.cookedCount(r.slug);
             const isNext = r.slug === nextSlug;
+            const isPassed = !count && saved.isPassed(region.id, r.slug);
             return (
               <Animated.View key={key} entering={enter} style={isNext ? styles.nextStop : undefined}>
                 {isNext && <CookCat outline={p.ink} size={52} style={styles.waitingCat} />}
                 <Pressable
                   onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}`}
-                  style={({ pressed }) => [styles.stop, { backgroundColor: tintFor(p, r.category), transform: [{ scale: pressed ? 0.98 : 1 }] }]}
+                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}${isPassed ? ', passed by' : ''}`}
+                  style={({ pressed }) => [styles.stop, { backgroundColor: tintFor(p, r.category), opacity: isPassed ? 0.6 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
                 >
                   <View style={[styles.node, { backgroundColor: count ? p.green : p.ground, borderColor: p.green }]}>
-                    {count ? <CheckIcon color="#FFFFFF" size={14} /> : <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>{n}</Text>}
+                    {count ? (
+                      <CheckIcon color="#FFFFFF" size={14} />
+                    ) : isPassed ? (
+                      <Footprints color={p.greenDeep} />
+                    ) : (
+                      <Text style={[t.label, { color: p.greenDeep, fontFamily: font.sansBold }]}>{n}</Text>
+                    )}
                   </View>
                   <Photo uri={r.image} width={76} radius={18} />
                   <View style={{ flex: 1, gap: 4 }}>
@@ -117,6 +148,19 @@ export function JourneyScreen({ route, navigation }: Props) {
                     </View>
                   </View>
                 </Pressable>
+                {(isNext || isPassed) && (
+                  <Pressable
+                    onPress={() => saved.togglePassed(region.id, r.slug)}
+                    accessibilityRole="button"
+                    accessibilityHint={isPassed ? 'Puts this stop back on your trail' : 'Moves on to the next stop without cooking this one'}
+                    hitSlop={8}
+                    style={styles.pathLink}
+                  >
+                    <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>
+                      {isPassed ? 'Passed by. Come back to it' : 'Not feeling this one? Take another path'}
+                    </Text>
+                  </Pressable>
+                )}
               </Animated.View>
             );
           }
@@ -148,12 +192,25 @@ export function JourneyScreen({ route, navigation }: Props) {
             <SummitFlag color={p.ink} />
             {!nextSlug && recipeStops.length > 0 && <CookCat outline={p.ink} size={56} mood="happy" />}
           </View>
-          <Text style={[t.hand, { color: p.ink, fontSize: 22 }]} textBreakStrategy="simple">The summit</Text>
-          {allCooked && (
+          <Text style={[t.hand, { color: p.ink, fontSize: 22, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1} textBreakStrategy="simple">The summit</Text>
+          {hasPostcard && (
             <View style={styles.postcard}>
-              <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' ? [s.recipe] : []))} />
+              <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : []))} />
             </View>
           )}
+          <Pressable
+            onPress={() =>
+              Linking.openURL(`mailto:cheapquickvegan@gmail.com?subject=${encodeURIComponent(`Recipe idea for "${region.trail}"`)}`).catch(() => {})
+            }
+            accessibilityRole="link"
+            hitSlop={8}
+            style={styles.suggest}
+          >
+            <Text style={[t.small, { color: p.muted, textAlign: 'center' }]}>
+              Something you'd love to see on this trail?{' '}
+              <Text style={{ color: p.greenDeep, textDecorationLine: 'underline' }}>Suggest a recipe</Text>
+            </Text>
+          </Pressable>
         </View>
       </View>
     </ScrollView>
@@ -225,6 +282,8 @@ const styles = StyleSheet.create({
   shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
   shelfItem: { width: 72, alignItems: 'center', gap: 2 },
   nextStop: { marginTop: 30 },
+  pathLink: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },
+  suggest: { marginTop: space.l, marginLeft: 30, minHeight: 44, justifyContent: 'center', paddingHorizontal: space.l },
   postcard: { alignSelf: 'stretch', marginTop: space.l, marginLeft: 30 },
   summitRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s },
   waitingCat: { position: 'absolute', right: 14, top: -36, zIndex: 1 },

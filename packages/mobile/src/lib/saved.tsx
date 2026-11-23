@@ -6,6 +6,7 @@ const COOKED_KEY = 'cqv:cooked:v1';
 const WEEK_KEY = 'cqv:week:v1';
 const FIRST_COOKED_KEY = 'cqv:first-cooked:v1';
 const SUMMITS_KEY = 'cqv:summits:v1';
+const PASSED_KEY = 'cqv:passed:v1';
 
 /** A recipe planned for this week, and how many times it had been cooked when it was added. */
 export type WeekEntry = { slug: string; cookedAtAdd: number };
@@ -32,6 +33,9 @@ type Saved = {
   /** Journeys summited, by region id, with the date. */
   summits: Record<string, string>;
   markSummit: (regionId: string) => void;
+  /** Journey stops the cook chose to walk past ("take another path"), as "region:slug". */
+  isPassed: (regionId: string, slug: string) => boolean;
+  togglePassed: (regionId: string, slug: string) => void;
 };
 
 const Ctx = createContext<Saved | null>(null);
@@ -60,6 +64,7 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
   const [week, setWeek] = usePersisted<WeekEntry[]>(WEEK_KEY, []);
   const [firstCooked, setFirstCooked] = usePersisted<Record<string, string>>(FIRST_COOKED_KEY, {});
   const [summits, setSummits] = usePersisted<Record<string, string>>(SUMMITS_KEY, {});
+  const [passed, setPassed] = usePersisted<string[]>(PASSED_KEY, []);
   const [bounceTick, setBounceTick] = useState(0);
 
   const toggle = useCallback(
@@ -98,8 +103,13 @@ export function SavedProvider({ children }: { children: React.ReactNode }) {
       firstCookedOn: (slug: string) => firstCooked[slug],
       summits,
       markSummit: (regionId: string) => setSummits((s) => (s[regionId] ? s : { ...s, [regionId]: new Date().toISOString() })),
+      isPassed: (regionId: string, slug: string) => passed.includes(`${regionId}:${slug}`),
+      togglePassed: (regionId: string, slug: string) => {
+        const key = `${regionId}:${slug}`;
+        setPassed((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
+      },
     }),
-    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek, firstCooked, summits, setSummits],
+    [slugs, toggle, bounceTick, bounce, cooked, markCooked, week, setWeek, firstCooked, summits, setSummits, passed, setPassed],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
