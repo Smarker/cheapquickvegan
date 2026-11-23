@@ -10,6 +10,7 @@ import Svg, { Line } from 'react-native-svg';
 import { StirringPot } from '../components/Doodles';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
+import { CookCat, type CatMood } from '../components/CookCat';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
 import { handsFreeAvailable, useHandsFree } from '../lib/handsFree';
 import { convertInStep, linesIn } from '../lib/units';
@@ -26,6 +27,9 @@ import { cancelTimerDone, scheduleTimerDone } from '../lib/timerNotifications';
 import { font, space, type as t } from '../theme/tokens';
 
 // Cook mode keeps its own low-glare kitchen palette in both themes: warm charcoal, cream ink and garden greens.
+/** The helper cat on the trail, in px wide. */
+const CAT = 40;
+
 const k = {
   ground: '#1D1E19',
   raised: '#2A2B24',
@@ -80,6 +84,21 @@ export function CookScreen({ route, navigation }: Props) {
   };
   const [timesCooked, setTimesCooked] = useState(0);
   const [heard, setHeard] = useState<string | null>(null);
+  const [trailW, setTrailW] = useState(0);
+  const [perk, setPerk] = useState(0);
+  const [timerDone, setTimerDone] = useState(false);
+  const lastIndex = useRef(0);
+  const [facing, setFacing] = useState<'left' | 'right'>('right');
+  useEffect(() => {
+    if (index !== lastIndex.current) setFacing(index > lastIndex.current ? 'right' : 'left');
+    lastIndex.current = index;
+  }, [index]);
+  useEffect(() => {
+    setTimerDone(false);
+    if (!timer) return;
+    const id = setTimeout(() => setTimerDone(true), Math.max(0, timer.endsAt - Date.now()));
+    return () => clearTimeout(id);
+  }, [timer]);
   const canVoice = useMemo(handsFreeAvailable, []);
 
   const voice = useHandsFree({
@@ -100,6 +119,7 @@ export function CookScreen({ route, navigation }: Props) {
   const title = displayTitle(r);
   const page = pages[index];
   const last = index === pages.length - 1;
+  const catMood: CatMood = timer && timerDone ? 'alert' : voice.on ? 'listening' : 'idle';
 
   const go = (to: number) => {
     Haptics.selectionAsync();
@@ -125,6 +145,7 @@ export function CookScreen({ route, navigation }: Props) {
     if (!r) return;
     const allLines = lines;
     setHeard(null);
+    setPerk((n) => n + 1);
     switch (cmd.type) {
       case 'next':
         if (last) return finish();
@@ -177,7 +198,10 @@ export function CookScreen({ route, navigation }: Props) {
       <View style={[styles.root, { paddingTop: insets.top + space.l, paddingBottom: insets.bottom + space.l }]}>
         <StatusBar style="light" />
         <Animated.View entering={reduce ? undefined : FadeIn.duration(400)} style={styles.finish}>
-          <StirringPot color={k.ink} size={170} />
+          <View style={styles.potRow}>
+            <StirringPot color={k.ink} size={170} />
+            <CookCat mood={timerDone || !timer ? 'happy' : 'idle'} outline={k.ink} size={72} style={{ marginLeft: -18, marginBottom: 4 }} />
+          </View>
           <Text style={[t.hand, styles.finishTitle]}>{title} is ready.</Text>
           <Text style={[t.body, { color: k.soft, textAlign: 'center' }]}>
             {timesCooked > 1 ? `That's time number ${timesCooked} for this one. Must be a keeper!` : 'Time to dig in. I hope it hits the spot!'}
@@ -245,11 +269,24 @@ export function CookScreen({ route, navigation }: Props) {
         </Text>
       )}
 
-      <View style={styles.track} accessible={false}>
-        <Svg width="100%" height={4} style={StyleSheet.absoluteFill}>
-          <Line x1="2" y1="2" x2="100%" y2="2" stroke={k.line} strokeWidth={3} strokeDasharray="1 8" strokeLinecap="round" />
-        </Svg>
-        <Animated.View style={[styles.fill, { backgroundColor: k.green }, progress]} />
+      <View style={styles.trail} onLayout={(e) => setTrailW(e.nativeEvent.layout.width)}>
+        {trailW > 0 && (
+          <CookCat
+            x={Math.min(Math.max(((index + 1) / Math.max(pages.length, 1)) * trailW - CAT * 0.8, 0), trailW - CAT)}
+            facing={facing}
+            mood={catMood}
+            perkKey={perk}
+            outline={k.ink}
+            size={CAT}
+            style={styles.cat}
+          />
+        )}
+        <View style={styles.track} accessible={false}>
+          <Svg width="100%" height={4} style={StyleSheet.absoluteFill}>
+            <Line x1="2" y1="2" x2="100%" y2="2" stroke={k.line} strokeWidth={3} strokeDasharray="1 8" strokeLinecap="round" />
+          </Svg>
+          <Animated.View style={[styles.fill, { backgroundColor: k.green }, progress]} />
+        </View>
       </View>
 
       <FlatList
@@ -345,7 +382,10 @@ const styles = StyleSheet.create({
   voice: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1.5 },
   voiceDot: { width: 9, height: 9, borderRadius: 5, borderWidth: 1.5 },
   voiceHint: { color: k.greenDeep, fontSize: 17, paddingHorizontal: space.xl, paddingRight: space.xl + 6, marginTop: 2 },
-  track: { height: 4, marginHorizontal: space.xl, marginTop: space.s, borderRadius: 2, overflow: 'hidden', justifyContent: 'center' },
+  trail: { marginHorizontal: space.xl, height: 40, justifyContent: 'flex-end' },
+  cat: { position: 'absolute', left: 0, bottom: 2 },
+  potRow: { flexDirection: 'row', alignItems: 'flex-end' },
+  track: { height: 4, borderRadius: 2, overflow: 'hidden', justifyContent: 'center' },
   fill: { height: 4, borderRadius: 2 },
   page: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xxl, gap: space.l },
   step: { fontFamily: font.sans, fontSize: 26, lineHeight: 36 },
