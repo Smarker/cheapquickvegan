@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StirringPot } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon, SearchIcon } from '../components/Icons';
+import { allergenLabel } from '../lib/allergens';
+import { usePrefs } from '../lib/prefs';
 import { Photo } from '../components/Photo';
 import { Pill } from '../components/Pill';
 import { TimePicker } from '../components/TimePicker';
@@ -49,7 +51,15 @@ export function SearchScreen({ navigation }: Props) {
   const guideHits = useMemo(() => searchGuides(query), [query, dataVersion]);
   const suggestions = useMemo(() => popularIngredients(), [dataVersion]);
   const fridge = useMemo(() => fridgeOptions(), [dataVersion]);
-  const fridgeHits = useMemo(() => fridgeMatches(picked, limit), [picked, limit, dataVersion]);
+  const prefs = usePrefs();
+  const fridgeHits = useMemo(() => fridgeMatches(picked, limit).filter((h) => prefs.fits(h.recipe)), [picked, limit, dataVersion, prefs.fits]);
+  /** "Contains soy" / "Needs a blender" beats why it matched: it's the thing to know first. */
+  const caution = (r: Recipe) => {
+    const w = prefs.warningsFor(r);
+    if (w.contains.length) return `Contains ${w.contains.map((a) => allergenLabel(a).toLowerCase()).join(', ')}`;
+    if (w.needs.length) return `Needs ${w.needs.map((n) => n.toLowerCase()).join(', ')}`;
+    return undefined;
+  };
   const labelOf = (a: Art) => FRIDGE.find((f) => f.art === a)?.label.toLowerCase() ?? a;
   const togglePick = (a: Art) => setPicked((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
   const searching = query.trim().length > 1;
@@ -196,7 +206,7 @@ export function SearchScreen({ navigation }: Props) {
               <RecipeRow
                 key={r.slug}
                 recipe={r}
-                note={why ? `Has ${why}` : undefined}
+                note={caution(r) ?? (why ? `Has ${why}` : undefined)}
                 index={i}
                 onPress={() => {
                   Keyboard.dismiss();

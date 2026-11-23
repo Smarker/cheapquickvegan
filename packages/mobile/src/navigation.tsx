@@ -13,6 +13,7 @@ import { GuideScreen } from './screens/GuideScreen';
 import { JourneyScreen } from './screens/JourneyScreen';
 import { CookScreen } from './screens/CookScreen';
 import { RecipeScreen } from './screens/RecipeScreen';
+import { PreferencesScreen } from './screens/PreferencesScreen';
 import { SavedScreen } from './screens/SavedScreen';
 import { SearchScreen } from './screens/SearchScreen';
 import { font, spring, type as t, usePalette } from './theme/tokens';
@@ -24,7 +25,7 @@ export type DiscoverStack = {
   Journey: { id: string };
   Guide: { slug: string };
 };
-export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string } };
+export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined };
 
 const Stack = createNativeStackNavigator<DiscoverStack>();
 const SavedNav = createNativeStackNavigator<SavedStack>();
@@ -70,6 +71,7 @@ function SavedTab() {
     <SavedNav.Navigator screenOptions={useStackOptions()}>
       <SavedNav.Screen name="Saved" component={SavedScreen} options={{ headerShown: false }} />
       <SavedNav.Screen name="Recipe" component={RecipeScreen} options={{ title: '' }} />
+      <SavedNav.Screen name="Preferences" component={PreferencesScreen} options={{ title: 'Preferences' }} />
     </SavedNav.Navigator>
   );
 }
@@ -136,7 +138,7 @@ function Tabbed() {
     <Tabs.Navigator screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="DiscoverTab" component={DiscoverTab} options={{ title: 'Discover' }} />
       <Tabs.Screen name="SearchTab" component={SearchTab} options={{ title: 'Search' }} />
-      <Tabs.Screen name="SavedTab" component={SavedTab} options={{ title: 'Saved' }} />
+      <Tabs.Screen name="SavedTab" component={SavedTab} options={{ title: 'Kitchen' }} />
       <Tabs.Screen name="ListTab" component={GroceryScreen} options={{ title: 'List' }} />
     </Tabs.Navigator>
   );

@@ -14,7 +14,7 @@ import { CookCat, type CatMood } from '../components/CookCat';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
 import { handsFreeAvailable, useHandsFree } from '../lib/handsFree';
 import { convertInStep, linesIn } from '../lib/units';
-import { useUnits } from '../lib/unitsPref';
+import { usePrefs, useUnits } from '../lib/prefs';
 import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
 import { HighlightedText } from '../components/HighlightedText';
@@ -100,11 +100,17 @@ export function CookScreen({ route, navigation }: Props) {
     return () => clearTimeout(id);
   }, [timer]);
   const canVoice = useMemo(handsFreeAvailable, []);
+  const prefs = usePrefs();
 
   const voice = useHandsFree({
     onCommand: (cmd) => handleVoice(cmd),
     onUnknown: (said) => setHeard(`Heard “${said}”. Try “next step”.`),
   });
+  // Hands-free from the start, if the cook asked for that in Kitchen → Preferences.
+  useEffect(() => {
+    if (prefs.autoHandsFree && canVoice) voice.start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     if (!heard) return;
     const id = setTimeout(() => setHeard(null), 3000);
@@ -200,7 +206,7 @@ export function CookScreen({ route, navigation }: Props) {
         <Animated.View entering={reduce ? undefined : FadeIn.duration(400)} style={styles.finish}>
           <View style={styles.potRow}>
             <StirringPot color={k.ink} size={170} />
-            <CookCat mood={timerDone || !timer ? 'happy' : 'idle'} outline={k.ink} size={72} style={{ marginLeft: -18, marginBottom: 4 }} />
+            {prefs.helper && <CookCat mood={timerDone || !timer ? 'happy' : 'idle'} outline={k.ink} size={72} style={{ marginLeft: -18, marginBottom: 4 }} />}
           </View>
           <Text style={[t.hand, styles.finishTitle]}>{title} is ready.</Text>
           <Text style={[t.body, { color: k.soft, textAlign: 'center' }]}>
@@ -270,7 +276,7 @@ export function CookScreen({ route, navigation }: Props) {
       )}
 
       <View style={styles.trail} onLayout={(e) => setTrailW(e.nativeEvent.layout.width)}>
-        {trailW > 0 && (
+        {trailW > 0 && prefs.helper && (
           <CookCat
             x={Math.min(Math.max(((index + 1) / Math.max(pages.length, 1)) * trailW - CAT * 0.8, 0), trailW - CAT)}
             facing={facing}

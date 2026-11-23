@@ -5,7 +5,7 @@ import { StirringPot } from './src/components/Doodles';
 import { DataProvider } from './src/lib/data';
 import { GroceryProvider } from './src/lib/grocery';
 import { SavedProvider } from './src/lib/saved';
-import { UnitsProvider } from './src/lib/unitsPref';
+import { PrefsProvider } from './src/lib/prefs';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
@@ -31,12 +31,12 @@ export default function App() {
       <DataProvider>
       <SavedProvider>
       <GroceryProvider>
-      <UnitsProvider>
+      <PrefsProvider>
       <NavigationContainer theme={{ ...base, colors: { ...base.colors, background: p.ground, card: p.ground, text: p.ink, primary: p.ink } }}>
         <RootTabs />
       </NavigationContainer>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      </UnitsProvider>
+      </PrefsProvider>
       </GroceryProvider>
       </SavedProvider>
       </DataProvider>

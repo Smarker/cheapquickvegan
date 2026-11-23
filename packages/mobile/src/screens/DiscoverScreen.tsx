@@ -15,6 +15,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line, Path } from 'react-native-svg';
 import { Peaks, StirringPot, Squiggle } from '../components/Doodles';
+import { usePrefs } from '../lib/prefs';
 import { GEAR } from '../components/GearDoodles';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
@@ -60,7 +61,8 @@ export function DiscoverScreen({ navigation }: Props) {
   const [gear, setGear] = useState<string | null>(null);
   const [meal, setMeal] = useState<Meal>(mealWord());
 
-  const matches = useMemo(() => tonight(limit, gear, meal), [limit, gear, meal, dataVersion]);
+  const prefs = usePrefs();
+  const matches = useMemo(() => tonight(limit, gear, meal).filter(prefs.fits), [limit, gear, meal, dataVersion, prefs.fits]);
   // The trail is a timeline: every match, quickest on the left.
   const featured = matches;
   // A signpost stands between two cards wherever the time steps up (30 min, 45 min, 1 hr…).
@@ -76,7 +78,7 @@ export function DiscoverScreen({ navigation }: Props) {
   const limitLabel = TIME_OPTIONS.find((o) => o.value === limit)?.label;
   const widerLabel =
     wider === undefined ? undefined : wider === null ? 'See every recipe' : `See ${TIME_OPTIONS.find((o) => o.value === wider)?.label} recipes`;
-  const slow = useMemo(() => projects().slice(0, 8), [dataVersion]);
+  const slow = useMemo(() => projects().filter(prefs.fits).slice(0, 8), [dataVersion, prefs.fits]);
   const open = (r: Recipe) => navigation.navigate('Recipe', { slug: r.slug });
 
   const otherMeal: Meal = meal === 'breakfast' ? 'dinner' : 'breakfast';
@@ -215,7 +217,7 @@ export function DiscoverScreen({ navigation }: Props) {
         </Text>
         <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Tap what you've got and I'll show what it can make.</Text>
         <View style={styles.gearGrid}>
-          {GEAR.map(({ tag, label, Doodle }, i) => {
+          {GEAR.filter((g) => !prefs.missingGear.includes(g.tag)).map(({ tag, label, Doodle }, i) => {
             const on = gear === tag;
             const count = equipmentCount(tag, limit, meal);
             const bg = [p.greenSoft, p.sageSoft, p.sand][i % 3];

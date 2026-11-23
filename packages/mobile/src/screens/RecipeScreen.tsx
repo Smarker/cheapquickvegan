@@ -14,7 +14,8 @@ import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { ingredientTerms } from '../lib/cook';
 import { canConvert, convertLine, writtenIn } from '../lib/units';
-import { useUnits } from '../lib/unitsPref';
+import { allergenLabel } from '../lib/allergens';
+import { usePrefs, useUnits } from '../lib/prefs';
 import { useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
 import { shareRecipe } from '../lib/share';
@@ -32,6 +33,7 @@ export function RecipeScreen({ route, navigation }: Props) {
   const grocery = useGrocery();
   const [tab, setTab] = useState<Tab>('ingredients');
   const { units, setUnits } = useUnits();
+  const prefs = usePrefs();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const r = recipes.find((x) => x.slug === route.params.slug);
   const tint = tintFor(p, r?.category ?? null);
@@ -103,6 +105,7 @@ export function RecipeScreen({ route, navigation }: Props) {
       <View style={[styles.sheet, { backgroundColor: p.ground }]}>
         <View style={[styles.grabber, { backgroundColor: p.hairline }]} />
         {!!r.description && <Text style={[t.body, { color: p.muted }]}>{r.description}</Text>}
+        <RecipeWarning warnings={prefs.warningsFor(r)} />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s }} accessibilityRole="tablist">
           {tabs.map((x) => (
@@ -210,7 +213,28 @@ export function RecipeScreen({ route, navigation }: Props) {
   );
 }
 
+const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+
+/** "Contains soy and gluten" / "Needs a blender", for the things this cook said to avoid or doesn't have. */
+function RecipeWarning({ warnings }: { warnings: ReturnType<ReturnType<typeof usePrefs>['warningsFor']> }) {
+  const p = usePalette();
+  if (!warnings.contains.length && !warnings.needs.length) return null;
+  return (
+    <View style={[styles.warn, { backgroundColor: p.sand, borderColor: p.hairline }]} accessibilityRole="alert">
+      {warnings.contains.length > 0 && (
+        <Text style={[t.body, { color: p.ink }]}>
+          Seems to contain {list(warnings.contains.map((a) => allergenLabel(a).toLowerCase()))}. That's from the ingredient list, so check labels too.
+        </Text>
+      )}
+      {warnings.needs.length > 0 && (
+        <Text style={[t.body, { color: p.ink }]}>Needs {list(warnings.needs.map((n) => n.toLowerCase()))}, which you said you don't have.</Text>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },
   top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
   heart: { position: 'absolute', right: 12, bottom: -18 },
   facts: { flexDirection: 'row', gap: space.s },
