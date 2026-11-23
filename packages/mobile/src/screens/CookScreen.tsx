@@ -105,6 +105,7 @@ export function CookScreen({ route, navigation }: Props) {
   const voice = useHandsFree({
     onCommand: (cmd) => handleVoice(cmd),
     onUnknown: (said) => setHeard(`Heard “${said}”. Try “next step”.`),
+    onProblem: (message) => setHeard(message),
   });
   // Hands-free from the start, if the cook asked for that in Kitchen → Preferences.
   useEffect(() => {
@@ -113,7 +114,7 @@ export function CookScreen({ route, navigation }: Props) {
   }, []);
   useEffect(() => {
     if (!heard) return;
-    const id = setTimeout(() => setHeard(null), 3000);
+    const id = setTimeout(() => setHeard(null), 5000);
     return () => clearTimeout(id);
   }, [heard]);
 
@@ -270,8 +271,8 @@ export function CookScreen({ route, navigation }: Props) {
           <View style={styles.close} />
         )}
       </View>
-      {voice.on && (
-        <Text style={[t.hand, styles.voiceHint]} accessibilityLiveRegion="polite" numberOfLines={1} textBreakStrategy="simple">
+      {(voice.on || !!heard) && (
+        <Text style={[t.hand, styles.voiceHint]} accessibilityLiveRegion="polite" numberOfLines={2} textBreakStrategy="simple">
           {heard ?? 'Say “next step”, “repeat” or “how much garlic?”'}
         </Text>
       )}

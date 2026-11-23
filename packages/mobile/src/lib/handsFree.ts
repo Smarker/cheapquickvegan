@@ -1,9 +1,32 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { parseCommand, type VoiceCommand } from './voice';
 
 // Commands short enough to act on from a partial transcript, before the recogniser decides you've
 // finished. "How much…" and "set a timer for…" wait for the end so they aren't cut off early.
+/** Hands-free switches itself off after this long with nothing said, to save battery and the mic. */
+const IDLE_MS = 10 * 60 * 1000;
+
+/** What to tell the cook when the speech service can't carry on. Null: a normal pause, just listen again. */
+function problemFor(code: string): string | null {
+  switch (code) {
+    case 'not-allowed':
+      return 'Microphone access is off. Turn it on in Settings to use hands-free.';
+    case 'network':
+      return 'Voice needs an internet connection on this phone.';
+    case 'language-not-supported':
+      return "Voice isn't available in English on this phone.";
+    case 'service-not-allowed':
+      return "This phone's speech service is turned off, so hands-free can't listen.";
+    case 'audio-capture':
+    case 'busy':
+      return 'The microphone is busy right now (a call or another app?).';
+    default:
+      return null; // no-speech, speech-timeout, aborted: the 'end' handler listens again
+  }
+}
+
 const QUICK = new Set<VoiceCommand['type']>(['next', 'back', 'repeat', 'stopTimer', 'timeLeft', 'finish', 'stopListening', 'ingredients']);
 
 // Speech recognition is native code that Expo Go doesn't include, so it only loads in real builds.
@@ -31,34 +54,42 @@ type Options = {
   onCommand: (cmd: VoiceCommand) => void;
   /** What the cook says that isn't a command (shown briefly, so they know they were heard). */
   onUnknown?: (said: string) => void;
+  /** Hands-free had to stop, and why, in plain words. */
+  onProblem?: (message: string) => void;
 };
 
 /**
  * Hands-free cook mode: listens while switched on, turns each phrase into a command, and can talk back.
  * The mic is ignored while the app is speaking, so it doesn't hear itself.
  */
-export function useHandsFree({ onCommand, onUnknown }: Options) {
+export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
   const [on, setOn] = useState(false);
   const [listening, setListening] = useState(false);
   const onRef = useRef(false);
   const speaking = useRef(false);
   const utterance = useRef(0);
   const acted = useRef(false); // already acted on this phrase from a partial result
-  const handlers = useRef({ onCommand, onUnknown });
-  handlers.current = { onCommand, onUnknown };
+  const paused = useRef(false); // app in the background: mic off until it's back
+  const lastHeard = useRef(Date.now());
+  const handlers = useRef({ onCommand, onUnknown, onProblem });
+  handlers.current = { onCommand, onUnknown, onProblem };
 
   const listen = useCallback(() => {
     const m = modules();
-    if (!m || !onRef.current) return;
+    if (!m || !onRef.current || paused.current) return;
     const R = m.rec.ExpoSpeechRecognitionModule;
     acted.current = false;
     R.start({
       lang: 'en-US',
       interimResults: true,
-      continuous: true,
+      // One phrase at a time (we restart right after each). Continuous mode on Android runs only on the
+      // on-device recogniser, which returns nothing when the phone hasn't downloaded the language pack.
+      continuous: false,
       maxAlternatives: 1,
-      // On the phone itself when it can: faster than a round trip to a server, and works offline.
-      requiresOnDeviceRecognition: R.supportsOnDeviceRecognition(),
+      // No requiresOnDeviceRecognition: phones can report support without having the language pack,
+      // and then return empty results. Google's service already goes on-device when the pack is there.
+      // iPhone: record and play on one session, replies through the loudspeaker (not the earpiece).
+      iosCategory: { category: 'playAndRecord', categoryOptions: ['defaultToSpeaker', 'allowBluetooth'], mode: 'default' },
       // Decide a phrase is over after a short pause rather than the default couple of seconds.
       androidIntentOptions: { EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 700, EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 500 },
     });
@@ -73,16 +104,18 @@ export function useHandsFree({ onCommand, onUnknown }: Options) {
       // Recognisers stop after a pause; keep going while hands-free is on.
       R.addListener('end', () => {
         setListening(false);
-        if (onRef.current && !speaking.current) listen();
+        if (onRef.current && !speaking.current && !paused.current) listen();
       }),
       R.addListener('error', (e) => {
-        if (e.error === 'not-allowed') {
-          onRef.current = false;
-          setOn(false);
-        }
+        const problem = problemFor(e.error);
+        if (!problem) return;
+        onRef.current = false;
+        setOn(false);
+        handlers.current.onProblem?.(problem);
       }),
       R.addListener('result', (e) => {
         if (speaking.current) return;
+        lastHeard.current = Date.now();
         const said = e.results[0]?.transcript ?? '';
         const cmd = parseCommand(said);
         if (!e.isFinal) {
@@ -101,8 +134,34 @@ export function useHandsFree({ onCommand, onUnknown }: Options) {
         else if (said.trim()) handlers.current.onUnknown?.(said);
       }),
     ];
+    // The mic never listens in the background: stop when the app leaves the screen, pick up on return.
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        if (paused.current) {
+          paused.current = false;
+          lastHeard.current = Date.now();
+          listen();
+        }
+      } else if (onRef.current && !paused.current) {
+        paused.current = true;
+        R.abort();
+        m.speech.stop();
+      }
+    });
+    // Nothing said for a while: switch off, and say so.
+    const idle = setInterval(() => {
+      if (onRef.current && !paused.current && !speaking.current && Date.now() - lastHeard.current > IDLE_MS) {
+        onRef.current = false;
+        setOn(false);
+        R.abort();
+        m.speech.speak('Hands-free is off. Tap it to turn it back on.', { language: 'en-US', rate: 0.95 });
+        handlers.current.onProblem?.('Hands-free turned off after 10 quiet minutes.');
+      }
+    }, 30_000);
     return () => {
       subs.forEach((s) => s.remove());
+      appState.remove();
+      clearInterval(idle);
       onRef.current = false;
       R.abort();
       m.speech.stop();
@@ -115,6 +174,8 @@ export function useHandsFree({ onCommand, onUnknown }: Options) {
     const { granted } = await m.rec.ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!granted) return false;
     onRef.current = true;
+    paused.current = false;
+    lastHeard.current = Date.now();
     setOn(true);
     listen();
     return true;
