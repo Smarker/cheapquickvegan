@@ -17,6 +17,7 @@ import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { ingredientAmounts, ingredientTerms, toolTerms } from '../lib/cook';
 import { canConvert, convertInStep, convertLine, linesIn, writtenIn } from '../lib/units';
+import { scaleInStep, scaleLine, scaleYield, useScale } from '../lib/scale';
 import { allergenLabel } from '../lib/allergens';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
@@ -40,6 +41,8 @@ export function RecipeScreen({ route, navigation }: Props) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [picking, setPicking] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
+  // How many it's being made for. Every amount below follows it, then the grams/cups choice.
+  const scale = useScale(route.params.slug, r?.yieldText);
   const tint = tintFor(p, r?.category ?? null);
 
   useLayoutEffect(() => {
@@ -60,12 +63,13 @@ export function RecipeScreen({ route, navigation }: Props) {
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
   // Directions read like cook mode: amounts after each ingredient, times and temperatures as tags,
   // tools underlined, all in the cook's units.
+  const sized = (l: string) => scaleLine(l, scale.factor);
   const allLines = r.ingredients.flatMap((g) => g.items);
   const stepTerms = ingredientTerms(allLines);
-  const stepAmounts = ingredientAmounts(linesIn(allLines, units));
+  const stepAmounts = ingredientAmounts(linesIn(allLines.map(sized), units));
   const stepTools = toolTerms(r.equipment);
   // What can go on a grocery list (never plain water). The picker asks which ones the cook needs.
-  const shoppable = r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map((l) => (units ? convertLine(l, units) : l));
+  const shoppable = r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map(sized).map((l) => (units ? convertLine(l, units) : l));
   const tabs: { key: Tab; label: string }[] = [
     { key: 'ingredients', label: `Ingredients · ${ingredientCount}` },
     { key: 'steps', label: 'Directions' },
@@ -73,7 +77,7 @@ export function RecipeScreen({ route, navigation }: Props) {
   ];
   const facts = [
     r.totalText && { icon: ClockIcon, text: r.totalText },
-    r.yieldText && { icon: ServesIcon, text: r.yieldText },
+    r.yieldText && { icon: ServesIcon, text: scaleYield(r.yieldText, scale.factor) },
     r.equipment[0] && { icon: PanIcon, text: r.equipment.slice(0, 2).join(', ') },
   ].filter(Boolean) as { icon: typeof ClockIcon; text: string }[];
 
@@ -141,6 +145,17 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
         </ScrollView>
 
+        {tab === 'ingredients' && (
+          <Servings
+            label={r.yieldText ? scaleYield(r.yieldText, scale.factor) : `${scale.target} ${scale.target === 1 ? 'batch' : 'batches'}`}
+            canLess={scale.target > 1}
+            canMore={scale.target < Math.max(12, scale.base * 4)}
+            onLess={() => scale.setTarget(scale.target - 1)}
+            onMore={() => scale.setTarget(scale.target + 1)}
+            changed={scale.target !== scale.base}
+            onReset={() => scale.setTarget(scale.base)}
+          />
+        )}
         {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (() => {
           const shown = units ?? writtenIn(r.ingredients.flatMap((g) => g.items));
           const other = shown === 'grams' ? 'volume' : 'grams';
@@ -167,7 +182,7 @@ export function RecipeScreen({ route, navigation }: Props) {
                     <View style={[styles.art, { opacity: done ? 0.4 : 1 }]}>
                       <IngredientDoodle line={item} color={p.ink} size={26} />
                     </View>
-                    <PencilStrike text={units ? convertLine(item, units) : item} done={done} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
+                    <PencilStrike text={units ? convertLine(sized(item), units) : sized(item)} done={done} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
                   </Pressable>
                 );
               })}
@@ -194,7 +209,7 @@ export function RecipeScreen({ route, navigation }: Props) {
                       amountTag={StyleSheet.flatten([styles.amountTag, { backgroundColor: p.sand, borderColor: p.hairline }])}
                       tools={stepTools}
                       toolStyle={{ fontFamily: font.sansMedium, textDecorationLine: 'underline', textDecorationColor: p.green }}
-                      convertAmount={(amount, after) => convertInStep(amount, after, units)}
+                      convertAmount={(amount, after) => convertInStep(scaleInStep(amount, scale.factor), after, units)}
                     />
                   </View>
                 );
@@ -281,7 +296,47 @@ function ActionButton({ label, on, onPress, a11y, Icon }: { label: string; on: b
   );
 }
 
+type ServingsProps = { label: string; canLess: boolean; canMore: boolean; onLess: () => void; onMore: () => void; changed: boolean; onReset: () => void };
+
+/** "Makes − 4 servings +": scale the recipe up or down. Every amount, step and grocery line follows. */
+function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }: ServingsProps) {
+  const p = usePalette();
+  const step = (on: boolean, sign: '−' | '+', onPress: () => void, a11y: string) => (
+    <Pressable
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      disabled={!on}
+      accessibilityRole="button"
+      accessibilityLabel={a11y}
+      accessibilityState={{ disabled: !on }}
+      hitSlop={6}
+      style={({ pressed }) => [styles.stepper, { borderColor: p.control, opacity: on ? 1 : 0.35, transform: [{ scale: pressed ? 0.92 : 1 }] }]}
+    >
+      <Text style={[t.label, { color: p.ink, fontSize: 20, lineHeight: 22 }]}>{sign}</Text>
+    </Pressable>
+  );
+  return (
+    <View style={styles.servings} accessible={false}>
+      <Text style={[t.label, { color: p.muted }]}>Makes</Text>
+      {step(canLess, '−', onLess, 'Make fewer')}
+      <Text style={[t.label, { color: p.ink, minWidth: 96, textAlign: 'center' }]} accessibilityLiveRegion="polite">
+        {label}
+      </Text>
+      {step(canMore, '+', onMore, 'Make more')}
+      {changed && (
+        <Pressable onPress={onReset} accessibilityRole="button" accessibilityLabel="Back to the original amount" hitSlop={8}>
+          <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Reset</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, marginTop: space.l, flexWrap: 'wrap' },
+  stepper: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },
   top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
   facts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.l, rowGap: space.s },

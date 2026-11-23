@@ -14,6 +14,7 @@ import { CookCat, type CatMood } from '../components/CookCat';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
 import { handsFreeAvailable, useHandsFree } from '../lib/handsFree';
 import { convertInStep, linesIn } from '../lib/units';
+import { scaleInStep, scaleLine, useScale } from '../lib/scale';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
@@ -59,8 +60,9 @@ export function CookScreen({ route, navigation }: Props) {
   // Amounts sit inline after each ingredient's first mention, so nobody taps a phone with messy hands.
   const tools = useMemo(() => (r ? toolTerms(r.equipment) : []), [r]);
   const { units } = useUnits();
-  // Amounts follow the cups-or-grams choice made on the recipe page.
-  const lines = useMemo(() => (r ? linesIn(r.ingredients.flatMap((g) => g.items), units) : []), [r, units]);
+  // Amounts follow the servings and the cups-or-grams choice made on the recipe page.
+  const { factor } = useScale(route.params.slug, r?.yieldText);
+  const lines = useMemo(() => (r ? linesIn(r.ingredients.flatMap((g) => g.items).map((l) => scaleLine(l, factor)), units) : []), [r, units, factor]);
   const amounts = useMemo(() => ingredientAmounts(lines), [lines]);
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
@@ -223,7 +225,7 @@ export function CookScreen({ route, navigation }: Props) {
         return voice.say(line ?? `I can't find ${cmd.item} in this recipe.`);
       }
       case 'ingredients': {
-        const need = page?.ingredients.length ? linesIn(page.ingredients, units) : allLines;
+        const need = page?.ingredients.length ? linesIn(page.ingredients.map((l) => scaleLine(l, factor)), units) : allLines;
         return voice.say(need.join('. '));
       }
     }
@@ -376,7 +378,7 @@ export function CookScreen({ route, navigation }: Props) {
                   amountTag={styles.amountTag}
                   tools={tools}
                   toolStyle={styles.tool}
-                  convertAmount={(amount, after) => convertInStep(amount, after, units)}
+                  convertAmount={(amount, after) => convertInStep(scaleInStep(amount, factor), after, units)}
                 />
                 {timersIn(s).map((tm) => (
                   <Pressable

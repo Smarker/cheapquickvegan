@@ -54,15 +54,15 @@ const GRAMS_PER_CUP: [RegExp, number][] = [
   [/marshmallows/, 50],
 ];
 
-const ML: Record<string, number> = { cup: 240, tbsp: 15, tsp: 5, ml: 1, l: 1000 };
-const G: Record<string, number> = { g: 1, kg: 1000, oz: 28.35, lb: 453.6 };
+export const ML: Record<string, number> = { cup: 240, tbsp: 15, tsp: 5, ml: 1, l: 1000 };
+export const G: Record<string, number> = { g: 1, kg: 1000, oz: 28.35, lb: 453.6 };
 
 const FRACTIONS: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125 };
-const NUM = String.raw`(?:\d+\s+[½¼¾⅓⅔⅛]|\d+\s+\d\/\d+|\d+\/\d+|\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]?|[½¼¾⅓⅔⅛])`;
-const UNIT = String.raw`(cups?|c|tablespoons?|tbsp|tbs|teaspoons?|tsp|grams?|g|kg|kilograms?|ml|milliliters?|millilitres?|l|liters?|litres?|oz|ounces?|lbs?|pounds?)`;
+export const NUM = String.raw`(?:\d+\s+[½¼¾⅓⅔⅛]|\d+\s+\d\/\d+|\d+\/\d+|\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]?|[½¼¾⅓⅔⅛])`;
+export const UNIT = String.raw`(cups?|c|tablespoons?|tbsp|tbs|teaspoons?|tsp|grams?|g|kg|kilograms?|ml|milliliters?|millilitres?|l|liters?|litres?|oz|ounces?|lbs?|pounds?)`;
 const QUANTITY = new RegExp(String.raw`^(\s*)(${NUM})(?:\s*(?:-|–|to)\s*(${NUM}))?\s*${UNIT}\.?(?=\s|$)(\s+of)?`, 'i');
 
-function toNumber(s: string): number {
+export function toNumber(s: string): number {
   const t = s.trim();
   const mixed = t.match(/^(\d+)\s+(\d)\/(\d+)$/);
   if (mixed) return +mixed[1] + +mixed[2] / +mixed[3];
@@ -73,7 +73,7 @@ function toNumber(s: string): number {
   return parseFloat(t);
 }
 
-function unitKey(u: string): string {
+export function unitKey(u: string): string {
   const x = u.toLowerCase();
   if (/^(cups?|c)$/.test(x)) return 'cup';
   if (/^(tablespoons?|tbsp|tbs)$/.test(x)) return 'tbsp';
@@ -88,10 +88,10 @@ function unitKey(u: string): string {
 
 export const gramsPerCup = (name: string): number | null => GRAMS_PER_CUP.find(([re]) => re.test(name.toLowerCase()))?.[1] ?? null;
 
-const roundGrams = (g: number) => (g < 20 ? Math.round(g) : g < 100 ? Math.round(g / 5) * 5 : Math.round(g / 10) * 10);
+export const roundGrams = (g: number) => (g < 20 ? Math.round(g) : g < 100 ? Math.round(g / 5) * 5 : Math.round(g / 10) * 10);
 
 const NICE: [number, string][] = [[0, ''], [0.25, '¼'], [1 / 3, '⅓'], [0.5, '½'], [2 / 3, '⅔'], [0.75, '¾'], [1, '']];
-function niceNumber(x: number): string {
+export function niceNumber(x: number): string {
   let whole = Math.floor(x);
   const [frac, glyph] = NICE.reduce((best, cand) => (Math.abs(cand[0] - (x - whole)) < Math.abs(best[0] - (x - whole)) ? cand : best));
   if (frac === 1) whole += 1;
@@ -100,7 +100,7 @@ function niceNumber(x: number): string {
 }
 
 /** Millilitres → the friendliest spoon or cup amount; a range uses the unit that suits its top end. */
-function volumeText(low: number, high: number | null = null): string {
+export function volumeText(low: number, high: number | null = null): string {
   const top = high ?? low;
   const [size, unit] = top / 240 >= 0.25 ? [240, top / 240 > 1.1 ? 'cups' : 'cup'] : top / 15 >= 1 ? [15, 'tbsp'] : [5, 'tsp'];
   const n = (ml: number) => niceNumber(ml / size);

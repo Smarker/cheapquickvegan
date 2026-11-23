@@ -16,6 +16,7 @@ import { isJustWater, useGrocery } from '../lib/grocery';
 import { useUnits } from '../lib/prefs';
 import { useSaved } from '../lib/saved';
 import { linesIn } from '../lib/units';
+import { factorFor, scaleLine } from '../lib/scale';
 import type { SavedStack } from '../navigation';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
 
@@ -36,7 +37,7 @@ export function SavedScreen({ navigation }: Props) {
   const [picking, setPicking] = useState(false);
   const week = saved.week.map((w) => recipes.find((r) => r.slug === w.slug)).filter((r): r is (typeof recipes)[number] => !!r);
   const toCook = week.filter((r) => !saved.cookedThisWeek(r.slug));
-  const pickerGroups: PickerGroup[] = toCook.map((r) => ({ slug: r.slug, title: displayTitle(r), lines: linesIn(r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)), units) }));
+  const pickerGroups: PickerGroup[] = toCook.map((r) => ({ slug: r.slug, title: displayTitle(r), lines: linesIn(r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map((l) => scaleLine(l, factorFor(r.slug, r.yieldText))), units) }));
   // Finished journeys, kept as postcards.
   const summitedRegions = REGIONS.filter((region) => saved.summits[region.id]).map((region) => ({
     region,
