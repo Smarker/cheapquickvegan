@@ -17,13 +17,17 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Ellipse, G, Path } from 'react-native-svg';
 
-// The cook-mode helper: a small tuxedo cat after the CheapQuickVegan tab icon.
-// A stand-in built in code (a Rive file or Stephanie's drawing can replace it with the same moods).
-// Cute-cat rules it follows: a big round head, eyes set low with a catch-light, a tiny nose,
-// a bean-shaped body, and motion that eases in and out, never constant.
+// The cook-mode helper: a small tuxedo cat after the CheapQuickVegan tab icon, drawn in code.
+// Cute-cat rules it follows: a big round head, eyes set low with a catch-light, a tiny nose, a bean
+// body, the tail wrapped round the feet when sitting, and motion that eases in and out, never constant.
+//
+// Its day: sits and watches (blinks, flicks its tail tip, tilts its head at the recipe), licks a paw
+// now and then, settles into a loaf when things go quiet, then naps. Anything happening wakes it, and
+// waking from a nap comes with a stretch and a yawn.
 
 export type CatMood = 'idle' | 'listening' | 'alert' | 'happy';
-type Pose = 'sit' | 'walk' | 'lick' | 'sleep';
+type Pose = 'sit' | 'walk' | 'lick' | 'loaf' | 'sleep' | 'stretch';
+type Eyes = 'open' | 'closed' | 'sleepy' | 'none';
 
 type Props = {
   /** Where along the trail to sit, in px from the left of the parent. */
@@ -35,7 +39,7 @@ type Props = {
   size?: number;
   outline: string;
   style?: ViewStyle;
-  /** Seconds without anything happening before it curls up for a nap. */
+  /** Seconds without anything happening before it naps (it loafs at a bit over half that). */
   napAfter?: number;
 };
 
@@ -56,48 +60,55 @@ const Limb = ({ d, w, outline, end }: { d: string; w: number; outline: string; e
   </>
 );
 
-/** White paw at the end of a leg. */
 const Paw = ({ cx, cy, outline }: { cx: number; cy: number; outline: string }) => (
   <Ellipse cx={cx} cy={cy} rx={2.6} ry={1.7} fill={CREAM} stroke={outline} strokeWidth={0.9} />
 );
 
-/** Head, drawn around (42, 17). Eyes open with catch-lights, or closed in content little arcs. */
-function Head({ outline, closed, tongue, ears = true, noEyes }: { outline: string; closed?: boolean; tongue?: boolean; ears?: boolean; noEyes?: boolean }) {
+const OpenEyes = () => (
+  <>
+    <Ellipse cx={37.6} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
+    <Ellipse cx={46.4} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
+    <Ellipse cx={37.8} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
+    <Ellipse cx={46.6} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
+    <Ellipse cx={38.6} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
+    <Ellipse cx={47.4} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
+  </>
+);
+
+/** Head, drawn around (42, 17). */
+function Head({ outline, eyes = 'open', tongue, yawn }: { outline: string; eyes?: Eyes; tongue?: boolean; yawn?: boolean }) {
   const line = { stroke: outline, strokeWidth: 1.3, strokeLinejoin: 'round' as const };
   return (
     <>
-      {ears && (
-        <>
-          <Path d="M32.6 12 C31.6 7 32.6 3 34 1.6 C36.4 3.2 38.6 5.4 39.8 7.6 Z" fill={FUR} {...line} />
-          <Path d="M34.2 9.6 C33.8 7 34.2 5 34.8 4.2 C36 5.2 37.2 6.4 37.8 7.6 Z" fill={PINK} />
-          <Path d="M44.2 7.6 C45.4 5.4 47.6 3.2 50 1.6 C51.4 3 52.4 7 51.4 12 Z" fill={FUR} {...line} />
-          <Path d="M46.2 7.6 C46.8 6.4 48 5.2 49.2 4.2 C49.8 5 50.2 7 49.8 9.6 Z" fill={PINK} />
-        </>
-      )}
-      {/* round head with soft cheeks */}
+      <Path d="M32.6 12 C31.6 7 32.6 3 34 1.6 C36.4 3.2 38.6 5.4 39.8 7.6 Z" fill={FUR} {...line} />
+      <Path d="M34.2 9.6 C33.8 7 34.2 5 34.8 4.2 C36 5.2 37.2 6.4 37.8 7.6 Z" fill={PINK} />
+      <Path d="M44.2 7.6 C45.4 5.4 47.6 3.2 50 1.6 C51.4 3 52.4 7 51.4 12 Z" fill={FUR} {...line} />
+      <Path d="M46.2 7.6 C46.8 6.4 48 5.2 49.2 4.2 C49.8 5 50.2 7 49.8 9.6 Z" fill={PINK} />
       <Path d="M31 18 C31 10.5 36 6.4 42 6.4 C48 6.4 53 10.5 53 18 C53 22 51.4 24.6 48.6 26.2 C46.6 27.4 44.4 27.8 42 27.8 C39.6 27.8 37.4 27.4 35.4 26.2 C32.6 24.6 31 22 31 18 Z" fill={FUR} {...line} />
-      {/* white muzzle and chin */}
       <Path d="M38.4 21.6 C38.4 19.2 40.4 18.6 42 19.6 C43.6 18.6 45.6 19.2 45.6 21.6 C45.6 24.6 43.8 26.4 42 26.4 C40.2 26.4 38.4 24.6 38.4 21.6 Z" fill={CREAM} />
-      {closed ? (
+      {eyes === 'open' && <OpenEyes />}
+      {eyes === 'closed' && (
         <>
           <Path d="M35.6 17.4 C36.6 18.8 38.6 18.8 39.6 17.4" fill="none" stroke={EYES} strokeWidth={1.3} strokeLinecap="round" />
           <Path d="M44.4 17.4 C45.4 18.8 47.4 18.8 48.4 17.4" fill="none" stroke={EYES} strokeWidth={1.3} strokeLinecap="round" />
         </>
-      ) : noEyes ? null : (
+      )}
+      {eyes === 'sleepy' && (
         <>
-          <Ellipse cx={37.6} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
-          <Ellipse cx={46.4} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
-          <Ellipse cx={37.8} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
-          <Ellipse cx={46.6} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
-          <Ellipse cx={38.6} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
-          <Ellipse cx={47.4} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
+          {/* heavy lids: only the lower half of each eye shows */}
+          <Path d="M35 17.2 C35 19.6 40.2 19.6 40.2 17.2 Z" fill={EYES} />
+          <Path d="M43.8 17.2 C43.8 19.6 49 19.6 49 17.2 Z" fill={EYES} />
+          <Path d="M37.2 17.2 C37.2 18.8 38.4 18.8 38.4 17.2 Z M46 17.2 C46 18.8 47.2 18.8 47.2 17.2 Z" fill={FUR} />
+          <Path d="M34.8 17.2 H40.4 M43.6 17.2 H49.2" stroke={outline} strokeWidth={0.8} strokeLinecap="round" />
         </>
       )}
-      {/* tiny nose and mouth */}
       <Path d="M41 21 H43 L42 22.2 Z" fill={PINK} />
-      <Path d="M40.4 23 C41 23.8 41.8 23.6 42 22.6 C42.2 23.6 43 23.8 43.6 23" fill="none" stroke={FUR} strokeWidth={0.6} strokeLinecap="round" />
+      {yawn ? (
+        <Path d="M40 23 C40 26.6 44 26.6 44 23 C44 22.2 40 22.2 40 23 Z" fill={PINK} stroke={FUR} strokeWidth={0.7} />
+      ) : (
+        <Path d="M40.4 23 C41 23.8 41.8 23.6 42 22.6 C42.2 23.6 43 23.8 43.6 23" fill="none" stroke={FUR} strokeWidth={0.6} strokeLinecap="round" />
+      )}
       {tongue && <Ellipse cx={42} cy={24.6} rx={0.9} ry={1.1} fill={PINK} />}
-      {/* whiskers */}
       <Path d="M38.4 22 L33.4 21 M38.6 23.2 L33.8 23.8 M45.6 22 L50.6 21 M45.4 23.2 L50.2 23.8" stroke={outline} strokeWidth={0.45} strokeOpacity={0.75} strokeLinecap="round" />
     </>
   );
@@ -116,9 +127,14 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const origin = (px: number, py: number): [number, number, number] => [Math.round((px / W) * size * 10) / 10, Math.round((py / H) * h * 10) / 10, 0];
   const line = { stroke: outline, strokeWidth: 1.3, strokeLinejoin: 'round' as const };
 
-  const [pose, setPose] = useState<Pose>('sit');
+  const [pose, setPoseState] = useState<Pose>('sit');
+  const poseRef = useRef<Pose>('sit');
+  const setPose = (p: Pose) => {
+    poseRef.current = p;
+    setPoseState(p);
+  };
   const lastActivity = useRef(Date.now());
-  const busy = useRef(false); // walking or licking: don't interrupt with another idle behaviour
+  const busy = useRef(false); // mid-walk, lick or stretch: no other idle behaviour starts
 
   const posX = useSharedValue(x);
   const bob = useSharedValue(0);
@@ -131,14 +147,28 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const tilt = useSharedValue(0);
   const breathe = useSharedValue(0);
   const zz = useSharedValue(0);
+  const reach = useSharedValue(0);
 
-  const wake = () => {
+  /** Something happened: reset the quiet clock, and get up if lying down (with a stretch after a nap). */
+  const wake = (stretch = true) => {
     lastActivity.current = Date.now();
+    const p = poseRef.current;
+    if (p === 'loaf') setPose('sit');
+    if (p === 'sleep') {
+      if (!stretch || reduce) return setPose('sit');
+      busy.current = true;
+      setPose('stretch');
+      reach.value = withSequence(withTiming(1, { duration: 600, easing: Easing.out(Easing.quad) }), withDelay(700, withTiming(0, { duration: 400 })));
+      setTimeout(() => {
+        if (poseRef.current === 'stretch') setPose('sit');
+        busy.current = false;
+      }, 1700);
+    }
   };
 
   // Walk to each new step: legs step in diagonal pairs, the body bobs, then it sits.
   useEffect(() => {
-    wake();
+    wake(false);
     if (reduce) {
       posX.value = x;
       return;
@@ -155,12 +185,13 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
       busy.current = false;
     }, 950);
     return () => clearTimeout(id);
-  }, [x, reduce, posX, stride, bob]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [x, reduce]);
 
-  // Moods wake it up and set the ears and paws.
+  // Moods: ears, paws, and a cocked head while listening.
   useEffect(() => {
-    wake();
-    if (mood !== 'idle' && pose === 'sleep') setPose('sit');
+    if (mood !== 'idle') wake();
+    else lastActivity.current = Date.now();
     if (reduce) {
       ears.value = mood === 'listening' ? 1 : 0;
       return;
@@ -168,6 +199,7 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
     cancelAnimation(paw);
     cancelAnimation(hop);
     ears.value = withSpring(mood === 'listening' || mood === 'alert' ? 1 : 0);
+    tilt.value = withSpring(mood === 'listening' ? -9 : 0);
     paw.value = withTiming(0, { duration: 150 });
     hop.value = 0;
     if (mood === 'alert') paw.value = withRepeat(withSequence(withTiming(0.45, { duration: 180 }), withTiming(0, { duration: 220 })), -1, false);
@@ -179,45 +211,56 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   useEffect(() => {
     if (!perkKey) return;
     wake();
-    if (pose === 'sleep') setPose('sit');
     if (reduce) return;
     ears.value = withSequence(withTiming(1.4, { duration: 120 }), withSpring(mood === 'listening' ? 1 : 0));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perkKey]);
 
-  // Idle life: blink and the odd tail flick while sitting; now and then a paw lick;
-  // after a quiet while, a nap.
+  // Idle life while sitting: blink, flick the tail tip, tilt the head at the recipe, lick a paw now and
+  // then. When it's been quiet a while: loaf, then nap.
   useEffect(() => {
     if (reduce) return;
     blink.value = withRepeat(withSequence(withDelay(3800, withTiming(0.1, { duration: 80 })), withTiming(1, { duration: 120 })), -1, false);
     tail.value = withRepeat(
-      withSequence(withDelay(5200, withTiming(10, { duration: 260, easing: Easing.out(Easing.quad) })), withTiming(-4, { duration: 320 }), withSpring(0)),
+      withSequence(withDelay(5200, withTiming(1, { duration: 260, easing: Easing.out(Easing.quad) })), withTiming(-0.4, { duration: 320 }), withSpring(0)),
       -1,
       false,
     );
     let lastLick = Date.now();
+    let lastTilt = Date.now();
     const id = setInterval(() => {
       if (busy.current) return;
       const quiet = (Date.now() - lastActivity.current) / 1000;
+      const p = poseRef.current;
       if (mood === 'idle' && quiet > napAfter) {
-        setPose((p) => (p === 'sleep' ? p : 'sleep'));
+        if (p !== 'sleep') setPose('sleep');
         return;
       }
+      if (mood === 'idle' && quiet > napAfter * 0.55) {
+        if (p === 'sit') setPose('loaf');
+        return;
+      }
+      if (p !== 'sit') return;
       if (Date.now() - lastLick > 14000 && quiet > 6 && mood !== 'alert') {
         lastLick = Date.now();
         busy.current = true;
         setPose('lick');
-        // Paw up to the mouth, head dips, four little licks, paw down.
         paw.value = withSequence(withTiming(1, { duration: 320, easing: Easing.out(Easing.quad) }), withDelay(2000, withTiming(0, { duration: 300 })));
         tilt.value = withSequence(
           withTiming(8, { duration: 320 }),
           withRepeat(withSequence(withTiming(13, { duration: 230 }), withTiming(8, { duration: 230 })), 4, false),
-          withTiming(0, { duration: 300 }),
+          withTiming(mood === 'listening' ? -9 : 0, { duration: 300 }),
         );
         setTimeout(() => {
-          setPose((p) => (p === 'lick' ? 'sit' : p));
+          if (poseRef.current === 'lick') setPose('sit');
           busy.current = false;
         }, 2700);
+        return;
+      }
+      // A curious little tilt toward the recipe below.
+      if (mood === 'idle' && Date.now() - lastTilt > 9000) {
+        lastTilt = Date.now();
+        tilt.value = withSequence(withTiming(7, { duration: 450, easing: Easing.inOut(Easing.quad) }), withDelay(1300, withTiming(0, { duration: 450 })));
       }
     }, 1000);
     return () => {
@@ -228,34 +271,38 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduce, mood, napAfter]);
 
-  // Sleeping: slow breaths and a drifting "z".
+  // Lying down: slow breaths; asleep, a drifting "z" too.
   useEffect(() => {
-    if (pose !== 'sleep' || reduce) {
+    const lying = pose === 'sleep' || pose === 'loaf';
+    if (!lying || reduce) {
       cancelAnimation(breathe);
       cancelAnimation(zz);
       breathe.value = 0;
       zz.value = 0;
       return;
     }
-    breathe.value = withRepeat(withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.sin) }), -1, true);
-    zz.value = withRepeat(withTiming(1, { duration: 2600, easing: Easing.out(Easing.quad) }), -1, false);
-  }, [pose, reduce, breathe, zz]);
+    breathe.value = withRepeat(withTiming(1, { duration: pose === 'sleep' ? 1800 : 1400, easing: Easing.inOut(Easing.sin) }), -1, true);
+    if (pose === 'sleep') zz.value = withRepeat(withTiming(1, { duration: 2600, easing: Easing.out(Easing.quad) }), -1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pose, reduce]);
 
   const whole = useAnimatedStyle(() => ({
     transform: [{ translateX: posX.value }, { translateY: bob.value + hop.value }, { scaleX: facing === 'left' ? -1 : 1 }],
   }));
   const rot = (v: SharedValue<number>, k: number) => useAnimatedStyle(() => ({ transform: [{ rotate: `${v.value * k}deg` }] }));
-  const tailStyle = rot(tail, 1);
+  const tipStyle = rot(tail, -28);
   const tiltStyle = rot(tilt, 1);
   const earStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -ears.value * 1.4 }, { scaleY: 1 + ears.value * 0.08 }] }));
   const eyeStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: blink.value }] }));
-  // The near front paw: up to the mouth for licking (1), a little tap for the timer (~0.45).
   const pawStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${-paw.value * 150}deg` }] }));
   const legA = rot(stride, 24);
   const legB = rot(stride, -24);
   const walkTail = rot(stride, 6);
   const breath = useAnimatedStyle(() => ({ transform: [{ scaleY: 1 + breathe.value * 0.04 }] }));
   const zStyle = useAnimatedStyle(() => ({ opacity: zz.value < 0.15 ? zz.value / 0.15 : 1 - (zz.value - 0.15) / 0.85, transform: [{ translateY: -zz.value * 10 }, { translateX: zz.value * 4 }] }));
+  // Stretch: front legs reach forward and the rear lifts a touch.
+  const reachStyle = useAnimatedStyle(() => ({ transform: [{ translateX: reach.value * 2.5 }] }));
+  const rearStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -reach.value * 1.5 }] }));
 
   const L = { position: 'absolute' as const, left: 0, top: 0, width: size, height: h };
   const svg = (children: React.ReactNode) => (
@@ -263,22 +310,18 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
       {children}
     </Svg>
   );
-  const fade = reduce ? undefined : FadeIn.duration(160);
-  const fadeOut = reduce ? undefined : FadeOut.duration(120);
+  const fade = reduce ? undefined : FadeIn.duration(180);
+  const fadeOut = reduce ? undefined : FadeOut.duration(140);
 
   return (
     <Animated.View style={[{ width: size, height: h }, whole, style]} accessible={false} importantForAccessibility="no-hide-descendants">
       {(pose === 'sit' || pose === 'lick') && (
         <Animated.View key="sit" entering={fade} exiting={fadeOut} style={L}>
-          {/* tail curling up behind */}
-          <Animated.View style={[L, { transformOrigin: origin(15, 42) }, tailStyle]}>
-            {svg(<Limb d="M15 43 C7.5 43 5 36 7.5 29.5 C8.8 26.4 11.6 25.6 12.4 27.6" w={3.4} outline={outline} />)}
-          </Animated.View>
-          {/* body, haunch, far front leg, bib, back paw, collar */}
+          {/* body, haunch, far front leg, bib, back paw */}
           <View style={L}>
             {svg(
               <>
-                <Limb d="M35.4 33 L35.2 44.6" w={4.4} outline={outline} end={<Paw cx={35.2} cy={45.6} outline={outline} />} />
+                <Limb d="M36.2 33 L36.2 44.6" w={4.4} outline={outline} end={<Paw cx={36} cy={45.6} outline={outline} />} />
                 <Path d="M15 46.4 C7.2 46.4 6.6 35.4 12.4 30.2 C17 26 23.6 24.6 29.4 25 C34.6 25.4 38.6 29 39.8 35 L40.6 46.4 Z" fill={FUR} {...line} />
                 <Path d="M18 37 C14 37 12.6 41 13.4 44" fill="none" stroke={outline} strokeWidth={0.8} strokeOpacity={0.3} strokeLinecap="round" />
                 <Path d="M33.2 28.8 C37 31.4 39.2 37 39.8 46.4 L34.4 46.4 C34.4 40 32.6 34.6 33.2 28.8 Z" fill={CREAM} />
@@ -286,34 +329,26 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
               </>,
             )}
           </View>
-          {/* head: tilts down to lick; ears and eyes move on their own */}
+          {/* head: tilts to look at the recipe, dips to lick; ears and eyes move on their own */}
           <Animated.View style={[L, { transformOrigin: origin(40, 27) }, tiltStyle]}>
             <Animated.View style={[L, { transformOrigin: origin(42, 9) }, earStyle]}>
               {svg(
                 <>
-                  <Head outline={outline} closed={pose === 'lick'} tongue={pose === 'lick'} noEyes={pose === 'sit'} />
+                  <Head outline={outline} eyes={pose === 'lick' ? 'closed' : 'none'} tongue={pose === 'lick'} />
                   <Collar />
                 </>,
               )}
             </Animated.View>
-            {pose === 'sit' && (
-              <Animated.View style={[L, { transformOrigin: origin(42, 17) }, eyeStyle]}>
-                {svg(
-                  <G>
-                    <Ellipse cx={37.6} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
-                    <Ellipse cx={46.4} cy={16.8} rx={2.6} ry={2.9} fill={EYES} />
-                    <Ellipse cx={37.8} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
-                    <Ellipse cx={46.6} cy={17.1} rx={1.25} ry={2.3} fill={FUR} />
-                    <Ellipse cx={38.6} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
-                    <Ellipse cx={47.4} cy={15.6} rx={0.75} ry={0.75} fill={CREAM} />
-                  </G>,
-                )}
-              </Animated.View>
-            )}
+            {pose === 'sit' && <Animated.View style={[L, { transformOrigin: origin(42, 17) }, eyeStyle]}>{svg(<OpenEyes />)}</Animated.View>}
           </Animated.View>
-          {/* near front leg: lifts to lick, taps for the timer */}
-          <Animated.View style={[L, { transformOrigin: origin(38.8, 33) }, pawStyle]}>
-            {svg(<Limb d="M38.8 33 L39.2 44.6" w={4.4} outline={outline} end={<Paw cx={39.6} cy={45.6} outline={outline} />} />)}
+          {/* near front leg, close beside the other: lifts to lick, taps for the timer */}
+          <Animated.View style={[L, { transformOrigin: origin(39, 33) }, pawStyle]}>
+            {svg(<Limb d="M39 33 L39.2 44.6" w={4.4} outline={outline} end={<Paw cx={39.6} cy={45.6} outline={outline} />} />)}
+          </Animated.View>
+          {/* tail wrapped round the front of the feet; only the tip flicks */}
+          <View style={L}>{svg(<Limb d="M13.6 45.8 C19 47.6 30 47.8 37.4 46.9" w={3.2} outline={outline} />)}</View>
+          <Animated.View style={[L, { transformOrigin: origin(37.4, 46.9) }, tipStyle]}>
+            {svg(<Limb d="M37.4 46.9 C40.6 46.6 43 45.4 43.6 42.8" w={3} outline={outline} />)}
           </Animated.View>
         </Animated.View>
       )}
@@ -323,7 +358,6 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
           <Animated.View style={[L, { transformOrigin: origin(13, 30) }, walkTail]}>
             {svg(<Limb d="M14 30 C8 28 6.5 20 9 14 C10.2 11 13.2 11 12.6 14" w={3.2} outline={outline} />)}
           </Animated.View>
-          {/* far legs (drawn first), then body, then near legs */}
           <Animated.View style={[L, { transformOrigin: origin(20, 34) }, legB]}>
             {svg(<Limb d="M20 34 L20 44.8" w={3.4} outline={outline} end={<Paw cx={20.2} cy={45.6} outline={outline} />} />)}
           </Animated.View>
@@ -351,26 +385,68 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
         </Animated.View>
       )}
 
-      {pose === 'sleep' && (
-        <Animated.View key="sleep" entering={reduce ? undefined : FadeIn.duration(500)} exiting={fadeOut} style={L}>
-          <Animated.View style={[L, { transformOrigin: origin(32, 46) }, breath]}>
+      {pose === 'stretch' && (
+        <Animated.View key="stretch" entering={fade} exiting={fadeOut} style={L}>
+          {/* rear up, chest down, front legs reaching forward, a big yawn */}
+          <Animated.View style={[L, rearStyle]}>
             {svg(
               <>
-                {/* curled loaf */}
-                <Path d="M12 41 C12 33 20 29.6 30 29.6 C40 29.6 48 32.6 49 38.6 C49.6 43 46 46.4 38 46.4 L18 46.4 C14 46.4 12 44.4 12 41 Z" fill={FUR} {...line} />
-                {/* head tucked onto its paws, eyes shut, ears soft */}
-                <G transform="translate(4 17) scale(0.82)">
-                  <Head outline={outline} closed />
-                </G>
-                <Paw cx={44.6} cy={45.4} outline={outline} />
-                {/* tail wrapped round the front */}
-                <Limb d="M13 43.4 C16 47 30 47.4 40.4 45.6" w={3.2} outline={outline} />
+                <Limb d="M11 26 C6 22 6 14 9.4 9.6" w={3.2} outline={outline} />
+                <Limb d="M14.4 33 L14 44.8" w={3.6} outline={outline} end={<Paw cx={14} cy={45.6} outline={outline} />} />
+                <Limb d="M19 34 L19.4 44.8" w={3.6} outline={outline} end={<Paw cx={19.6} cy={45.6} outline={outline} />} />
+                <Path d="M9.6 29 C9.6 23.4 15.6 21.6 21 23.6 C28 26.4 35 32 41 37 C43.4 39 42.6 43 39.6 43.2 L31 43.2 C25 40.8 19 38 14.4 36.4 C11.2 35.2 9.6 32.4 9.6 29 Z" fill={FUR} {...line} />
               </>,
             )}
           </Animated.View>
-          <Animated.View style={[L, zStyle]}>
-            {svg(<Path d="M50 20 H54 L50 24 H54 M55.5 14.5 H58 L55.5 17 H58" fill="none" stroke={outline} strokeWidth={1.1} strokeLinecap="round" strokeLinejoin="round" />)}
+          <Animated.View style={[L, reachStyle]}>
+            {svg(
+              <>
+                <Limb d="M36 41.6 L52 45.2" w={3.4} outline={outline} end={<Paw cx={53} cy={45.6} outline={outline} />} />
+                <Limb d="M39 41 L55.4 44.6" w={3.6} outline={outline} end={<Paw cx={56.4} cy={45.2} outline={outline} />} />
+                <G transform="translate(13 18) scale(0.85)">
+                  <Head outline={outline} eyes="closed" yawn />
+                  <Collar />
+                </G>
+              </>,
+            )}
           </Animated.View>
+        </Animated.View>
+      )}
+
+      {(pose === 'loaf' || pose === 'sleep') && (
+        <Animated.View key={pose} entering={reduce ? undefined : FadeIn.duration(500)} exiting={fadeOut} style={L}>
+          <Animated.View style={[L, { transformOrigin: origin(32, 46) }, breath]}>
+            {svg(
+              pose === 'loaf' ? (
+                <>
+                  {/* loaf: paws tucked under, head up, sleepy eyes */}
+                  <Path d="M12 40 C12 32 20 28.6 30 28.6 C40 28.6 47 31 48 37.6 C48.6 43 45 46.4 37 46.4 L19 46.4 C15 46.4 12 44 12 40 Z" fill={FUR} {...line} />
+                  <Path d="M40 31 C44 32.4 46.4 35.6 46.4 40 C44.4 41.6 41.6 42 39.6 41.4 C40.6 38 40.8 34 40 31 Z" fill={CREAM} />
+                  <Ellipse cx={42.4} cy={46} rx={2.2} ry={1.2} fill={CREAM} stroke={outline} strokeWidth={0.8} />
+                  <G transform="translate(1 6) scale(0.95)">
+                    <Head outline={outline} eyes="sleepy" />
+                    <Collar />
+                  </G>
+                  <Limb d="M13 43.6 C16 47 28 47.4 36 46.2" w={3.2} outline={outline} />
+                </>
+              ) : (
+                <>
+                  {/* curled up asleep, head tucked onto its paws */}
+                  <Path d="M12 41 C12 33 20 29.6 30 29.6 C40 29.6 48 32.6 49 38.6 C49.6 43 46 46.4 38 46.4 L18 46.4 C14 46.4 12 44.4 12 41 Z" fill={FUR} {...line} />
+                  <G transform="translate(4 17) scale(0.82)">
+                    <Head outline={outline} eyes="closed" />
+                  </G>
+                  <Paw cx={44.6} cy={45.4} outline={outline} />
+                  <Limb d="M13 43.4 C16 47 30 47.4 40.4 45.6" w={3.2} outline={outline} />
+                </>
+              ),
+            )}
+          </Animated.View>
+          {pose === 'sleep' && (
+            <Animated.View style={[L, zStyle]}>
+              {svg(<Path d="M50 20 H54 L50 24 H54 M55.5 14.5 H58 L55.5 17 H58" fill="none" stroke={outline} strokeWidth={1.1} strokeLinecap="round" strokeLinejoin="round" />)}
+            </Animated.View>
+          )}
         </Animated.View>
       )}
     </Animated.View>

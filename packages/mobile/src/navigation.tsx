@@ -77,6 +77,8 @@ function SavedTab() {
 }
 
 const ICONS = { DiscoverTab: DiscoverIcon, SearchTab: SearchIcon, SavedTab: SavedIcon, ListTab: ListIcon } as const;
+/** The first screen of each tab's stack. */
+const ROOTS = { DiscoverTab: 'Discover', SearchTab: 'Search', SavedTab: 'Saved' } as const;
 
 /** Docked bar on both OSes; the active tab gets a soft basil pill, like Material's indicator. */
 function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -96,10 +98,12 @@ function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             accessibilityLabel={label}
             onPress={() => {
               const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !e.defaultPrevented) {
-                if (Platform.OS === 'ios') Haptics.selectionAsync();
-                navigation.navigate(route.name);
-              }
+              if (e.defaultPrevented) return;
+              if (!focused && Platform.OS === 'ios') Haptics.selectionAsync();
+              const root = ROOTS[route.name as keyof typeof ROOTS];
+              // Search always opens on the search page, and tapping the tab you're on goes back to its start.
+              if (root && (focused || route.name === 'SearchTab')) navigation.navigate(route.name, { screen: root });
+              else if (!focused) navigation.navigate(route.name);
             }}
             style={styles.tab}
           >
