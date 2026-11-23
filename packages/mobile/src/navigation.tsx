@@ -6,7 +6,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { useSaved } from './lib/saved';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DiscoverIcon, ListIcon, SavedIcon, SearchIcon } from './components/Icons';
+import { DiscoverIcon, KitchenIcon, ListIcon, SearchIcon } from './components/Icons';
 import { DiscoverScreen } from './screens/DiscoverScreen';
 import { GroceryScreen } from './screens/GroceryScreen';
 import { GuideScreen } from './screens/GuideScreen';
@@ -76,7 +76,7 @@ function SavedTab() {
   );
 }
 
-const ICONS = { DiscoverTab: DiscoverIcon, SearchTab: SearchIcon, SavedTab: SavedIcon, ListTab: ListIcon } as const;
+const ICONS = { DiscoverTab: DiscoverIcon, SearchTab: SearchIcon, SavedTab: KitchenIcon, ListTab: ListIcon } as const;
 /** The first screen of each tab's stack. */
 const ROOTS = { DiscoverTab: 'Discover', SearchTab: 'Search', SavedTab: 'Saved' } as const;
 

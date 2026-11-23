@@ -32,6 +32,8 @@ export function SearchScreen({ navigation }: Props) {
   const [limit, setLimit] = useState<TimeLimit>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [picked, setPicked] = useState<Art[]>([]);
+  // The fridge picker stays one tap away until it's wanted, so Search opens calm.
+  const [fridgeOpen, setFridgeOpen] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(RECENT_KEY)
@@ -125,6 +127,24 @@ export function SearchScreen({ navigation }: Props) {
               </View>
             </View>
 
+            {!fridgeOpen && picked.length === 0 ? (
+              <Pressable
+                onPress={() => setFridgeOpen(true)}
+                accessibilityRole="button"
+                accessibilityHint="Pick the ingredients you have to find recipes that use them"
+                style={({ pressed }) => [styles.fridgeEntry, { backgroundColor: p.sand, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
+              >
+                <View style={styles.fridgeArt}>
+                  <IngredientDoodle art="tofu" color={p.ink} size={28} />
+                  <IngredientDoodle art="greens" color={p.ink} size={28} />
+                  <IngredientDoodle art="mushroom" color={p.ink} size={28} />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[t.rowTitle, { color: p.ink }]}>What's in your fridge?</Text>
+                  <Text style={[t.small, { color: p.muted }]}>Pick what you've got, and see what it makes.</Text>
+                </View>
+              </Pressable>
+            ) : (
             <View style={{ gap: space.s }}>
               <Text style={[t.section, { color: p.ink, fontSize: 18 }]} accessibilityRole="header">
                 What's in your fridge?
@@ -184,6 +204,7 @@ export function SearchScreen({ navigation }: Props) {
                 </View>
               )}
             </View>
+            )}
           </View>
         ) : hits.length === 0 && guideHits.length === 0 ? (
           <View style={styles.empty}>
@@ -274,6 +295,8 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: font.sans, fontSize: 17, paddingVertical: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   fridge: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
+  fridgeEntry: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: space.l, borderRadius: 24 },
+  fridgeArt: { flexDirection: 'row', gap: 2 },
   tile: { width: '31%', minHeight: 92, borderWidth: 1.5, borderRadius: 18, alignItems: 'center', justifyContent: 'center', gap: 4, padding: 8 },
   tick: { position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   fridgeHead: { flexDirection: 'row', alignItems: 'center' },

@@ -19,6 +19,7 @@ import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
 import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
+import { RecipeGone } from '../components/RecipeGone';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -132,7 +133,7 @@ export function CookScreen({ route, navigation }: Props) {
     width: withTiming(`${((index + 1) / Math.max(pages.length, 1)) * 100}%`, { duration: reduce ? 0 : 400 }),
   }));
 
-  if (!r) return null;
+  if (!r) return <RecipeGone slug={route.params.slug} onBack={() => navigation.goBack()} />;
   const title = displayTitle(r);
   const page = pages[index];
   const last = index === pages.length - 1;

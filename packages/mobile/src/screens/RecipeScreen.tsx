@@ -10,6 +10,7 @@ import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
 import { PencilStrike } from '../components/PencilStrike';
 import { GroceryPicker } from '../components/GroceryPicker';
+import { RecipeGone } from '../components/RecipeGone';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
@@ -53,7 +54,7 @@ export function RecipeScreen({ route, navigation }: Props) {
     });
   }, [navigation, tint, r, p.ink]);
 
-  if (!r) return null;
+  if (!r) return <RecipeGone slug={route.params.slug} onBack={() => navigation.goBack()} />;
   const title = displayTitle(r);
   const photo = width - 48;
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);

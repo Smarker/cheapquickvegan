@@ -117,9 +117,6 @@ export function DiscoverScreen({ navigation }: Props) {
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
         <TimePicker value={limit} onChange={setLimit} />
-        {gearLabel && (
-          <Pill label={`${gearLabel}  ✕`} selected onPress={() => setGear(null)} accessibilityLabel={`Remove ${gearLabel} filter`} />
-        )}
       </ScrollView>
 
       {featured.length === 0 ? (
@@ -132,8 +129,14 @@ export function DiscoverScreen({ navigation }: Props) {
         <>
           <View style={[styles.pad, styles.note]} accessible={false}>
             <Text style={[t.label, { color: p.greenDeep, paddingRight: 6 }]} numberOfLines={1} textBreakStrategy="simple">
-              {featured.length} {featured.length === 1 ? 'recipe' : 'recipes'}, quickest first
+              {featured.length} {featured.length === 1 ? 'recipe' : 'recipes'}
+              {gearLabel ? ` with a ${gearLabel.toLowerCase()}` : ', quickest first'}
             </Text>
+            {gearLabel && (
+              <Pressable onPress={() => setGear(null)} accessibilityRole="button" accessibilityLabel={`Clear the ${gearLabel} filter`} hitSlop={10}>
+                <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Clear</Text>
+              </Pressable>
+            )}
             <Svg width={44} height={14} viewBox="0 0 44 14">
               <Path d="M2 8 C12 4 24 10 38 6 M32 2 L39 6 L33 11" stroke={p.greenDeep} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </Svg>

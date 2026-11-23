@@ -32,6 +32,13 @@ export const DiscoverIcon = ({ color, size = 24 }: P) => (
 export const SearchIcon = ({ color, size = 24 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24"><Circle cx="10.5" cy="10.5" r="6" stroke={color} {...base} /><Path d="M15 15l5 5" stroke={color} {...base} /></Svg>
 );
+/** Kitchen tab: a little pot with a lid knob and steam, in the same 1.8 stroke. */
+export const KitchenIcon = ({ color, size = 24 }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M4.5 11h15v5.5a3.5 3.5 0 0 1-3.5 3.5H8a3.5 3.5 0 0 1-3.5-3.5z M2.5 12.5h2 M19.5 12.5h2 M4 11h16 M10.5 9h3" stroke={color} {...base} />
+    <Path d="M9.5 6.5c0-1 .8-1.2.8-2.2 M13.7 6.5c0-1 .8-1.2.8-2.2" stroke={color} {...base} />
+  </Svg>
+);
 export const SavedIcon = ({ color, size = 24 }: P) => <HeartIcon color={color} size={size} />;
 /** Share: the arrow out of a tray, drawn in the same 1.8px hand. */
 export const ShareIcon = ({ color, size = 22 }: P) => (
