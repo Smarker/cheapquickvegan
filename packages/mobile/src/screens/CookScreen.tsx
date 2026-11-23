@@ -28,7 +28,7 @@ import { font, space, type as t } from '../theme/tokens';
 
 // Cook mode keeps its own low-glare kitchen palette in both themes: warm charcoal, cream ink and garden greens.
 /** The helper cat on the trail, in px wide. */
-const CAT = 50;
+const CAT = 66;
 
 const k = {
   ground: '#1D1E19',
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   voice: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1.5 },
   voiceDot: { width: 9, height: 9, borderRadius: 5, borderWidth: 1.5 },
   voiceHint: { color: k.greenDeep, fontSize: 17, paddingHorizontal: space.xl, paddingRight: space.xl + 6, marginTop: 2 },
-  trail: { marginHorizontal: space.xl, height: 46, justifyContent: 'flex-end' },
+  trail: { marginHorizontal: space.xl, height: 56, justifyContent: 'flex-end' },
   cat: { position: 'absolute', left: 0, bottom: 2 },
   potRow: { flexDirection: 'row', alignItems: 'flex-end' },
   track: { height: 4, borderRadius: 2, overflow: 'hidden', justifyContent: 'center' },
