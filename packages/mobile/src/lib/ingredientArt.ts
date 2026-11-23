@@ -7,7 +7,7 @@ export const ART = [
   'onion', 'garlic', 'ginger', 'greens', 'herbs', 'citrus', 'potato', 'mushroom', 'tomato', 'carrot', 'avocado',
   'tofu', 'beans', 'chocolate', 'nuts', 'dates', 'seeds', 'sauce',
   'radish', 'cucumber', 'corn', 'berries', 'cauliflower', 'artichoke', 'bread', 'dough', 'tortilla', 'cheese', 'plantMeat',
-  'egg', 'marshmallow', 'seaweed', 'wine', 'pickle',
+  'egg', 'marshmallow', 'seaweed', 'wine', 'pickle', 'water',
 ] as const;
 export type Art = (typeof ART)[number];
 
@@ -70,9 +70,9 @@ const RULES: [Art, RegExp][] = [
   ['seaweed', /kombu|nori|seaweed|wakame/],
 ];
 
-/** The drawing for an ingredient line, or null (water, ice and anything unusual get none). */
+/** The drawing for an ingredient line, or null (ice and anything unusual get none). */
 export function artFor(line: string): Art | null {
   const text = line.toLowerCase().replace(/\([^)]*\)/g, ' ');
-  if (/^\W*[\d\s\/½¼¾.–-]*\s*(cups?|c|tbsp|tsp|ml)?\s*(of\s+)?(cold|warm|hot|boiling|ice)?\s*water\b(?!\s*chestnut)/.test(text)) return null;
+  if (/^\W*[\d\s\/½¼¾.–-]*\s*(cups?|c|tbsp|tsp|ml)?\s*(of\s+)?(cold|warm|hot|boiling|ice)?\s*water\b(?!\s*chestnut)/.test(text)) return 'water';
   return RULES.find(([, re]) => re.test(text))?.[0] ?? null;
 }

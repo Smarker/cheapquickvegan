@@ -403,6 +403,15 @@ const DRAWINGS: Record<Art, D> = {
       <Path d="M11 9 C13 10 19 10 21 9" stroke={c} {...thin} />
     </>
   ),
+  water: (c) => (
+    <>
+      {/* a glass of water: tapered tumbler, a wavy waterline and a bubble */}
+      <Path d="M9 6 H23 L21 27 C21 28 11 28 11 27 Z" stroke={c} {...k} />
+      <Path d="M10 13 C12 11.5 14 14.5 16 13 C18 11.5 20 14.5 22 13" stroke={c} {...thin} />
+      <Circle cx="14" cy="20" r="1.1" stroke={c} {...thin} />
+      <Circle cx="18" cy="23" r="0.7" stroke={c} {...thin} />
+    </>
+  ),
   pickle: (c) => (
     <>
       <Path d="M9 9 H23 V12 C24 13 24 14 24 16 V26 C24 28 8 28 8 26 V16 C8 14 8 13 9 12 Z" stroke={c} {...k} />

@@ -35,8 +35,8 @@ describe('artFor', () => {
     expect(artFor(line)).toBe(art);
   });
 
-  it('leaves water and one-offs without a drawing', () => {
-    expect(artFor('2 cups water')).toBe(null);
+  it('draws water as a glass and leaves one-offs without a drawing', () => {
+    expect(artFor('2 cups water')).toBe('water');
     expect(artFor('1 tsp hickory liquid smoke')).toBe(null);
   });
 });

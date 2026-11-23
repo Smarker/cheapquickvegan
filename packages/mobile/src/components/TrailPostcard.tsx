@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { CookCat } from './CookCat';
 import { Peaks } from './Doodles';
 import { CheckIcon } from './Icons';
-import type { Region } from '../lib/journeys';
+import { journey, type Region } from '../lib/journeys';
+import { Photo } from './Photo';
 import { displayTitle, type Recipe } from '../lib/recipes';
 import { useSaved } from '../lib/saved';
 import { space, type as t, usePalette } from '../theme/tokens';
@@ -24,6 +26,11 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
   const p = usePalette();
   const saved = useSaved();
   const summited = saved.summits[region.id];
+  // A real photo of the area makes it a postcard: the journey's own pick, or its first travel guide's photo.
+  const photo = useMemo(
+    () => region.postcardPhoto ?? journey(region).flatMap((s) => (s.kind === 'guide' && s.guide.image ? [s.guide.image] : []))[0],
+    [region],
+  );
 
   const share = () => {
     const list = recipes.map((r) => `✓ ${displayTitle(r)}`).join('\n');
@@ -42,8 +49,9 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
       style={({ pressed }) => [styles.card, { backgroundColor: p.sand, opacity: pressed ? 0.92 : 1 }]}
     >
       <View style={[styles.tape, { backgroundColor: p.tape }]} />
+      {photo && <Photo uri={photo} width={300} height={150} radius={16} style={styles.photo} />}
       <View style={styles.head}>
-        <Peaks color={p.ink} width={84} />
+        {!photo && <Peaks color={p.ink} width={84} />}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[t.cardTitle, { color: p.ink }]}>{region.trail}</Text>
           {summited && <Text style={[t.label, { color: p.greenDeep }]}>Summited {day(summited)}</Text>}
@@ -74,6 +82,7 @@ const styles = StyleSheet.create({
   card: { borderRadius: 24, padding: space.l, paddingTop: space.xl, gap: space.m, transform: [{ rotate: '-1deg' }] },
   tape: { position: 'absolute', top: -8, alignSelf: 'center', width: 72, height: 20, opacity: 0.85, transform: [{ rotate: '2deg' }] },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.m },
+  photo: { alignSelf: 'stretch', width: '100%' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   foot: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   share: { minHeight: 44, justifyContent: 'center' },

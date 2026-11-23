@@ -119,6 +119,8 @@ export type Region = {
   blurb: string;
   cuisines: string[];
   guideSlugs: string[];
+  /** Optional photo of the area for the finished-trail postcard. Defaults to the first travel guide's photo. */
+  postcardPhoto?: string;
 };
 
 export const REGIONS: Region[] = [
