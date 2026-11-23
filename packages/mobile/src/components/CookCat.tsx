@@ -27,7 +27,7 @@ import Svg, { Ellipse, G, Path } from 'react-native-svg';
 // On the finish screen it hops, and now and then chases its tail.
 
 export type CatMood = 'idle' | 'listening' | 'alert' | 'happy';
-type Pose = 'sit' | 'walk' | 'lick' | 'knead' | 'loaf' | 'sleep' | 'stretch';
+type Pose = 'sit' | 'walk' | 'lick' | 'knead' | 'loaf' | 'sleep' | 'stretch' | 'leap';
 type Eyes = 'open' | 'closed' | 'sleepy' | 'none';
 
 type Props = {
@@ -231,9 +231,11 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
     tilt.value = withSpring(mood === 'listening' ? -9 : 0);
     paw.value = withTiming(0, { duration: 150 });
     hop.value = 0;
+    if (mood !== 'happy' && poseRef.current === 'leap') setPose('sit');
     if (mood === 'alert') paw.value = withRepeat(withSequence(withTiming(0.45, { duration: 180 }), withTiming(0, { duration: 220 })), -1, false);
+    if (mood === 'happy' && !reduce) setPose('leap');
     if (mood === 'happy') {
-      // A real little jump: crouch, spring up stretched, hang at the top, drop faster than it rose,
+      // A real little jump, standing on all four paws: crouch, spring up stretched, hang at the top, drop faster than it rose,
       // land with a squash, settle. Height and squash run on the same timeline.
       const easeOut = Easing.out(Easing.quad);
       const easeIn = Easing.in(Easing.quad);
@@ -273,7 +275,7 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
         chase = setTimeout(() => {
           stride.value = withTiming(0, { duration: 120 });
           orbit.value = 0;
-          setPose('sit');
+          setPose('leap');
           busy.current = false;
         }, 2100);
       }, 7000);
@@ -401,6 +403,21 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const legA = rot(stride, 24);
   const legB = rot(stride, -24);
   const walkTail = rot(stride, 6);
+  // Leaping: crouched paws gather under the body, then in the air the front legs reach forward,
+  // the back legs push out behind and the tail streams back. All read from the jump height.
+  const leapFront = useAnimatedStyle(() => {
+    const air = Math.max(0, -hop.value) / 12;
+    const crouch = Math.max(0, hop.value) / 1.2;
+    return { transform: [{ rotate: `${-air * 42 + crouch * 12}deg` }] };
+  });
+  const leapBack = useAnimatedStyle(() => {
+    const air = Math.max(0, -hop.value) / 12;
+    const crouch = Math.max(0, hop.value) / 1.2;
+    return { transform: [{ rotate: `${air * 48 - crouch * 14}deg` }] };
+  });
+  const leapTail = useAnimatedStyle(() => ({ transform: [{ rotate: `${(Math.max(0, -hop.value) / 12) * 28}deg` }] }));
+  // Nose up on the way up, level at the top, nose down to land.
+  const leapPitch = useAnimatedStyle(() => ({ transform: [{ rotate: `${hop.value < 0 ? -Math.sin((-hop.value / 12) * Math.PI) * 6 : 0}deg` }] }));
   const breath = useAnimatedStyle(() => ({ transform: [{ scaleY: 1 + breathe.value * 0.04 }] }));
   const zStyle = useAnimatedStyle(() => ({ opacity: zz.value < 0.15 ? zz.value / 0.15 : 1 - (zz.value - 0.15) / 0.85, transform: [{ translateY: -zz.value * 10 }, { translateX: zz.value * 4 }] }));
   // Stretch: front legs reach forward and the rear lifts a touch.
@@ -503,6 +520,40 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
             {svg(<Limb d="M16.5 33 L16.5 44.8" w={3.6} outline={outline} end={<Paw cx={16.7} cy={45.6} outline={outline} />} />)}
           </Animated.View>
           <Animated.View style={[L, { transformOrigin: origin(36.5, 34) }, legB]}>
+            {svg(<Limb d="M36.5 34 L36.5 44.8" w={3.6} outline={outline} end={<Paw cx={36.7} cy={45.6} outline={outline} />} />)}
+          </Animated.View>
+        </Animated.View>
+      )}
+
+      {pose === 'leap' && (
+        <Animated.View key="leap" entering={fade} exiting={fadeOut} style={[L, { transformOrigin: origin(28, 34) }, leapPitch]}>
+          {/* standing on all fours, same body as walking; legs and tail follow the jump */}
+          <Animated.View style={[L, { transformOrigin: origin(13, 30) }, leapTail]}>
+            {svg(<Limb d="M14 30 C8 28 6.5 20 9 14 C10.2 11 13.2 11 12.6 14" w={4.2} outline={outline} />)}
+          </Animated.View>
+          <Animated.View style={[L, { transformOrigin: origin(20, 34) }, leapBack]}>
+            {svg(<Limb d="M20 34 L20 44.8" w={3.4} outline={outline} end={<Paw cx={20.2} cy={45.6} outline={outline} />} />)}
+          </Animated.View>
+          <Animated.View style={[L, { transformOrigin: origin(40, 34) }, leapFront]}>
+            {svg(<Limb d="M40 34 L40 44.8" w={3.4} outline={outline} end={<Paw cx={40.2} cy={45.6} outline={outline} />} />)}
+          </Animated.View>
+          <View style={L}>
+            {svg(
+              <>
+                <Path d="M13 31 C13 25 20 22.4 29 22.4 C37 22.4 43 23.4 45 28 C46 31 44.6 36 38 36.4 C31 36.8 22 36.8 17.4 36.2 C14.4 35.8 13 34 13 31 Z" fill={FUR} {...line} />
+                <Texture d="M18 27.4 q1.6 -0.9 2.8 0 M24 26.2 q1.4 -0.8 2.8 -0.1 M30 26 q1.4 -0.7 2.6 0 M20 31.6 q1.4 -0.6 2.4 0.2" />
+                <Path d="M38 27 C42 28 44 31 43 35.6 C41 36.2 39 36.4 37.6 36.4 C38.4 33 38.4 30 38 27 Z" fill={CREAM} />
+                <G transform="translate(6 2) scale(0.92)">
+                  <Head outline={outline} />
+                  <Collar />
+                </G>
+              </>,
+            )}
+          </View>
+          <Animated.View style={[L, { transformOrigin: origin(16.5, 33) }, leapBack]}>
+            {svg(<Limb d="M16.5 33 L16.5 44.8" w={3.6} outline={outline} end={<Paw cx={16.7} cy={45.6} outline={outline} />} />)}
+          </Animated.View>
+          <Animated.View style={[L, { transformOrigin: origin(36.5, 34) }, leapFront]}>
             {svg(<Limb d="M36.5 34 L36.5 44.8" w={3.6} outline={outline} end={<Paw cx={36.7} cy={45.6} outline={outline} />} />)}
           </Animated.View>
         </Animated.View>
