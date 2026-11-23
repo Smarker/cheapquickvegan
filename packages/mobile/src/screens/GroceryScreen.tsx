@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyBowl } from '../components/Doodles';
 import { CheckIcon } from '../components/Icons';
 import { PencilStrike } from '../components/PencilStrike';
+import { IngredientDoodle } from '../components/IngredientDoodle';
 import { AISLES, useGrocery } from '../lib/grocery';
 import { font, space, type as t, usePalette } from '../theme/tokens';
 
@@ -78,6 +79,9 @@ export function GroceryScreen() {
                         <View style={[styles.box, { borderColor: item.checked ? p.green : p.control, backgroundColor: item.checked ? p.green : 'transparent' }]}>
                           {item.checked && <CheckIcon color="#FFFFFF" size={14} />}
                         </View>
+                        <View style={[styles.art, { opacity: item.checked ? 0.4 : 1 }]}>
+                          <IngredientDoodle line={item.text} color={p.ink} size={26} />
+                        </View>
                         <View style={{ flex: 1 }}>
                           <PencilStrike text={item.text} done={item.checked} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
                           {recipes.length > 1 && <Text style={[t.small, { color: p.muted }]}>{item.recipeTitle}</Text>}
@@ -115,6 +119,7 @@ const styles = StyleSheet.create({
   primary: { minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   secondary: { minHeight: 48, paddingHorizontal: space.l, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   item: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 48, paddingVertical: 4 },
+  art: { width: 28, alignItems: 'center' },
   box: { width: 22, height: 22, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   recipeRow: { flexDirection: 'row', alignItems: 'center', minHeight: 44 },
   remove: { minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },

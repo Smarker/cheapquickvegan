@@ -1,3 +1,4 @@
+import { artFor, type Art } from './ingredientArt';
 import { guides, type Guide } from './journeys';
 import { displayTitle, recipes, type Recipe, type TimeLimit } from './recipes';
 
@@ -65,4 +66,49 @@ export function popularIngredients(n = 8): string[] {
     .sort((a, b) => b.n - a.n)
     .slice(0, n)
     .map((x) => x.c);
+}
+
+/** Fridge and pantry staples for "What's in your fridge?", each with its drawing. */
+export const FRIDGE: { art: Art; label: string }[] = [
+  { art: 'tofu', label: 'Tofu' },
+  { art: 'greens', label: 'Greens' },
+  { art: 'mushroom', label: 'Mushrooms' },
+  { art: 'potato', label: 'Potatoes' },
+  { art: 'bellPepper', label: 'Peppers' },
+  { art: 'tomato', label: 'Tomatoes' },
+  { art: 'onion', label: 'Onions' },
+  { art: 'garlic', label: 'Garlic' },
+  { art: 'citrus', label: 'Lemon or lime' },
+  { art: 'avocado', label: 'Avocado' },
+  { art: 'carrot', label: 'Carrots' },
+  { art: 'beans', label: 'Beans' },
+  { art: 'rice', label: 'Rice' },
+  { art: 'noodles', label: 'Noodles' },
+  { art: 'coconut', label: 'Coconut milk' },
+  { art: 'nutButter', label: 'Peanut butter' },
+  { art: 'herbs', label: 'Fresh herbs' },
+  { art: 'yogurt', label: 'Yogurt' },
+];
+
+const artsIn = (r: Recipe) => new Set(r.ingredients.flatMap((g) => g.items).map(artFor).filter((a): a is Art => a != null));
+
+/** Staples that at least one recipe uses, so the picker never offers a dead end. */
+export const fridgeOptions = () => {
+  const used = new Set(recipes.flatMap((r) => [...artsIn(r)]));
+  return FRIDGE.filter((f) => used.has(f.art));
+};
+
+export type FridgeHit = { recipe: Recipe; uses: Art[] };
+
+/** Recipes that use what you have: most of your picks first, then quickest. */
+export function fridgeMatches(picked: Art[], limit: TimeLimit): FridgeHit[] {
+  if (!picked.length) return [];
+  return recipes
+    .filter((r) => limit == null || (r.totalMinutes != null && r.totalMinutes <= limit))
+    .map((recipe) => {
+      const has = artsIn(recipe);
+      return { recipe, uses: picked.filter((a) => has.has(a)) };
+    })
+    .filter((h) => h.uses.length > 0)
+    .sort((a, b) => b.uses.length - a.uses.length || (a.recipe.totalMinutes ?? 999) - (b.recipe.totalMinutes ?? 999));
 }

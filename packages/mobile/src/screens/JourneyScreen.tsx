@@ -5,6 +5,7 @@ import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated'
 import Svg, { Line } from 'react-native-svg';
 import { CookedStamp } from '../components/CookedStamp';
 import { Hut, SummitFlag } from '../components/Doodles';
+import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
 import { journey, REGIONS, STRETCH_LABEL, type Difficulty, type Stop } from '../lib/journeys';
@@ -157,7 +158,19 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
       {stop.kind === 'lesson' ? (
         <Text style={[t.body, { color: p.ink }]}>{stop.body}</Text>
       ) : (
-        <Text style={[t.body, { color: p.ink }]}>The next recipes share {joinList(stop.items)}. Grab them once and you're set.</Text>
+        <>
+          <Text style={[t.body, { color: p.ink }]}>The next recipes share {joinList(stop.items)}. Grab them once and you're set.</Text>
+          <View style={styles.shelf} accessible={false}>
+            {stop.items.map((item) => (
+              <View key={item} style={styles.shelfItem}>
+                <IngredientDoodle line={item} color={p.ink} size={34} />
+                <Text style={[t.small, { color: p.muted, textAlign: 'center' }]} numberOfLines={2}>
+                  {item}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
       )}
       {stop.guide && (
         <Pressable
@@ -187,5 +200,7 @@ const styles = StyleSheet.create({
   stop: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: 10, borderRadius: 24 },
   node: { position: 'absolute', left: -42, width: 28, height: 28, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   rest: { borderWidth: 1.5, borderRadius: 24, padding: space.l, gap: space.s },
+  shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
+  shelfItem: { width: 72, alignItems: 'center', gap: 2 },
   summit: { alignItems: 'center', gap: space.s, marginTop: space.l, marginLeft: -30 },
 });

@@ -12,6 +12,8 @@ export type Aisle = (typeof AISLES)[number];
 
 // First match wins, so oils and spices are checked before the broader pantry words.
 const RULES: [Aisle, RegExp][] = [
+  // Fresh peppers before the spice rule, which would otherwise take any line with "pepper" in it.
+  ['Produce', /\b(bell peppers?|jalape[nñ]os?|poblanos?|serranos?|habaneros?)\b/i],
   ['Spices & oils', /\b(salt|pepper(corns)?|cumin|paprika|chili powder|cinnamon|nutmeg|oregano|basil|thyme|rosemary|turmeric|saffron|curry powder|garam masala|red pepper flakes|gochugaru|bay lea|cloves?|cardamom|vanilla|olive oil|sesame oil|coconut oil|vegetable oil|canola oil|avocado oil|oil|vinegar|everything (bagel )?seasoning|seasoning|spice)\b/i],
   ['Fridge & freezer', /\b(tofu|tempeh|plant[- ]?based milk|oat milk|soy milk|almond milk|vegan butter|butter|vegan cheese|cream cheese|yogurt|beyond|impossible|frozen|ice|miso|kimchi|hummus|tortillas?)\b/i],
   ['Produce', /\b(onions?|shallots?|garlic|ginger|scallions?|green onions?|leeks?|potato(es)?|sweet potato|carrots?|celery|peppers?|bell pepper|jalape[nñ]o|tomato(es)?|cucumbers?|zucchini|spinach|kale|lettuce|cabbage|broccoli|cauliflower|mushrooms?|corn|avocados?|lemons?|limes?|oranges?|apples?|bananas?|berries|blueberries|strawberries|cilantro|parsley|dill|mint|radish(es)?|artichokes?|peas|herbs?)\b/i],
@@ -44,7 +46,8 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(KEY)
-      .then((raw) => raw && setItems(JSON.parse(raw)))
+      // Re-sort on load, so fixes to the store-section rules reach lists already saved.
+      .then((raw) => raw && setItems((JSON.parse(raw) as GroceryItem[]).map((i) => ({ ...i, aisle: aisleFor(i.text) }))))
       .catch(() => {})
       .finally(() => setLoaded(true));
   }, []);

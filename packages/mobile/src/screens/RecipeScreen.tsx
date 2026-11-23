@@ -8,6 +8,7 @@ import { CheckIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../compone
 import { Photo } from '../components/Photo';
 import { HighlightedText } from '../components/HighlightedText';
 import { PencilStrike } from '../components/PencilStrike';
+import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
@@ -118,6 +119,9 @@ export function RecipeScreen({ route, navigation }: Props) {
                     <View style={[styles.box, { borderColor: done ? p.green : p.control, backgroundColor: done ? p.green : 'transparent' }]}>
                       {done && <CheckIcon color="#FFFFFF" size={14} />}
                     </View>
+                    <View style={[styles.art, { opacity: done ? 0.4 : 1 }]}>
+                      <IngredientDoodle line={item} color={p.ink} size={26} />
+                    </View>
                     <PencilStrike text={item} done={done} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
                   </Pressable>
                 );
@@ -202,6 +206,7 @@ const styles = StyleSheet.create({
   grabber: { alignSelf: 'center', width: 64, height: 5, borderRadius: 3, marginBottom: space.s },
   group: { gap: space.s },
   ing: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },
+  art: { width: 28, alignItems: 'center' },
   box: { width: 22, height: 22, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   step: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
   dot: { width: 7, height: 7, borderRadius: 4, marginTop: 9 },
