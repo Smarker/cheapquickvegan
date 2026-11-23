@@ -14,7 +14,7 @@ import { CookCat, type CatMood } from '../components/CookCat';
 import { KitchenTimer, type RunningTimer } from '../components/KitchenTimer';
 import { handsFreeAvailable, useHandsFree } from '../lib/handsFree';
 import { convertInStep, linesIn } from '../lib/units';
-import { scaleInStep, scaleLine, useScale } from '../lib/scale';
+import { scaleInStep, scaleLine, scaleYield, useScale } from '../lib/scale';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
@@ -62,6 +62,7 @@ export function CookScreen({ route, navigation }: Props) {
   const { units } = useUnits();
   // Amounts follow the servings and the cups-or-grams choice made on the recipe page.
   const { factor } = useScale(route.params.slug, r?.yieldText);
+  const scaledYield = factor !== 1 && r?.yieldText ? scaleYield(r.yieldText, factor) : null;
   const lines = useMemo(() => (r ? linesIn(r.ingredients.flatMap((g) => g.items).map((l) => scaleLine(l, factor)), units) : []), [r, units, factor]);
   const amounts = useMemo(() => ingredientAmounts(lines), [lines]);
   const [index, setIndex] = useState(0);
@@ -282,9 +283,17 @@ export function CookScreen({ route, navigation }: Props) {
         <Pressable onPress={leave} accessibilityRole="button" accessibilityLabel="Stop cooking" hitSlop={12} style={styles.close}>
           <Text style={[t.label, { color: k.ink, fontSize: 16 }]}>Done</Text>
         </Pressable>
-        <Text style={[t.label, { color: k.soft }]} accessibilityLiveRegion="polite">
-          {pages.length > 1 ? `${index + 1} of ${pages.length}` : title}
-        </Text>
+        <View style={{ alignItems: 'center', flexShrink: 1 }}>
+          <Text style={[t.label, { color: k.soft }]} accessibilityLiveRegion="polite">
+            {pages.length > 1 ? `${index + 1} of ${pages.length}` : title}
+          </Text>
+          {/* Scaled? Say so where the amounts are read, so a restart or a glance never means the wrong amount. */}
+          {scaledYield && (
+            <Text style={[t.small, { color: k.green }]} numberOfLines={1}>
+              Makes {scaledYield}
+            </Text>
+          )}
+        </View>
         {canVoice ? (
           <Pressable
             onPress={() => (voice.on ? voice.stop() : voice.start().then((ok) => ok && voice.say('Hands-free is on. Say next step, or how much garlic.')))}

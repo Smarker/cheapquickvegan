@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,7 +7,7 @@ import { EmptyBowl } from '../components/Doodles';
 import { CheckIcon } from '../components/Icons';
 import { PencilStrike } from '../components/PencilStrike';
 import { IngredientDoodle } from '../components/IngredientDoodle';
-import { AISLES, useGrocery } from '../lib/grocery';
+import { AISLES, useGrocery, type GroceryItem } from '../lib/grocery';
 import { mergeLines } from '../lib/groceryMerge';
 import { font, space, type as t, usePalette } from '../theme/tokens';
 
@@ -21,6 +22,19 @@ export function GroceryScreen() {
   const left = byAisle.reduce((n, a) => n + a.lines.filter((l) => !l.checked).length, 0);
   const tick = (ids: string[], checked: boolean) => ids.forEach((id) => g.items.find((i) => i.id === id)?.checked === checked && g.toggle(id));
   const recipes = [...new Map(g.items.map((i) => [i.recipeSlug, i.recipeTitle])).entries()];
+  // Long-press a line to see the recipe's own wording ("1 C jasmine rice (cooked)").
+  const [shown, setShown] = useState<Set<string>>(new Set());
+  // Removing is quick to undo: the last removal can be put back for a few seconds.
+  const [undo, setUndo] = useState<{ label: string; items: GroceryItem[] } | null>(null);
+  useEffect(() => {
+    if (!undo) return;
+    const id = setTimeout(() => setUndo(null), 6000);
+    return () => clearTimeout(id);
+  }, [undo]);
+  const removeWithUndo = (label: string, gone: GroceryItem[], run: () => void) => {
+    run();
+    setUndo({ label, items: gone });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: p.ground }}>
@@ -55,11 +69,35 @@ export function GroceryScreen() {
                 <Text style={{ fontFamily: font.sansBold, fontSize: 16, color: '#2B2A24' }}>Send list</Text>
               </Pressable>
               {g.items.some((i) => i.checked) && (
-                <Pressable onPress={g.clearChecked} accessibilityRole="button" style={[styles.secondary, { borderColor: p.hairline }]}>
+                <Pressable
+                  onPress={() => {
+                    const gone = g.items.filter((i) => i.checked);
+                    removeWithUndo(`Cleared ${gone.length} ticked`, gone, g.clearChecked);
+                  }}
+                  accessibilityRole="button"
+                  style={[styles.secondary, { borderColor: p.hairline }]}
+                >
                   <Text style={[t.label, { color: p.ink }]}>Clear ticked</Text>
                 </Pressable>
               )}
             </View>
+
+            {undo && (
+              <Animated.View entering={reduce ? undefined : FadeIn} exiting={reduce ? undefined : FadeOut} style={[styles.undo, { backgroundColor: p.sand }]} accessibilityLiveRegion="polite">
+                <Text style={[t.small, { color: p.ink, flex: 1 }]}>{undo.label}.</Text>
+                <Pressable
+                  onPress={() => {
+                    g.restore(undo.items);
+                    setUndo(null);
+                  }}
+                  accessibilityRole="button"
+                  hitSlop={10}
+                  style={styles.undoButton}
+                >
+                  <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
+                </Pressable>
+              </Animated.View>
+            )}
 
             {byAisle.map(({ aisle, lines: rows }) => {
               if (!rows.length) return null;
@@ -75,6 +113,14 @@ export function GroceryScreen() {
                           Haptics.selectionAsync();
                           tick(item.ids, item.checked);
                         }}
+                        onLongPress={() =>
+                          setShown((prev) => {
+                            const next = new Set(prev);
+                            next.has(item.key) ? next.delete(item.key) : next.add(item.key);
+                            return next;
+                          })
+                        }
+                        accessibilityHint="Long-press to see how the recipe writes it"
                         accessibilityRole="checkbox"
                         accessibilityState={{ checked: item.checked }}
                         style={styles.item}
@@ -87,6 +133,10 @@ export function GroceryScreen() {
                         </View>
                         <View style={{ flex: 1 }}>
                           <PencilStrike text={item.text} done={item.checked} style={{ ...t.body, color: p.ink }} doneColor={p.muted} lineColor={p.ink} />
+                          {item.note && <Text style={[t.small, { color: p.muted }]}>{item.note[0].toUpperCase() + item.note.slice(1)}</Text>}
+                          {shown.has(item.key) && (
+                            <Text style={[t.small, { color: p.muted }]}>Recipe says: {item.originals.join('; ')}</Text>
+                          )}
                         </View>
                       </Pressable>
                     </Animated.View>
@@ -100,7 +150,9 @@ export function GroceryScreen() {
               {recipes.map(([slug, title]) => (
                 <View key={slug} style={styles.recipeRow}>
                   <Text style={[t.body, { color: p.ink, flex: 1 }]}>{title}</Text>
-                  <Pressable onPress={() => g.removeRecipe(slug)} accessibilityRole="button" accessibilityLabel={`Remove ${title} from the list`} hitSlop={8} style={styles.remove}>
+                  <Pressable
+                    onPress={() => removeWithUndo(`Removed ${title}`, g.items.filter((i) => i.recipeSlug === slug), () => g.removeRecipe(slug))}
+                    accessibilityRole="button" accessibilityLabel={`Remove ${title} from the list`} hitSlop={8} style={styles.remove}>
                     <Text style={[t.label, { color: p.greenDeep }]}>Remove</Text>
                   </Pressable>
                 </View>
@@ -126,4 +178,6 @@ const styles = StyleSheet.create({
   recipeRow: { flexDirection: 'row', alignItems: 'center', minHeight: 44 },
   remove: { minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },
   band: { position: 'absolute', top: 0, left: 0, right: 0 },
+  undo: { flexDirection: 'row', alignItems: 'center', gap: space.m, borderRadius: 18, paddingLeft: space.l, paddingRight: space.s, minHeight: 48, marginTop: space.s },
+  undoButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: space.s },
 });

@@ -1,5 +1,6 @@
 import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Pill } from '../components/Pill';
+import { ToggleChip } from '../components/ToggleChip';
 import { ALLERGENS } from '../lib/allergens';
 import { handsFreeAvailable } from '../lib/handsFree';
 import { usePrefs, type Theme } from '../lib/prefs';
@@ -65,16 +66,10 @@ export function PreferencesScreen() {
         </View>
       </Section>
 
-      <Section title="My equipment" note="Untick anything you don't have. Recipes that need it leave your Discover trail. Search still finds them and says what they need.">
+      <Section title="My equipment" note="Ticked means you have it. Untick anything you don't. Recipes that need it leave your Discover trail. Search still finds them and says what they need.">
         <View style={styles.row}>
           {gear.map((tag) => (
-            <Pill
-              key={tag}
-              label={nice(tag)}
-              selected={!prefs.missingGear.includes(tag)}
-              onPress={() => prefs.toggleGear(tag)}
-              accessibilityLabel={`${nice(tag)}: ${prefs.missingGear.includes(tag) ? "don't have" : 'have'}`}
-            />
+            <ToggleChip key={tag} kind="have" label={nice(tag)} on={!prefs.missingGear.includes(tag)} onPress={() => prefs.toggleGear(tag)} />
           ))}
         </View>
       </Section>
@@ -82,9 +77,14 @@ export function PreferencesScreen() {
       <Section title="Things to avoid" note="Recipes that seem to contain these leave your Discover trail, and get a note everywhere else.">
         <View style={styles.row}>
           {ALLERGENS.map((a) => (
-            <Pill key={a.key} label={a.label} selected={prefs.avoid.includes(a.key)} onPress={() => prefs.toggleAvoid(a.key)} />
+            <ToggleChip key={a.key} kind="avoid" label={a.label} on={prefs.avoid.includes(a.key)} onPress={() => prefs.toggleAvoid(a.key)} />
           ))}
         </View>
+        <Text style={[t.label, { color: p.ink }]} accessibilityLiveRegion="polite">
+          {prefs.avoid.length
+            ? `Avoiding: ${ALLERGENS.filter((a) => prefs.avoid.includes(a.key)).map((a) => a.label.toLowerCase()).join(', ')}`
+            : 'Not avoiding anything.'}
+        </Text>
         <View style={[styles.caveat, { backgroundColor: p.sand, borderColor: p.hairline }]}>
           <Text style={[t.small, { color: p.ink }]}>
             This reads the ingredient list, not the packaging. A branded sauce or a "may contain" label can hide soy, gluten or nuts, so please

@@ -10,6 +10,9 @@ export const ArrowIcon = ({ color, size = 18 }: P) => (
 export const CheckIcon = ({ color, size = 16 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24"><Path d="M5 12.5l4.5 4.5L19 7.5" stroke={color} {...base} strokeWidth={2.4} /></Svg>
 );
+export const CrossIcon = ({ color, size = 16 }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24"><Path d="M7 7l10 10M17 7L7 17" stroke={color} {...base} strokeWidth={2.4} /></Svg>
+);
 export const ClockIcon = ({ color, size = 22 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24"><Circle cx="12" cy="12" r="8.5" stroke={color} {...base} /><Path d="M12 7.5V12l3 2" stroke={color} {...base} /></Svg>
 );

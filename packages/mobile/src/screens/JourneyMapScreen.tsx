@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } fr
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { Blazes } from '../components/Blazes';
 import { CookCat } from '../components/CookCat';
-import { AREAS, GRADE_LABEL, journey, openHikes, type Area, type Difficulty, type Region } from '../lib/journeys';
+import { AREAS, gradeLabel, journey, openHikes, type Area, type Difficulty, type Region } from '../lib/journeys';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import { space, type as t, usePalette, type Palette } from '../theme/tokens';
@@ -183,7 +183,7 @@ function HikeRow({ hike, slugs, p, behind, summited, onPress }: RowProps) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${hike.trail}, ${GRADE_LABEL[hike.grade]} hike, ${status}`}
+      accessibilityLabel={`${hike.trail}, ${gradeLabel(hike)} hike, ${status}`}
       style={({ pressed }) => [styles.row, { borderColor: p.hairline, opacity: pressed ? 0.85 : 1 }]}
     >
       <Blazes level={hike.grade} color={p.green} />

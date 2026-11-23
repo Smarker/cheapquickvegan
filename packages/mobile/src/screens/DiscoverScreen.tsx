@@ -38,7 +38,7 @@ import {
   type TimeLimit,
   widerLimit,
 } from '../lib/recipes';
-import { GRADE_LABEL, journey, openHikes } from '../lib/journeys';
+import { gradeLabel, journey, openHikes } from '../lib/journeys';
 import { Blazes } from '../components/Blazes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -135,7 +135,7 @@ export function DiscoverScreen({ navigation }: Props) {
       {weekToCook.length > 0 && (
         <View style={styles.week}>
           <View style={[styles.pad, styles.weekHead]}>
-            <Text style={[t.label, { color: p.ink }]} accessibilityRole="header">
+            <Text style={[t.label, { color: p.ink, flexShrink: 1, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple" accessibilityRole="header">
               This week · {weekToCook.length} to cook
             </Text>
             <Pressable onPress={() => navigation.getParent()?.navigate('SavedTab')} accessibilityRole="link" accessibilityLabel="See this week in Kitchen" hitSlop={10}>
@@ -261,7 +261,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s }}>
                   <Blazes level={region.grade} color={p.green} />
                   <Text style={[t.small, { color: p.muted }]}>
-                    {done ? `${done} of ${stops.length} cooked` : `${GRADE_LABEL[region.grade]}, ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
+                    {done ? `${done} of ${stops.length} cooked` : `${gradeLabel(region)}, ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
                   </Text>
                 </View>
               </Pressable>

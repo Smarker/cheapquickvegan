@@ -83,7 +83,7 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
         <Pressable onPress={share} accessibilityRole="button" hitSlop={8} style={styles.share}>
           <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Share postcard</Text>
         </Pressable>
-        <CookCat outline={p.ink} size={48} napAfter={1e9} />
+        <CookCat outline={p.ink} size={48} still />
       </View>
     </Pressable>
   );

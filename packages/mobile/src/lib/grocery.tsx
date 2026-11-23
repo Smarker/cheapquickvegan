@@ -35,6 +35,8 @@ type Grocery = {
   toggle: (id: string) => void;
   removeRecipe: (slug: string) => void;
   clearChecked: () => void;
+  /** Put back items just removed (Undo). */
+  restore: (items: GroceryItem[]) => void;
   clearAll: () => void;
   send: () => Promise<void>;
 };
@@ -85,11 +87,12 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
       removeRecipe: (slug) => setItems((prev) => prev.filter((i) => i.recipeSlug !== slug)),
       clearChecked: () => setItems((prev) => prev.filter((i) => !i.checked)),
       clearAll: () => setItems([]),
+      restore: (back) => setItems((prev) => [...prev, ...back.filter((b) => !prev.some((i) => i.id === b.id))]),
       send: async () => {
         const todo = items.filter((i) => !i.checked);
         const text = AISLES.map((a) => {
           const rows = todo.filter((i) => i.aisle === a);
-          return rows.length ? `${a}\n${mergeLines(rows).map((l) => `☐ ${l.text}`).join('\n')}` : '';
+          return rows.length ? `${a}\n${mergeLines(rows).map((l) => `☐ ${l.text}${l.note ? ` (${l.note})` : ''}`).join('\n')}` : '';
         })
           .filter(Boolean)
           .join('\n\n');

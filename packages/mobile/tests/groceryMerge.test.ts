@@ -28,8 +28,10 @@ describe('mergeLines', () => {
     expect(mergeLines(items('1 red onion, sliced', '½ red onion'))[0].text).toBe('1 ½ red onion');
     expect(mergeLines(items('1 cup spinach', '3 cups spinach'))[0].text).toBe('4 cups spinach');
   });
-  it('keeps one-off lines exactly as written', () => {
-    expect(mergeLines(items('1 block firm tofu, pressed'))[0].text).toBe('1 block firm tofu, pressed');
+  it('keeps one-off lines, in shopping words', () => {
+    const [line] = mergeLines(items('1 block firm tofu, pressed'));
+    expect(line.text).toBe('1 block firm tofu');
+    expect(line.originals).toEqual(['1 block firm tofu, pressed']);
   });
   it('is ticked only when every copy is', () => {
     const out = mergeLines([

@@ -1,21 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { AREAS, journey, openHikes, recipesFor, REGIONS } from '../src/lib/journeys';
+import { AREAS, journey, MIN_STOPS, openHikes, recipesFor } from '../src/lib/journeys';
 
 describe('hikes', () => {
-  it('give each area recipe exactly one hike', () => {
+  it('only shows hikes with enough stops', () => {
+    for (const h of openHikes()) expect(recipesFor(h).length).toBeGreaterThanOrEqual(MIN_STOPS);
+  });
+
+  it('give each area recipe at most one hike', () => {
     for (const area of AREAS) {
-      const hikes = REGIONS.filter((h) => h.area === area.id);
-      const slugs = hikes.flatMap((h) => recipesFor(h).map((r) => r.slug));
+      const slugs = openHikes()
+        .filter((h) => h.area === area.id)
+        .flatMap((h) => recipesFor(h).map((r) => r.slug));
       expect(new Set(slugs).size).toBe(slugs.length);
     }
   });
 
-  it('keep every stop at the hike grade, behind one signpost', () => {
+  it('puts a signpost before each grade on a hike', () => {
     for (const h of openHikes()) {
       const stops = journey(h);
-      expect(stops.filter((s) => s.kind === 'section')).toHaveLength(1);
-      for (const s of stops) if (s.kind === 'recipe') expect(s.difficulty).toBe(h.grade);
+      const grades = new Set(stops.flatMap((s) => (s.kind === 'recipe' ? [s.difficulty] : [])));
+      expect(stops.filter((s) => s.kind === 'section')).toHaveLength(grades.size);
+      for (const g of grades) expect((h.grades ?? [h.grade]).includes(g)).toBe(true);
     }
   });
-
 });

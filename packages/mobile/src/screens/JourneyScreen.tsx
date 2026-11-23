@@ -11,7 +11,7 @@ import { Hut, SummitFlag } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
-import { GRADE_LABEL, journey, REGIONS, STRETCH_LABEL, type Difficulty, type Stop } from '../lib/journeys';
+import { gradeLabel, hikeById, journey, STRETCH_LABEL, type Stop } from '../lib/journeys';
 import { displayTitle } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -41,7 +41,7 @@ export function JourneyScreen({ route, navigation }: Props) {
   const p = usePalette();
   const reduce = useReducedMotion();
   const saved = useSaved();
-  const region = REGIONS.find((r) => r.id === route.params.id)!;
+  const region = hikeById(route.params.id)!;
   const dataVersion = useDataVersion();
   const stops = useMemo(() => journey(region), [region, dataVersion]);
   const recipeStops = stops.filter((s) => s.kind === 'recipe');
@@ -71,7 +71,7 @@ export function JourneyScreen({ route, navigation }: Props) {
       </Text>
       <View style={styles.grade}>
         <Blazes level={region.grade} color={p.green} />
-        <Text style={[t.label, { color: p.ink }]}>{GRADE_LABEL[region.grade]} hike</Text>
+        <Text style={[t.label, { color: p.ink }]}>{gradeLabel(region)} hike</Text>
       </View>
       <Text style={[t.body, { color: p.muted }]}>{region.blurb}</Text>
       <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>

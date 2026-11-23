@@ -269,11 +269,15 @@ Ink-line drawings on a 32×32 grid for 56 ingredients and the equipment tags, sh
 - **Do** use the category tint for recipe cards and rows, and Dry Sand for informational panels.
 - **Do** give every motion a Reduce Motion fallback (still, not just faster).
 - **Do** keep the cook's messy hands in mind: big targets, inline amounts, voice, nothing that needs precise taps.
+- **Do** make on/off chips say what "on" means: a tick on Sage Leaf for things you have, a cross in an ink outline for things to avoid, with a plain summary line ("Avoiding: soy").
+- **Do** round scaled amounts the way each measure works: cups in quarters and thirds, tablespoons in halves, teaspoons down to ⅛; cloves and eggs whole, cans and blocks in halves, produce in quarters. Never scale below what can be measured.
+- **Do** write the grocery list in shopping words ("jasmine rice", "1 lime"), with cooking notes ("for 1 cup cooked", "optional") as a quiet second line.
+- **Do** give anything that removes or counts something a way back: Undo, Reset, "Take one off", "Come back to it".
 
 ### Don't:
 - **Don't** use blue or saturated accents near food.
 - **Don't** set counts, amounts, instructions, voice hints or errors in the handwriting font.
 - **Don't** put shadows on cards, chips or panels; only photos and floating controls lift.
-- **Don't** show the cat outside cook mode and journey pages, or let it cover text.
+- **Don't** show the live cat outside cook mode and journey pages, or let it cover text. On keepsakes (the trail postcard) it is a still drawing.
 - **Don't** add streaks, badges, rewards, confetti or nudges; cooked counts stay quiet records.
 - **Don't** use pills for status; status is a tag, a stamp or plain text.

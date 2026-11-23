@@ -42,6 +42,8 @@ type Props = {
   style?: ViewStyle;
   /** Seconds without anything happening before it naps (it loafs at a bit over half that). */
   napAfter?: number;
+  /** A still drawing: no idle life, no moods. For keepsakes like the trail postcard, where the cat isn't the live helper. */
+  still?: boolean;
 };
 
 const W = 64;
@@ -139,8 +141,8 @@ const Collar = () => (
   </>
 );
 
-export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, size = 48, outline, style, napAfter = 45 }: Props) {
-  const reduce = useReducedMotion();
+export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, size = 48, outline, style, napAfter = 45, still = false }: Props) {
+  const reduce = useReducedMotion() || still;
   const h = (size / W) * H;
   const origin = (px: number, py: number): [number, number, number] => [Math.round((px / W) * size * 10) / 10, Math.round((py / H) * h * 10) / 10, 0];
   const line = { stroke: outline, strokeWidth: 1.3, strokeLinejoin: 'round' as const };

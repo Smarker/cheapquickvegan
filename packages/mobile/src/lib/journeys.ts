@@ -142,7 +142,14 @@ export type Region = {
   guideSlugs: string[];
   /** Optional photo of the area for the finished-trail postcard. Defaults to the first travel guide's photo. */
   postcardPhoto?: string;
+  /** The grades of recipe it holds, when a short neighbour was folded in. Defaults to [grade]. */
+  grades?: Difficulty[];
+  /** An area's only hike while it has too few recipes per grade: easy to hard in one trail. */
+  mixed?: boolean;
 };
+
+/** "Easy", "Medium", "Hard", or "Easy to hard" for an area's single mixed hike. */
+export const gradeLabel = (h: Region) => (h.mixed ? 'Easy to hard' : GRADE_LABEL[h.grade]);
 
 export const GRADE_LABEL: Record<Difficulty, string> = { Easy: 'Easy', Medium: 'Medium', Challenge: 'Hard' };
 
@@ -189,38 +196,92 @@ function pantryFor(stretch: Recipe[]): string[] {
 
 const areaRecipes = (cuisines: string[]) => recipes.filter((r) => r.cuisine != null && cuisines.includes(r.cuisine));
 
-/** The recipes on a hike: its area's recipes at the hike's grade, easiest first. Grades are rated across the whole area. */
-export function recipesFor(region: Region): Recipe[] {
+const ORDER: Difficulty[] = ['Easy', 'Medium', 'Challenge'];
+
+/** Each of a hike's recipes with its grade, easier stretches first, easiest first within one. Grades are rated across the whole area. */
+function gradedFor(region: Region): { recipe: Recipe; grade: Difficulty }[] {
   const list = areaRecipes(region.cuisines);
   const rated = rateTrail(list);
-  return list.filter((r) => rated.get(r.slug) === region.grade).sort((x, y) => effort(x) - effort(y));
+  const grades = region.grades ?? [region.grade];
+  return list
+    .filter((r) => grades.includes(rated.get(r.slug)!))
+    .map((recipe) => ({ recipe, grade: rated.get(recipe.slug)! }))
+    .sort((x, y) => ORDER.indexOf(x.grade) - ORDER.indexOf(y.grade) || effort(x.recipe) - effort(y.recipe));
 }
 
-/** Hikes that have at least one recipe yet. */
-export function openHikes(): Region[] {
-  return REGIONS.filter((h) => recipesFor(h).length > 0);
+export function recipesFor(region: Region): Recipe[] {
+  return gradedFor(region).map((x) => x.recipe);
 }
+
+/** A hike needs this many recipes to be a hike, so every summit means a few dinners, not one. */
+export const MIN_STOPS = 3;
+
+/**
+ * The hikes to show. A grade with at least three recipes is its own hike; a shorter one folds into the
+ * nearest real hike in its area (harder first). An area with no full grade but three recipes in all gets
+ * one "easy to hard" hike, named after its medium trail. Fewer than three recipes: no hike yet.
+ */
+export function openHikes(): Region[] {
+  const out: Region[] = [];
+  for (const area of AREAS) {
+    const hikes = REGIONS.filter((h) => h.area === area.id);
+    const counts = new Map(hikes.map((h) => [h.grade, recipesFor(h).length]));
+    const full = hikes.filter((h) => (counts.get(h.grade) ?? 0) >= MIN_STOPS);
+    const short = hikes.filter((h) => !full.includes(h) && (counts.get(h.grade) ?? 0) > 0);
+    if (full.length) {
+      const grades = new Map(full.map((h) => [h.id, [h.grade] as Difficulty[]]));
+      const guides = new Map(full.map((h) => [h.id, [...h.guideSlugs]]));
+      for (const s of short) {
+        const i = ORDER.indexOf(s.grade);
+        const target = [...full].sort((a, b) => Math.abs(ORDER.indexOf(a.grade) - i) - Math.abs(ORDER.indexOf(b.grade) - i) || ORDER.indexOf(b.grade) - ORDER.indexOf(a.grade))[0];
+        grades.get(target.id)!.push(s.grade);
+        guides.get(target.id)!.push(...s.guideSlugs);
+      }
+      for (const h of full) out.push({ ...h, grades: grades.get(h.id)!.sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)), guideSlugs: guides.get(h.id)! });
+    } else if (short.reduce((n, h) => n + (counts.get(h.grade) ?? 0), 0) >= MIN_STOPS) {
+      const flagship = hikes.find((h) => h.grade === 'Medium') ?? hikes[0];
+      out.push({
+        ...flagship,
+        id: `${area.id}-trail`,
+        grade: 'Medium',
+        grades: short.map((h) => h.grade).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)),
+        guideSlugs: hikes.flatMap((h) => h.guideSlugs),
+        blurb: 'Easy to hard in one trail, while more recipes are on the way.',
+        mixed: true,
+      });
+    }
+  }
+  return out;
+}
+
+/** A hike by id, including an area's mixed hike. */
+export const hikeById = (id: string): Region | undefined => openHikes().find((h) => h.id === id) ?? REGIONS.find((h) => h.id === id);
 
 /**
  * A hike: a rest stop at base camp (a technique lesson when its recipes need one, otherwise a
  * pantry stop), a signpost, then the recipes, easiest first. Travel guides are spread along the way.
  */
 export function journey(region: Region): Stop[] {
-  const items = recipesFor(region);
+  const graded = gradedFor(region);
   const stops: Stop[] = [];
-  if (items.length) {
-    // Easy hikes start with a pantry stop; harder ones with a lesson in the technique they need, if any.
-    const lesson = region.grade === 'Easy' ? undefined : items.flatMap(techniquesIn)[0];
+  const taught = new Set<string>();
+  // One stretch per grade on the hike, each behind its own signpost.
+  ORDER.forEach((grade) => {
+    const items = graded.filter((x) => x.grade === grade).map((x) => x.recipe);
+    if (!items.length) return;
+    // Easy stretches start with a pantry stop; harder ones with a lesson in the technique they need, if any.
+    const lesson = grade === 'Easy' ? undefined : items.flatMap(techniquesIn).find((t) => !taught.has(t.id));
     if (lesson) {
+      taught.add(lesson.id);
       const guide = guideBySlug(lesson.guide);
       stops.push({ kind: 'lesson', title: lesson.title, body: guide ? guideIntro(guide) : lesson.body, guide });
-    } else {
+    } else if (!stops.length) {
       const pantry = pantryFor(items);
       if (pantry.length > 1) stops.push({ kind: 'pantry', items: pantry, guide: guideBySlug(PANTRY_GUIDE) });
     }
-    stops.push({ kind: 'section', difficulty: region.grade });
-    items.forEach((recipe) => stops.push({ kind: 'recipe', recipe, difficulty: region.grade }));
-  }
+    stops.push({ kind: 'section', difficulty: grade });
+    items.forEach((recipe) => stops.push({ kind: 'recipe', recipe, difficulty: grade }));
+  });
 
   // Spread guides between recipes: after recipe #2, #4, … (never before the first recipe).
   const regionGuides = region.guideSlugs.map((s) => guides.find((g) => g.slug === s)).filter((g): g is Guide => !!g);

@@ -9,7 +9,7 @@ import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
 import { HeartButton } from '../components/HeartButton';
 import { TrailPostcard } from '../components/TrailPostcard';
 import { Photo } from '../components/Photo';
-import { journey, REGIONS } from '../lib/journeys';
+import { journey, openHikes, REGIONS } from '../lib/journeys';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { isJustWater, useGrocery } from '../lib/grocery';
@@ -31,7 +31,9 @@ export function SavedScreen({ navigation }: Props) {
   const list = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
   const cooks = recipes.reduce((n, r) => n + saved.cookedCount(r.slug), 0);
   const cookedRecipes = recipes.filter((r) => saved.cookedCount(r.slug) > 0).length;
-  const summits = REGIONS.filter((region) => saved.summits[region.id]).length;
+  // Every hike a summit could have been recorded on: today's hikes plus the full list.
+  const allHikes = [...openHikes(), ...REGIONS.filter((h) => !openHikes().some((o) => o.id === h.id))];
+  const summits = allHikes.filter((region) => saved.summits[region.id]).length;
   const grocery = useGrocery();
   const { units } = useUnits();
   const [picking, setPicking] = useState(false);
@@ -39,9 +41,9 @@ export function SavedScreen({ navigation }: Props) {
   const toCook = week.filter((r) => !saved.cookedThisWeek(r.slug));
   const pickerGroups: PickerGroup[] = toCook.map((r) => ({ slug: r.slug, title: displayTitle(r), lines: linesIn(r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map((l) => scaleLine(l, factorFor(r.slug, r.yieldText))), units) }));
   // Finished journeys, kept as postcards.
-  const summitedRegions = REGIONS.filter((region) => saved.summits[region.id]).map((region) => ({
+  const summitedRegions = allHikes.filter((region) => saved.summits[region.id]).map((region) => ({
     region,
-    recipes: journey(region).flatMap((s) => (s.kind === 'recipe' ? [s.recipe] : [])),
+    recipes: journey(region).flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : [])),
   }));
   const stats = [
     { n: cooks, label: cooks === 1 ? 'meal cooked' : 'meals cooked' },

@@ -42,9 +42,11 @@ export function RecipeScreen({ route, navigation }: Props) {
   const [picking, setPicking] = useState(false);
   // Cooked it without cook mode (from Directions, or from memory): one tap counts it, and it can be undone.
   const [justMarked, setJustMarked] = useState(false);
+  // Tapping the cooked stamp offers to take one off, for a cook counted by mistake.
+  const [fixing, setFixing] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
   // How many it's being made for. Every amount below follows it, then the grams/cups choice.
-  const scale = useScale(route.params.slug, r?.yieldText);
+  const scale = useScale(route.params.slug, r?.yieldText, r ? r.ingredients.flatMap((g) => g.items) : []);
   const tint = tintFor(p, r?.category ?? null);
 
   useLayoutEffect(() => {
@@ -103,7 +105,34 @@ export function RecipeScreen({ route, navigation }: Props) {
           {title}
         </Text>
         {/* A note on the title, not a stray chip: only there once it's been cooked. */}
-        {saved.cookedCount(r.slug) > 0 && <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} style={{ marginTop: -space.s }} />}
+        {saved.cookedCount(r.slug) > 0 && (
+          <View style={styles.stampRow}>
+            <Pressable
+              onPress={() => setFixing((f) => !f)}
+              accessibilityRole="button"
+              accessibilityLabel={`Cooked ${saved.cookedCount(r.slug)} ${saved.cookedCount(r.slug) === 1 ? 'time' : 'times'}`}
+              accessibilityHint="Shows how to take one off if it was counted by mistake"
+              hitSlop={8}
+            >
+              <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
+            </Pressable>
+            {fixing && (
+              <Pressable
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  saved.unmarkCooked(r.slug);
+                  if (saved.cookedCount(r.slug) <= 1) setFixing(false);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Take one cook off"
+                hitSlop={10}
+                style={styles.fix}
+              >
+                <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Take one off</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
         <View style={styles.facts}>
           {facts.map(({ icon: Icon, text }) => (
             <View key={text} style={styles.fact}>
@@ -112,37 +141,6 @@ export function RecipeScreen({ route, navigation }: Props) {
             </View>
           ))}
         </View>
-        {justMarked ? (
-          <View style={styles.marked}>
-            <Text style={[t.small, { color: p.greenDeep }]}>Marked as cooked.</Text>
-            <Pressable
-              onPress={() => {
-                saved.unmarkCooked(r.slug);
-                setJustMarked(false);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel="Undo marking as cooked"
-              hitSlop={10}
-            >
-              <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              saved.markCooked(r.slug);
-              setJustMarked(true);
-            }}
-            accessibilityRole="button"
-            accessibilityHint="Counts this recipe as cooked without going through cook mode"
-            hitSlop={10}
-            style={styles.marked}
-          >
-            <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Made it already? Mark it cooked</Text>
-          </Pressable>
-        )}
-
         {/* Keep it for later, plan it, shop for it: three quiet actions. Cooking is the one big button. */}
         <View style={styles.actions}>
           <View style={styles.action}>
@@ -178,17 +176,17 @@ export function RecipeScreen({ route, navigation }: Props) {
         </ScrollView>
 
         {tab === 'ingredients' && (
+          <View style={styles.sizeRow}>
           <Servings
             label={r.yieldText ? scaleYield(r.yieldText, scale.factor) : `${scale.target} ${scale.target === 1 ? 'batch' : 'batches'}`}
-            canLess={scale.target > 1}
-            canMore={scale.target < Math.max(12, scale.base * 4)}
-            onLess={() => scale.setTarget(scale.target - 1)}
-            onMore={() => scale.setTarget(scale.target + 1)}
+            canLess={scale.canLess}
+            canMore={scale.canMore}
+            onLess={scale.less}
+            onMore={scale.more}
             changed={scale.target !== scale.base}
             onReset={() => scale.setTarget(scale.base)}
           />
-        )}
-        {tab === 'ingredients' && canConvert(r.ingredients.flatMap((g) => g.items)) && (() => {
+          {canConvert(r.ingredients.flatMap((g) => g.items)) && (() => {
           const shown = units ?? writtenIn(r.ingredients.flatMap((g) => g.items));
           const other = shown === 'grams' ? 'volume' : 'grams';
           return (
@@ -198,7 +196,9 @@ export function RecipeScreen({ route, navigation }: Props) {
               </Text>
             </Pressable>
           );
-        })()}
+          })()}
+          </View>
+        )}
         {tab === 'ingredients' &&
           r.ingredients.map((g, gi) => (
             <View key={gi} style={styles.group}>
@@ -248,6 +248,38 @@ export function RecipeScreen({ route, navigation }: Props) {
               })}
             </View>
           ))}
+        {/* At the end of the steps, where it's true: counts a cook done from Directions or memory, with Undo. */}
+        {tab === 'steps' &&
+          (justMarked ? (
+            <View style={styles.marked}>
+              <Text style={[t.small, { color: p.greenDeep }]}>Marked as cooked.</Text>
+              <Pressable
+                onPress={() => {
+                  saved.unmarkCooked(r.slug);
+                  setJustMarked(false);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Undo marking as cooked"
+                hitSlop={10}
+              >
+                <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                saved.markCooked(r.slug);
+                setJustMarked(true);
+              }}
+              accessibilityRole="button"
+              accessibilityHint="Counts this recipe as cooked without going through cook mode"
+              hitSlop={10}
+              style={styles.marked}
+            >
+              <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Made it? Mark it cooked</Text>
+            </Pressable>
+          ))}
 
         {tab === 'tips' &&
           r.tips.map((tip, i) => (
@@ -260,7 +292,7 @@ export function RecipeScreen({ route, navigation }: Props) {
     </ScrollView>
       <GroceryPicker
         visible={picking}
-        groups={[{ slug: r.slug, title, lines: shoppable }]}
+        groups={[{ slug: r.slug, title: scale.factor !== 1 && r.yieldText ? `${title} · ${scaleYield(r.yieldText, scale.factor)}` : title, lines: shoppable }]}
         onClose={() => setPicking(false)}
         onAdd={(picked) => {
           if (grocery.hasRecipe(r.slug)) grocery.removeRecipe(r.slug);
@@ -367,8 +399,11 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
 }
 
 const styles = StyleSheet.create({
-  marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 32 },
-  servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, marginTop: space.l, flexWrap: 'wrap' },
+  marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 44, marginTop: space.s },
+  servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, flexWrap: 'wrap' },
+  stampRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, marginTop: -space.s },
+  fix: { minHeight: 44, justifyContent: 'center' },
+  sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.s, marginTop: space.l },
   stepper: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },
   top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
@@ -385,7 +420,7 @@ const styles = StyleSheet.create({
   group: { gap: space.s },
   ing: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },
   art: { width: 28, alignItems: 'center' },
-  units: { flexDirection: 'row', gap: space.s, marginTop: space.s },
+  units: { minHeight: 44, justifyContent: 'center' },
   box: { width: 22, height: 22, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   amountTag: { borderWidth: 1.5, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 0, transform: [{ translateY: 4 }] },
   amountText: { fontFamily: font.sansMedium, fontSize: 15, lineHeight: 21, fontVariant: ['tabular-nums'] },
