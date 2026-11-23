@@ -78,7 +78,9 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
           parts[i - 1]?.kind === 'measure' ||
           (parts[i - 2]?.kind === 'measure' && /^\s*(of\s+)?(the\s+)?$/i.test(between)) ||
           // "Dice 1/2 a shallot", "add 2 onions": a bare number just before the name
-          /(\d|[½¼¾⅓⅔])\s*(\/\s*\d+)?\s+((a|an|of|the|small|medium|large)\s+)*$/i.test(between);
+          /(\d|[½¼¾⅓⅔])\s*(\/\s*\d+)?\s+((a|an|of|the|small|medium|large)\s+)*$/i.test(between) ||
+          // "add more vinegar", "the remaining oil": a top-up, not the recipe's whole amount
+          /\b(more|extra|remaining|rest of the|a little|a bit of|a pinch of|a splash of|a dash of)\s+$/i.test(between);
         const found = amounts ? amountFor(part.s, amounts) : null;
         const show = found && !shownLines.has(found.line) && !statedAlready;
         if (found) shownLines.add(found.line);

@@ -169,6 +169,7 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const knead = useSharedValue(0);
   const roll = useSharedValue(0);
   const orbit = useSharedValue(0);
+  const squash = useSharedValue(1); // body squash and stretch for jumps (1 = normal)
 
   /** Something happened: reset the quiet clock, and get up if lying down (with a stretch after a nap). */
   const wake = (stretch = true) => {
@@ -225,13 +226,42 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
     }
     cancelAnimation(paw);
     cancelAnimation(hop);
+    cancelAnimation(squash);
+    squash.value = 1;
     ears.value = withSpring(mood === 'listening' || mood === 'alert' ? 1 : 0);
     tilt.value = withSpring(mood === 'listening' ? -9 : 0);
     paw.value = withTiming(0, { duration: 150 });
     hop.value = 0;
     if (mood === 'alert') paw.value = withRepeat(withSequence(withTiming(0.45, { duration: 180 }), withTiming(0, { duration: 220 })), -1, false);
     if (mood === 'happy') {
-      hop.value = withRepeat(withSequence(withDelay(1400, withTiming(-5, { duration: 170 })), withSpring(0, { damping: 8 })), -1, false);
+      // A real little jump: crouch, spring up stretched, hang at the top, drop faster than it rose,
+      // land with a squash, settle. Height and squash run on the same timeline.
+      const easeOut = Easing.out(Easing.quad);
+      const easeIn = Easing.in(Easing.quad);
+      hop.value = withRepeat(
+        withSequence(
+          withDelay(1600, withTiming(1.2, { duration: 220, easing: easeOut })), // crouch
+          withTiming(-11, { duration: 230, easing: easeOut }), // take off
+          withTiming(-12, { duration: 90 }), // hang
+          withTiming(0, { duration: 210, easing: easeIn }), // fall
+          withTiming(0.8, { duration: 60, easing: easeOut }), // land
+          withTiming(0, { duration: 180, easing: easeOut }), // settle
+        ),
+        -1,
+        false,
+      );
+      squash.value = withRepeat(
+        withSequence(
+          withDelay(1600, withTiming(0.86, { duration: 220, easing: easeOut })),
+          withTiming(1.1, { duration: 140, easing: easeOut }),
+          withTiming(1, { duration: 180 }),
+          withTiming(1.04, { duration: 210, easing: easeIn }),
+          withTiming(0.84, { duration: 60, easing: easeOut }),
+          withTiming(1, { duration: 180, easing: easeOut }),
+        ),
+        -1,
+        false,
+      );
       let chase: ReturnType<typeof setTimeout> | undefined;
       const id = setInterval(() => {
         if (busy.current) return;
@@ -365,7 +395,8 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
         { translateX: posX.value + (chasing ? Math.sin(a) * size * 0.14 : 0) },
         { translateY: bob.value + hop.value - far * 3 },
         { scale: 1 - far * 0.1 },
-        { scaleX: (facing === 'left' ? -1 : 1) * turn },
+        { scaleX: (facing === 'left' ? -1 : 1) * turn * (2 - squash.value) },
+        { scaleY: squash.value },
       ],
     };
   });
@@ -396,7 +427,7 @@ export function CookCat({ x = 0, facing = 'right', mood = 'idle', perkKey = 0, s
   const fadeOut = reduce ? undefined : FadeOut.duration(140);
 
   return (
-    <Animated.View style={[{ width: size, height: h }, whole, style]} accessible={false} importantForAccessibility="no-hide-descendants">
+    <Animated.View style={[{ width: size, height: h, transformOrigin: [size / 2, h, 0] }, whole, style]} accessible={false} importantForAccessibility="no-hide-descendants">
       {(pose === 'sit' || pose === 'lick' || pose === 'knead') && (
         <Animated.View key="sit" entering={fade} exiting={fadeOut} style={L}>
           {/* body, haunch, far front leg, bib, back paw */}

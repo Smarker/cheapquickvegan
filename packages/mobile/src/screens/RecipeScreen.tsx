@@ -14,8 +14,8 @@ import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
-import { ingredientTerms } from '../lib/cook';
-import { canConvert, convertLine, writtenIn } from '../lib/units';
+import { ingredientAmounts, ingredientTerms, toolTerms } from '../lib/cook';
+import { canConvert, convertInStep, convertLine, linesIn, writtenIn } from '../lib/units';
 import { allergenLabel } from '../lib/allergens';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
@@ -57,6 +57,12 @@ export function RecipeScreen({ route, navigation }: Props) {
   const title = displayTitle(r);
   const photo = width - 48;
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
+  // Directions read like cook mode: amounts after each ingredient, times and temperatures as tags,
+  // tools underlined, all in the cook's units.
+  const allLines = r.ingredients.flatMap((g) => g.items);
+  const stepTerms = ingredientTerms(allLines);
+  const stepAmounts = ingredientAmounts(linesIn(allLines, units));
+  const stepTools = toolTerms(r.equipment);
   // What can go on a grocery list (never plain water). The picker asks which ones the cook needs.
   const shoppable = r.ingredients.flatMap((g) => g.items).filter((l) => !isJustWater(l)).map((l) => (units ? convertLine(l, units) : l));
   const tabs: { key: Tab; label: string }[] = [
@@ -179,9 +185,15 @@ export function RecipeScreen({ route, navigation }: Props) {
                     <StepBadge n={stepNo} colors={{ ink: p.ink, green: p.green, line: p.hairline }} size={26} />
                     <HighlightedText
                       text={step}
-                      terms={ingredientTerms(r.ingredients.flatMap((g) => g.items))}
+                      terms={stepTerms}
                       style={[t.body, { flex: 1, color: p.ink }]}
                       highlight={{ fontFamily: font.sansBold, color: p.greenDeep }}
+                      amounts={stepAmounts}
+                      amountStyle={StyleSheet.flatten([styles.amountText, { color: p.ink }])}
+                      amountTag={StyleSheet.flatten([styles.amountTag, { backgroundColor: p.sand, borderColor: p.hairline }])}
+                      tools={stepTools}
+                      toolStyle={{ fontFamily: font.sansMedium, textDecorationLine: 'underline', textDecorationColor: p.green }}
+                      convertAmount={(amount, after) => convertInStep(amount, after, units)}
                     />
                   </View>
                 );
@@ -286,6 +298,8 @@ const styles = StyleSheet.create({
   art: { width: 28, alignItems: 'center' },
   units: { flexDirection: 'row', gap: space.s, marginTop: space.s },
   box: { width: 22, height: 22, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  amountTag: { borderWidth: 1.5, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 0, transform: [{ translateY: 4 }] },
+  amountText: { fontFamily: font.sansMedium, fontSize: 15, lineHeight: 21, fontVariant: ['tabular-nums'] },
   step: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
   dot: { width: 7, height: 7, borderRadius: 4, marginTop: 9 },
 });
