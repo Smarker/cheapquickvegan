@@ -127,9 +127,9 @@ export function RecipeScreen({ route, navigation }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel="Take one cook off"
                 hitSlop={10}
-                style={styles.fix}
+                style={[styles.chip, { borderColor: p.hairline }]}
               >
-                <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Take one off</Text>
+                <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Take one off</Text>
               </Pressable>
             )}
           </View>
@@ -187,6 +187,11 @@ export function RecipeScreen({ route, navigation }: Props) {
             changed={scale.target !== scale.base}
             onReset={() => scale.setTarget(scale.base)}
           />
+          {scale.limit && scale.target < scale.base && (
+            <Text style={[t.small, { color: p.muted, flexBasis: '100%' }]}>
+              Smallest batch: {scaleLine(scale.limit, scale.factor).replace(/,.*$/, '')} can't go smaller.
+            </Text>
+          )}
           {canConvert(r.ingredients.flatMap((g) => g.items)) && (() => {
           const shown = units ?? writtenIn(r.ingredients.flatMap((g) => g.items));
           const other = shown === 'grams' ? 'volume' : 'grams';
@@ -262,8 +267,9 @@ export function RecipeScreen({ route, navigation }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel="Undo marking as cooked"
                 hitSlop={10}
+                style={[styles.chip, { borderColor: p.hairline }]}
               >
-                <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
+                <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Undo</Text>
               </Pressable>
             </View>
           ) : (
@@ -276,9 +282,9 @@ export function RecipeScreen({ route, navigation }: Props) {
               accessibilityRole="button"
               accessibilityHint="Counts this recipe as cooked without going through cook mode"
               hitSlop={10}
-              style={styles.marked}
+              style={[styles.marked, styles.chip, { borderColor: p.hairline }]}
             >
-              <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Made it? Mark it cooked</Text>
+              <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Made it? Mark it cooked</Text>
             </Pressable>
           ))}
 
@@ -391,8 +397,8 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
       </Text>
       {step(canMore, '+', onMore, 'More servings')}
       {changed && (
-        <Pressable onPress={onReset} accessibilityRole="button" accessibilityLabel="Back to the original amount" hitSlop={8}>
-          <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Reset</Text>
+        <Pressable onPress={onReset} accessibilityRole="button" accessibilityLabel="Back to the original amount" hitSlop={8} style={[styles.chip, { borderColor: p.hairline }]}>
+          <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Reset</Text>
         </Pressable>
       )}
     </View>
@@ -400,6 +406,9 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
 }
 
 const styles = StyleSheet.create({
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
+  chipText: { fontFamily: font.sansMedium },
   marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 44, marginTop: space.s },
   servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, flexWrap: 'wrap' },
   stampRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, marginTop: -space.s },

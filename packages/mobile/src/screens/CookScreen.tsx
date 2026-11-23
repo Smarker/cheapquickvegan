@@ -20,6 +20,7 @@ import { findIngredient, type VoiceCommand } from '../lib/voice';
 import { cookPages, ingredientAmounts, ingredientTerms, toolTerms, type CookPage } from '../lib/cook';
 import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
+import { Hint } from '../components/Hint';
 import { RecipeGone } from '../components/RecipeGone';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
@@ -315,6 +316,13 @@ export function CookScreen({ route, navigation }: Props) {
           {heard ?? 'Say “next step”, “repeat” or “how much garlic?”'}
         </Text>
       )}
+      {canVoice && (
+        <View style={styles.hint}>
+          <Hint id="hands-free" doneWhen={voice.on} colors={{ ink: k.ink, panel: k.raised, line: k.line }}>
+            Hands-free means voice. Turn it on, then say “next step”, “how much garlic?” or “set a 10 minute timer”.
+          </Hint>
+        </View>
+      )}
 
       <View style={styles.trail} onLayout={(e) => setTrailW(e.nativeEvent.layout.width)}>
         {trailW > 0 && prefs.helper && (
@@ -448,6 +456,7 @@ export function CookScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  hint: { paddingHorizontal: space.xl, marginTop: space.s },
   root: { flex: 1, backgroundColor: k.ground },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xl, minHeight: 44 },
   close: { minWidth: 56 },

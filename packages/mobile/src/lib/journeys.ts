@@ -116,16 +116,18 @@ function rateTrail(list: Recipe[]): Map<string, Difficulty> {
 export type Area = {
   id: string;
   name: string;
+  /** For small spaces: "Italy". */
+  short: string;
   cuisines: string[];
   /** What's drawn on its island. */
   scenery: 'peaks' | 'terraces' | 'mesa' | 'andes';
 };
 
 export const AREAS: Area[] = [
-  { id: 'italy', name: 'Italy & the Mediterranean', cuisines: ['Italian', 'Mediterranean', 'Spanish'], scenery: 'peaks' },
-  { id: 'asia', name: 'Asia', cuisines: ['Asian', 'Thai', 'Japanese'], scenery: 'terraces' },
-  { id: 'americas', name: 'American classics', cuisines: ['American'], scenery: 'mesa' },
-  { id: 'latin', name: 'Latin America', cuisines: ['Mexican', 'Tex-Mex', 'South American'], scenery: 'andes' },
+  { id: 'italy', name: 'Italy & the Mediterranean', short: 'Italy', cuisines: ['Italian', 'Mediterranean', 'Spanish'], scenery: 'peaks' },
+  { id: 'asia', name: 'Asia', short: 'Asia', cuisines: ['Asian', 'Thai', 'Japanese'], scenery: 'terraces' },
+  { id: 'americas', name: 'American classics', short: 'American', cuisines: ['American'], scenery: 'mesa' },
+  { id: 'latin', name: 'Latin America', short: 'Latin America', cuisines: ['Mexican', 'Tex-Mex', 'South American'], scenery: 'andes' },
 ];
 
 /** One hike: an area's recipes at one grade. (Kept as "Region" so screens and saved progress keep working.) */

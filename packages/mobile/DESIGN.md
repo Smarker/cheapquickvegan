@@ -273,6 +273,9 @@ Ink-line drawings on a 32×32 grid for 56 ingredients and the equipment tags, sh
 - **Do** round scaled amounts the way each measure works: cups in quarters and thirds, tablespoons in halves, teaspoons down to ⅛; cloves and eggs whole, cans and blocks in halves, produce in quarters. Never scale below what can be measured.
 - **Do** write the grocery list in shopping words ("jasmine rice", "1 lime"), with cooking notes ("for 1 cup cooked", "optional") as a quiet second line.
 - **Do** give anything that removes or counts something a way back: Undo, Reset, "Take one off", "Come back to it".
+- **Do** style text actions by what they do: underlined green text only navigates ("See all", guide links); actions that change your data (Mark it cooked, Take one off, Undo, Reset, Take another path) are small outline chips.
+- **Do** teach at the point of use with one-time hints: a Dry Sand note with a ✕, dismissed for good when closed or when the cook uses the feature. Never a tour, never twice.
+- **Do** treat a summit as a memory: once reached it stays (postcard, date), and the trail shows any stops reopened beside it.
 
 ### Don't:
 - **Don't** use blue or saturated accents near food.

@@ -14,7 +14,7 @@ import { Pill } from '../components/Pill';
 import { TimePicker } from '../components/TimePicker';
 import { useDataVersion } from '../lib/data';
 import type { Art } from '../lib/ingredientArt';
-import { displayTitle, type Recipe, type TimeLimit } from '../lib/recipes';
+import { displayTitle, projects, type Recipe, type TimeLimit } from '../lib/recipes';
 import { FRIDGE, fridgeMatches, fridgeOptions, popularIngredients, searchGuides, searchRecipes } from '../lib/search';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
 
@@ -33,6 +33,7 @@ export function SearchScreen({ navigation }: Props) {
   const [picked, setPicked] = useState<Art[]>([]);
   // The fridge picker stays one tap away until it's wanted, so Search opens calm.
   const [fridgeOpen, setFridgeOpen] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(RECENT_KEY)
@@ -203,6 +204,35 @@ export function SearchScreen({ navigation }: Props) {
                 </View>
               )}
             </View>
+            )}
+
+            {/* Breads, soups and bigger cooks: off Discover on weekdays, always here. */}
+            {!projectsOpen ? (
+              <Pressable
+                onPress={() => setProjectsOpen(true)}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.fridgeEntry, { backgroundColor: p.sand, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
+              >
+                <View style={styles.fridgeArt}>
+                  <IngredientDoodle art="bread" color={p.ink} size={28} />
+                  <IngredientDoodle art="dough" color={p.ink} size={28} />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[t.rowTitle, { color: p.ink }]}>Weekend projects</Text>
+                  <Text style={[t.small, { color: p.muted }]}>Breads, soups and bigger cooks. Worth the wait.</Text>
+                </View>
+              </Pressable>
+            ) : (
+              <View style={{ gap: space.s }}>
+                <Text style={[t.section, { color: p.ink, fontSize: 18 }]} accessibilityRole="header">
+                  Weekend projects
+                </Text>
+                {projects()
+                  .filter(prefs.fits)
+                  .map((recipe, i) => (
+                    <RecipeRow key={recipe.slug} recipe={recipe} index={i} onPress={() => navigation.navigate('Recipe', { slug: recipe.slug })} />
+                  ))}
+              </View>
             )}
           </View>
         ) : hits.length === 0 && guideHits.length === 0 ? (

@@ -128,7 +128,13 @@ export function scaleLine(line: string, factor: number): string {
  * under ⅛ teaspoon, a clove or an egg under one, a can under half, produce under a quarter.
  */
 export function minFactor(lines: string[]): number {
+  return floorOf(lines).factor;
+}
+
+/** The floor and the ingredient that sets it, so the stepper can say why it stops. */
+export function floorOf(lines: string[]): { factor: number; limit: string | null } {
   let floor = 0;
+  let limit: string | null = null;
   for (const line of lines) {
     const m = line.match(LEAD);
     if (!m) continue;
@@ -137,12 +143,16 @@ export function minFactor(lines: string[]): number {
     const unit = m[5]?.trim();
     if (unit) {
       const u = unitKey(unit);
-      if (u === 'cup' || u === 'tbsp' || u === 'tsp') floor = Math.max(floor, MIN_ML / (n * ML[u]));
+      if (u === 'cup' || u === 'tbsp' || u === 'tsp') {
+        const f = MIN_ML / (n * ML[u]);
+        if (f > floor) [floor, limit] = [f, line];
+      }
     } else {
-      floor = Math.max(floor, countStep(line.slice(m[0].length)).min / n);
+      const f = countStep(line.slice(m[0].length)).min / n;
+      if (f > floor) [floor, limit] = [f, line];
     }
   }
-  return Math.min(1, floor);
+  return { factor: Math.min(1, floor), limit: floor > 0 ? limit : null };
 }
 
 /** An amount written inside a step ("2 cups"), scaled when it's a measured quantity. Times and temperatures never match. */
@@ -211,7 +221,7 @@ export function useScale(slug: string, yieldText: string | null | undefined, lin
     save();
   };
   // Never smaller than every ingredient can still be measured.
-  const floor = minFactor(lines);
+  const { factor: floor, limit } = floorOf(lines);
   const steps = servingSteps(base).filter((n) => n === base || n / base >= floor - 1e-9);
   // The nearest step below/above the current amount, even if it was saved off-step.
   const less = [...steps].reverse().find((n) => n < target);
@@ -226,5 +236,8 @@ export function useScale(slug: string, yieldText: string | null | undefined, lin
     more: () => more != null && set(more),
     canLess: less != null,
     canMore: more != null,
+    /** At the smallest batch: the ingredient line that can't go smaller. */
+    // Only when an ingredient is what stops it, not the plain one-serving minimum.
+    limit: less == null && servingSteps(base)[0] < target ? limit : null,
   };
 }

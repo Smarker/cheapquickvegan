@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyBowl } from '../components/Doodles';
 import { CheckIcon } from '../components/Icons';
 import { PencilStrike } from '../components/PencilStrike';
+import { Hint } from '../components/Hint';
+import { dismissHint } from '../lib/hints';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { AISLES, useGrocery, type GroceryItem } from '../lib/grocery';
 import { mergeLines } from '../lib/groceryMerge';
@@ -56,6 +58,8 @@ export function GroceryScreen() {
               {left === 0 ? 'All done. Happy cooking!' : `${left} to get${recipes.length > 1 ? ` for ${recipes.length} recipes` : `, for ${recipes[0][1]}`}`}
             </Text>
 
+            <Hint id="grocery-long-press">Lines are written for the shop. Long-press any item to see how the recipe writes it.</Hint>
+
             <View style={styles.actions}>
               <Pressable
                 onPress={() => {
@@ -92,9 +96,9 @@ export function GroceryScreen() {
                   }}
                   accessibilityRole="button"
                   hitSlop={10}
-                  style={styles.undoButton}
+                  style={[styles.chip, { borderColor: p.hairline }]}
                 >
-                  <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Undo</Text>
+                  <Text style={[t.label, { color: p.greenDeep }]}>Undo</Text>
                 </Pressable>
               </Animated.View>
             )}
@@ -113,13 +117,14 @@ export function GroceryScreen() {
                           Haptics.selectionAsync();
                           tick(item.ids, item.checked);
                         }}
-                        onLongPress={() =>
+                        onLongPress={() => {
+                          dismissHint('grocery-long-press');
                           setShown((prev) => {
                             const next = new Set(prev);
                             next.has(item.key) ? next.delete(item.key) : next.add(item.key);
                             return next;
-                          })
-                        }
+                          });
+                        }}
                         accessibilityHint="Long-press to see how the recipe writes it"
                         accessibilityRole="checkbox"
                         accessibilityState={{ checked: item.checked }}
@@ -167,6 +172,9 @@ export function GroceryScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
+  chipText: { fontFamily: font.sansMedium },
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.s },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.l, paddingBottom: 80 },
   actions: { flexDirection: 'row', gap: space.m, marginTop: space.s },

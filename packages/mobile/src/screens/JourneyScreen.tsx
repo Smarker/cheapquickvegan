@@ -7,6 +7,7 @@ import { Blazes } from '../components/Blazes';
 import { CookedStamp } from '../components/CookedStamp';
 import { CookCat } from '../components/CookCat';
 import { TrailPostcard } from '../components/TrailPostcard';
+import { dismissHint } from '../lib/hints';
 import { Hut, SummitFlag } from '../components/Doodles';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
@@ -43,6 +44,8 @@ export function JourneyScreen({ route, navigation }: Props) {
   const saved = useSaved();
   const region = hikeById(route.params.id)!;
   const dataVersion = useDataVersion();
+  // Opening a hike is how you learn what one is: the Discover tip has done its job.
+  useEffect(() => dismissHint('journeys'), []);
   // Once started, the hike keeps its stops; recipes published later become side trips below the summit.
   const pinned = saved.trailFor(region.id);
   const stops = useMemo(() => journey(region, pinned), [region, dataVersion, pinned]);
@@ -64,6 +67,9 @@ export function JourneyScreen({ route, navigation }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, pinned, region.id]);
   const hasPostcard = allCooked && cooked > 0;
+  // A summit, once reached, stays reached. If a stop opens up again later, the trail says so beside it.
+  const summitedOn = saved.summits[region.id];
+  const reopened = summitedOn && !allCooked ? recipeStops.filter((s) => s.kind === 'recipe' && !behind(s.recipe.slug)).length : 0;
   // Remember the day the trail was finished, for its postcard.
   useEffect(() => {
     if (hasPostcard) saved.markSummit(region.id);
@@ -84,7 +90,9 @@ export function JourneyScreen({ route, navigation }: Props) {
       </View>
       <Text style={[t.body, { color: p.muted }]}>{region.blurb}</Text>
       <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>
-        {allCooked
+        {reopened
+          ? `Summited ${new Date(summitedOn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}. ${reopened} ${reopened === 1 ? 'stop' : 'stops'} open again, whenever you like.`
+          : allCooked
           ? cooked === recipeStops.length
             ? `You've cooked the whole trail. Summit reached!`
             : `Summit reached, your way. ${cooked} cooked along the trail.`
@@ -155,9 +163,9 @@ export function JourneyScreen({ route, navigation }: Props) {
                     accessibilityRole="button"
                     accessibilityHint={isPassed ? 'Puts this stop back on your trail' : 'Moves on to the next stop without cooking this one'}
                     hitSlop={8}
-                    style={styles.pathLink}
+                    style={[styles.pathLink, styles.chip, { borderColor: p.hairline }]}
                   >
-                    <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>
+                    <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>
                       {isPassed ? 'Passed by. Come back to it' : 'Not feeling this one? Take another path'}
                     </Text>
                   </Pressable>
@@ -194,7 +202,7 @@ export function JourneyScreen({ route, navigation }: Props) {
             {!nextSlug && recipeStops.length > 0 && <CookCat outline={p.ink} size={56} mood="happy" />}
           </View>
           <Text style={[t.hand, { color: p.ink, fontSize: 22, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1} textBreakStrategy="simple">The summit</Text>
-          {hasPostcard && (
+          {(hasPostcard || !!summitedOn) && (
             <View style={styles.postcard}>
               <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : []))} />
             </View>
@@ -255,7 +263,7 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
         <Hut color={p.ink} size={48} />
         <View style={{ flex: 1 }}>
           <Text style={[t.hand, { color: p.greenDeep }]}>{stop.kind === 'lesson' ? 'Refugio lesson' : 'Pantry stop'}</Text>
-          <Text style={[t.rowTitle, { color: p.ink }]}>{stop.kind === 'lesson' ? stop.title : 'Stock up for the next stretch'}</Text>
+          <Text style={[t.rowTitle, { color: p.ink }]}>{stop.kind === 'lesson' ? stop.title : 'Stock up before you set off'}</Text>
         </View>
       </View>
       {stop.kind === 'lesson' ? (
@@ -295,6 +303,9 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
 const joinList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
 const styles = StyleSheet.create({
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
+  chipText: { fontFamily: font.sansMedium },
   root: { padding: space.xl, paddingTop: space.s, paddingBottom: 64, gap: space.s },
   trail: { marginTop: space.xl, gap: space.l, paddingLeft: 30 },
   path: { position: 'absolute', left: 13, top: 0, bottom: 0 },

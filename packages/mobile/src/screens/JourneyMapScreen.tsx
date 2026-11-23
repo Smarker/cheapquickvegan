@@ -79,8 +79,9 @@ export function JourneyMapScreen({ navigation }: Props) {
   }, [dataVersion, saved]);
 
   const behind = (h: Region, slug: string) => saved.cookedCount(slug) > 0 || saved.isPassed(h.id, slug);
-  // The cat waits on the first hike you've started but not finished.
+  // The cat waits on the first hike you've started but not summited.
   const current = [...hikes.entries()].find(([id, slugs]) => {
+    if (saved.summits[id]) return false;
     const h = openHikes().find((x) => x.id === id)!;
     const done = slugs.filter((s) => behind(h, s)).length;
     return done > 0 && done < slugs.length;
@@ -178,7 +179,8 @@ type RowProps = { hike: Region; slugs: string[]; p: Palette; behind: (slug: stri
 
 function HikeRow({ hike, slugs, p, behind, summited, onPress }: RowProps) {
   const done = slugs.filter(behind).length;
-  const status = summited ? 'Summited' : done ? `${done} of ${slugs.length} stops` : `${slugs.length} ${slugs.length === 1 ? 'stop' : 'stops'}`;
+  const open = slugs.length - done;
+  const status = summited ? (open ? `Summited · ${open} open` : 'Summited') : done ? `${done} of ${slugs.length} stops` : `${slugs.length} ${slugs.length === 1 ? 'stop' : 'stops'}`;
   return (
     <Pressable
       onPress={onPress}

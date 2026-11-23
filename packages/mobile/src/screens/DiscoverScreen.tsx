@@ -38,9 +38,10 @@ import {
   type TimeLimit,
   widerLimit,
 } from '../lib/recipes';
-import { gradeLabel, journey, openHikes } from '../lib/journeys';
+import { AREAS, gradeLabel, journey, openHikes } from '../lib/journeys';
 import { planWords } from '../lib/plan';
 import { Blazes } from '../components/Blazes';
+import { Hint } from '../components/Hint';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import type { DiscoverStack } from '../navigation';
@@ -76,10 +77,13 @@ export function DiscoverScreen({ navigation }: Props) {
     .map((region) => {
       const stops = journey(region, saved.trailFor(region.id)).filter((st) => st.kind === 'recipe');
       const done = stops.filter((st) => st.kind === 'recipe' && saved.cookedCount(st.recipe.slug) > 0).length;
-      const started = done > 0 && done < stops.length;
-      return { region, stops, done, rank: (started ? 0 : 10) + gradeOrder[region.grade] };
+      const summited = !!saved.summits[region.id];
+      const started = !summited && done > 0 && done < stops.length;
+      return { region, stops, done, summited, started, rank: (started ? 0 : 10) + gradeOrder[region.grade] };
     })
-    .sort((x, y) => x.rank - y.rank);
+    .sort((x, y) => x.rank - y.rank)
+    // Hikes in progress, then one easy place to begin; every other hike lives on the map.
+    .filter((h, i, all) => h.started || (!h.summited && h.done === 0 && all.findIndex((x) => !x.started && !x.summited && x.done === 0) === i));
   const matches = useMemo(() => tonight(limit, gear, meal).filter(prefs.fits), [limit, gear, meal, dataVersion, prefs.fits]);
   // The trail is a timeline: every match, quickest on the left.
   const featured = matches;
@@ -231,6 +235,11 @@ export function DiscoverScreen({ navigation }: Props) {
             Cooking journeys
           </Text>
           <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>New to a cuisine? Pick a hike, from an easy stroll to a summit climb.</Text>
+          <View style={{ marginTop: space.m }}>
+            <Hint id="journeys" lead={<Blazes level="Easy" color={p.green} />}>
+              A hike is a few recipes from one cuisine. The green bars show how hard: one is an easy stroll, three is a summit climb.
+            </Hint>
+          </View>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
           <Pressable
@@ -255,7 +264,9 @@ export function DiscoverScreen({ navigation }: Props) {
                   { backgroundColor: [p.greenSoft, p.sand, p.sageSoft, p.mist][i % 4], transform: [{ scale: pressed ? 0.97 : 1 }] },
                 ]}
               >
-                <Text style={[t.hand, { color: p.greenDeep, fontSize: 17 }]}>{region.name}</Text>
+                <Text style={[t.hand, { color: p.greenDeep, fontSize: 17, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
+                  {AREAS.find((a) => a.id === region.area)?.short ?? region.name}
+                </Text>
                 <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
                   {region.trail}
                 </Text>
@@ -304,11 +315,12 @@ export function DiscoverScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {slow.length > 0 && (
+      {/* Bigger cooks on weekends, when there's time. Weekdays, they're one tap away in Search. */}
+      {slow.length > 0 && isWeekend() && (
         <View style={{ marginTop: space.xxl }}>
           <View style={styles.pad}>
             <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
-              {isWeekend() ? 'For a slow weekend' : 'When you have more time'}
+              For a slow weekend
             </Text>
             <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Breads, soups and bigger cooks. Worth the wait.</Text>
           </View>
