@@ -47,3 +47,20 @@ describe('findIngredient', () => {
     expect(findIngredient('saffron', lines)).toBe(null);
   });
 });
+
+import { isEcho } from '../src/lib/voice';
+describe('isEcho', () => {
+  const step = 'Build the curry base. Heat 1 to 2 tablespoons of coconut oil in a deep pan, then add the next layer.';
+  it('ignores the app hearing itself', () => {
+    expect(isEcho('heat 1 to 2 tablespoons of coconut oil', step)).toBe(true);
+    expect(isEcho('then add the next', step)).toBe(true);
+  });
+  it('hears the cook talking over it', () => {
+    expect(isEcho('next step', step)).toBe(false);
+    expect(isEcho('coconut oil go back', step)).toBe(false);
+    expect(isEcho('stop the timer', step)).toBe(false);
+  });
+  it('is never an echo when the app is quiet', () => {
+    expect(isEcho('next', '')).toBe(false);
+  });
+});

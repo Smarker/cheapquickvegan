@@ -62,3 +62,16 @@ export function findIngredient(item: string, lines: string[]): string | null {
     .sort((a, b) => b.hits - a.hits || a.line.length - b.line.length);
   return scored[0]?.line ?? null;
 }
+
+const wordsOf = (s: string) => s.toLowerCase().replace(/[^a-z0-9'\s]/g, ' ').split(/\s+/).filter(Boolean);
+
+/**
+ * While the app is talking the mic stays on, so it also hears the app. A phrase made only of words the
+ * app is saying is its own voice coming back; anything with a word of the cook's own is real.
+ */
+export function isEcho(heard: string, speaking: string): boolean {
+  const said = wordsOf(heard);
+  if (!said.length || !speaking) return false;
+  const spoken = new Set(wordsOf(speaking));
+  return said.every((w) => spoken.has(w));
+}

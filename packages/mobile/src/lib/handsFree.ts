@@ -1,7 +1,7 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { parseCommand, type VoiceCommand } from './voice';
+import { isEcho, parseCommand, type VoiceCommand } from './voice';
 
 // Commands short enough to act on from a partial transcript, before the recogniser decides you've
 // finished. "How much…" and "set a timer for…" wait for the end so they aren't cut off early.
@@ -60,13 +60,16 @@ type Options = {
 
 /**
  * Hands-free cook mode: listens while switched on, turns each phrase into a command, and can talk back.
- * The mic is ignored while the app is speaking, so it doesn't hear itself.
+ * The mic stays on while the app is talking, so the cook can cut in ("next", "stop the timer") without
+ * waiting for it to finish; anything that's only the app's own words coming back is ignored.
  */
 export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
   const [on, setOn] = useState(false);
   const [listening, setListening] = useState(false);
   const onRef = useRef(false);
   const speaking = useRef(false);
+  const spokenText = useRef(''); // what the app is saying right now, to tell its echo from the cook
+  const active = useRef(false); // the recogniser is running (never start it twice)
   const utterance = useRef(0);
   const acted = useRef(false); // already acted on this phrase from a partial result
   const paused = useRef(false); // app in the background: mic off until it's back
@@ -76,9 +79,10 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
 
   const listen = useCallback(() => {
     const m = modules();
-    if (!m || !onRef.current || paused.current) return;
+    if (!m || !onRef.current || paused.current || active.current) return;
     const R = m.rec.ExpoSpeechRecognitionModule;
     acted.current = false;
+    active.current = true;
     R.start({
       lang: 'en-US',
       interimResults: true,
@@ -101,12 +105,14 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
     const R = m.rec.ExpoSpeechRecognitionModule;
     const subs = [
       R.addListener('start', () => setListening(true)),
-      // Recognisers stop after a pause; keep going while hands-free is on.
+      // Recognisers stop after each phrase; start again straight away, even while the app is talking.
       R.addListener('end', () => {
+        active.current = false;
         setListening(false);
-        if (onRef.current && !speaking.current && !paused.current) listen();
+        if (onRef.current && !paused.current) listen();
       }),
       R.addListener('error', (e) => {
+        active.current = false; // some errors arrive without an 'end'
         const problem = problemFor(e.error);
         if (!problem) return;
         onRef.current = false;
@@ -114,10 +120,13 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
         handlers.current.onProblem?.(problem);
       }),
       R.addListener('result', (e) => {
-        if (speaking.current) return;
-        lastHeard.current = Date.now();
         const said = e.results[0]?.transcript ?? '';
+        // The app hearing itself: ignore.
+        if (speaking.current && isEcho(said, spokenText.current)) return;
+        lastHeard.current = Date.now();
         const cmd = parseCommand(said);
+        // The cook cutting in: stop talking and do it.
+        if (cmd && speaking.current) m.speech.stop();
         if (!e.isFinal) {
           // Act the moment a short command is clear, then ignore the rest of this phrase.
           if (cmd && QUICK.has(cmd.type) && !acted.current) {
@@ -150,7 +159,7 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
     });
     // Nothing said for a while: switch off, and say so.
     const idle = setInterval(() => {
-      if (onRef.current && !paused.current && !speaking.current && Date.now() - lastHeard.current > IDLE_MS) {
+      if (onRef.current && !paused.current && Date.now() - lastHeard.current > IDLE_MS) {
         onRef.current = false;
         setOn(false);
         R.abort();
@@ -185,23 +194,25 @@ export function useHandsFree({ onCommand, onUnknown, onProblem }: Options) {
     onRef.current = false;
     setOn(false);
     modules()?.rec.ExpoSpeechRecognitionModule.abort();
+    modules()?.speech.stop();
   }, []);
 
-  /** Read something out loud, pausing the mic so it doesn't hear itself. */
+  /** Read something out loud. The mic keeps listening, so the cook can interrupt. */
   const say = useCallback(
     (text: string) => {
       const m = modules();
       if (!m) return;
       const mine = ++utterance.current;
       speaking.current = true;
-      m.rec.ExpoSpeechRecognitionModule.abort();
+      spokenText.current = text;
       m.speech.stop();
-      const resume = () => {
+      const done = () => {
         if (mine !== utterance.current) return; // a newer reply took over
         speaking.current = false;
-        listen();
+        spokenText.current = '';
       };
-      m.speech.speak(text, { language: 'en-US', rate: 0.95, onDone: resume, onStopped: resume, onError: resume });
+      m.speech.speak(text, { language: 'en-US', rate: 0.95, onDone: done, onStopped: done, onError: done });
+      listen(); // in case it had stopped; does nothing if it's already listening
     },
     [listen],
   );
