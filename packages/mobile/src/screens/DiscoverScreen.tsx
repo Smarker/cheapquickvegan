@@ -292,7 +292,7 @@ type CardProps = {
   cooked: number;
 };
 
-/** A recipe card pinned up with a strip of tape, standing on the dotted trail. */
+/** A recipe card standing on the dotted trail, held up by its own mile marker showing the time. */
 function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, cooked }: CardProps) {
   const p = usePalette();
   const title = displayTitle(r);
@@ -335,7 +335,6 @@ function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, coo
             {[r.category, r.yieldText].filter(Boolean).join(' · ')}
           </Text>
         </View>
-        <Tape p={p} tilt={-tilt * 3} />
       </Animated.View>
       </Pressable>
 
@@ -345,8 +344,15 @@ function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, coo
             <Line x1="0" y1="2" x2={width + gapAfter} y2="2" stroke={p.green} strokeWidth={2.5} strokeDasharray="1 8" strokeLinecap="round" />
           </Svg>
         </Animated.View>
-        <View style={[styles.stopDot, { backgroundColor: p.green, borderColor: p.ground }]} />
-        <Text style={[t.hand, { color: p.greenDeep, backgroundColor: p.ground, paddingHorizontal: 4 }]}>{r.totalMinutes} min</Text>
+        <View style={[styles.marker, { width }]}>
+          <View style={[styles.markerPost, { backgroundColor: p.ink, height: 14 }]} />
+          <View style={[styles.markerBoard, { borderColor: p.ink, backgroundColor: p.sand }]}>
+            <Text style={[t.label, { color: p.ink }]} numberOfLines={1}>
+              {r.totalMinutes} min
+            </Text>
+          </View>
+          <View style={[styles.markerPost, { backgroundColor: p.ink, height: 10 }]} />
+        </View>
       </View>
       {sign && <Signpost p={p} label={sign} left={width + (gapAfter - 72) / 2} />}
     </Animated.View>
@@ -411,11 +417,6 @@ function GearTile({ index, onPress, doodle, style, children, ...a11y }: GearTile
   );
 }
 
-/** A strip of washi tape holding the card up. */
-function Tape({ p, tilt }: { p: Palette; tilt: number }) {
-  return <View pointerEvents="none" style={[styles.tape, { backgroundColor: p.accent, transform: [{ rotate: `${tilt}deg` }] }]} />;
-}
-
 const styles = StyleSheet.create({
   pad: { paddingHorizontal: space.xl },
   endStop: { alignItems: 'center', justifyContent: 'center', gap: space.s, paddingBottom: 40 },
@@ -426,13 +427,14 @@ const styles = StyleSheet.create({
   cardBody: { paddingHorizontal: 8, paddingTop: space.m, paddingBottom: space.s, gap: 4 },
   heart: { position: 'absolute', right: 10, top: 10 },
   stamp: { position: 'absolute', left: 10, bottom: 10, backgroundColor: 'rgba(247,243,234,0.92)' },
-  tape: { position: 'absolute', top: -10, alignSelf: 'center', left: '38%', width: 64, height: 20, borderRadius: 3, opacity: 0.75 },
-  stop: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: space.l, paddingLeft: 2 },
-  stopDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2 },
-  trail: { position: 'absolute', left: 6, top: 10 },
+  stop: { marginTop: 2 },
+  trail: { position: 'absolute', left: 0, top: 27 },
+  marker: { alignItems: 'center' },
+  markerPost: { width: 3, borderRadius: 2 },
+  markerBoard: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 2 },
   gearGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.m, marginTop: space.l },
   gear: { alignItems: 'center', gap: 4, paddingVertical: space.m, paddingHorizontal: 4, borderRadius: 20, borderWidth: 2 },
-  sign: { position: 'absolute', bottom: 12, width: 72, alignItems: 'center' },
+  sign: { position: 'absolute', bottom: 22, width: 72, alignItems: 'center' },
   board: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, transform: [{ rotate: '-4deg' }] },
   post: { width: 2.5, height: 34, borderRadius: 2 },
   journey: { width: 190, borderRadius: 24, padding: space.l, gap: 6 },
