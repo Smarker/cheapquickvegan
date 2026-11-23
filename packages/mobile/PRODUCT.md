@@ -39,6 +39,7 @@ Stephanie's own cheap, quick recipes, shaped by her partner's Italian family, wi
 - Cooked counts and journey progress are quiet records of what you've done, never streaks, rewards or nudges to come back.
 - Finishing a journey leaves a **trail postcard**: a keepsake of the trail, the summit date and the recipes cooked along the way, kept in Kitchen under "Your journeys" and shareable. A memory, not a badge.
 - No stop is ever required. "Take another path" walks past a recipe (shown with faint footprints, never a cross or "skipped"), and the summit counts stops cooked or passed. The postcard lists only what was cooked. Each summit offers "Suggest a recipe" by email.
+- A started hike never changes under the cook. The first stop cooked or passed freezes that hike's stops for them; progress and the summit count only those. Recipes published later appear below the summit as optional "New since you started" side trips, never as extra stops. Hikes nobody has started yet use the latest recipes. A hike needs at least 3 stops to exist.
 - Stephanie will draw the SVG illustrations. Screens leave marked slots for them.
 - Small text is always dark ink. Bright world colors are for filled shapes only.
 
