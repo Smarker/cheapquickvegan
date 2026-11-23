@@ -74,7 +74,11 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
         if (part.kind === 'measure') return <Text key={i}>{tag(convertAmount ? convertAmount(part.s, parts.slice(i + 1).map((x) => x.s).join('')) : part.s)}</Text>;
         // "Heat 1–2 tablespoons of coconut oil": the step already gives the quantity.
         const between = parts[i - 1]?.kind === 'text' ? parts[i - 1].s : '';
-        const statedAlready = parts[i - 1]?.kind === 'measure' || (parts[i - 2]?.kind === 'measure' && /^\s*(of\s+)?(the\s+)?$/i.test(between));
+        const statedAlready =
+          parts[i - 1]?.kind === 'measure' ||
+          (parts[i - 2]?.kind === 'measure' && /^\s*(of\s+)?(the\s+)?$/i.test(between)) ||
+          // "Dice 1/2 a shallot", "add 2 onions": a bare number just before the name
+          /(\d|[½¼¾⅓⅔])\s*(\/\s*\d+)?\s+((a|an|of|the|small|medium|large)\s+)*$/i.test(between);
         const found = amounts ? amountFor(part.s, amounts) : null;
         const show = found && !shownLines.has(found.line) && !statedAlready;
         if (found) shownLines.add(found.line);
