@@ -2,7 +2,6 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  Easing,
   FadeInDown,
   FadeOutDown,
   cancelAnimation,

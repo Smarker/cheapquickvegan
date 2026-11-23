@@ -296,7 +296,7 @@ export function DiscoverScreen({ navigation }: Props) {
                   {label}
                 </Text>
                 <Text style={[t.label, { color: p.greenDeep, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1}>
-                  {count === 0 ? `none this quick` : `${count} ${count === 1 ? 'recipe' : 'recipes'}`}
+                  {count === 0 ? `0 recipes` : `${count} ${count === 1 ? 'recipe' : 'recipes'}`}
                 </Text>
               </GearTile>
             );

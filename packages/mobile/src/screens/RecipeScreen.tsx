@@ -385,11 +385,11 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
   return (
     <View style={styles.servings} accessible={false}>
       <Text style={[t.label, { color: p.muted }]}>Makes</Text>
-      {step(canLess, '−', onLess, 'Make fewer')}
+      {step(canLess, '−', onLess, 'Fewer servings')}
       <Text style={[t.label, { color: p.ink, minWidth: 96, textAlign: 'center' }]} accessibilityLiveRegion="polite">
         {label}
       </Text>
-      {step(canMore, '+', onMore, 'Make more')}
+      {step(canMore, '+', onMore, 'More servings')}
       {changed && (
         <Pressable onPress={onReset} accessibilityRole="button" accessibilityLabel="Back to the original amount" hitSlop={8}>
           <Text style={[t.small, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Reset</Text>

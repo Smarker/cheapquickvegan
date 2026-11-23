@@ -25,7 +25,6 @@ const RECENT_KEY = 'cqv:recent-searches:v1';
 export function SearchScreen({ navigation }: Props) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
-  const reduce = useReducedMotion();
   const dataVersion = useDataVersion();
   const input = useRef<TextInput>(null);
   const [query, setQuery] = useState('');

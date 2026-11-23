@@ -55,6 +55,7 @@ export function SavedScreen({ navigation }: Props) {
   ];
 
   return (
+    <View style={{ flex: 1, backgroundColor: p.ground }}>
     <ScrollView style={{ backgroundColor: p.ground }} contentContainerStyle={[styles.root, { paddingTop: insets.top + space.xl, flexGrow: 1 }]}>
       <View style={styles.head}>
         <Text style={[t.display, { color: p.ink, fontFamily: font.serif }]} accessibilityRole="header">
@@ -193,10 +194,14 @@ export function SavedScreen({ navigation }: Props) {
         </>
       )}
     </ScrollView>
+      {/* Paper behind the status bar, like the other tabs, so scrolled content never runs under the clock. */}
+      <View pointerEvents="none" style={[styles.band, { height: insets.top, backgroundColor: p.ground }]} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  band: { position: 'absolute', top: 0, left: 0, right: 0 },
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.m },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefs: { minHeight: 44, paddingHorizontal: space.l, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center' },

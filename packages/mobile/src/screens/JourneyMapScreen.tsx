@@ -93,7 +93,7 @@ export function JourneyMapScreen({ navigation }: Props) {
         Pick a hike
       </Text>
       <Text style={[t.body, { color: p.muted }]}>
-        Every area has an easy stroll, a steady climb and a summit. Start wherever you like.
+        Each area has its own hikes, from an easy stroll to a summit climb. Start wherever you like.
       </Text>
 
       {AREAS.map((area, ai) => {

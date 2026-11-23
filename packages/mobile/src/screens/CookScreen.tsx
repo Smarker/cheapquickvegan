@@ -91,7 +91,7 @@ export function CookScreen({ route, navigation }: Props) {
   const [heard, setHeard] = useState<string | null>(null);
   // Steps ticked off, as "page:step". Numbers run across the whole recipe, like the Directions tab.
   const [ticked, setTicked] = useState<Set<string>>(new Set());
-  const firstNumber = useMemo(() => pages.reduce<number[]>((acc, pg, i) => [...acc, i === 0 ? 1 : acc[i - 1] + pages[i - 1].steps.length], []), [pages]);
+  const firstNumber = useMemo(() => pages.reduce<number[]>((acc, _page, i) => [...acc, i === 0 ? 1 : acc[i - 1] + pages[i - 1].steps.length], []), [pages]);
   const tick = (keys: string[], on = true) =>
     setTicked((prev) => {
       const next = new Set(prev);
