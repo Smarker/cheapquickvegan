@@ -6,6 +6,8 @@ export const ART = [
   'noodles', 'rice', 'flour', 'cornstarch', 'sugar', 'yeast', 'broth', 'bellPepper', 'salt', 'pepper', 'scallion',
   'onion', 'garlic', 'ginger', 'greens', 'herbs', 'citrus', 'potato', 'mushroom', 'tomato', 'carrot', 'avocado',
   'tofu', 'beans', 'chocolate', 'nuts', 'dates', 'seeds', 'sauce',
+  'radish', 'cucumber', 'corn', 'berries', 'cauliflower', 'artichoke', 'bread', 'dough', 'tortilla', 'cheese', 'plantMeat',
+  'egg', 'marshmallow', 'seaweed', 'wine', 'pickle',
 ] as const;
 export type Art = (typeof ART)[number];
 
@@ -15,6 +17,8 @@ const RULES: [Art, RegExp][] = [
   ['oil', /\boil\b|cooking spray/],
   ['soySauce', /soy sauce|\btamari\b|coconut aminos|liquid aminos/],
   ['vinegar', /vinegar|\bmirin\b/],
+  ['pickle', /pickle/],
+  ['wine', /\bwine\b|\bsake\b/],
   ['syrup', /maple|syrup|agave|\bhoney\b|molasses/],
   ['coconut', /coconut(?! sugar)/],
   ['spice', /powder|paprika|cumin|turmeric|cinnamon|nutmeg|flakes|seasoning|garam masala|cardamom|allspice|cayenne|oregano|bay lea|\bdried (basil|thyme|rosemary|parsley|dill)|everything bagel|nutritional yeast|gochugaru|five spice/],
@@ -23,7 +27,10 @@ const RULES: [Art, RegExp][] = [
   ['yogurt', /yogh?urt/],
   ['noodles', /noodle|pasta|spaghetti|ramen|udon|soba|lasagna|macaroni|penne/],
   ['rice', /\brice\b/],
-  ['flour', /flour|bisquick|baking mix/],
+  ['cauliflower', /cauliflower/],
+  ['dough', /dough|phyllo|filo|wrappers?|puff pastry/],
+  ['tortilla', /tortilla/],
+  ['flour', /\bflour|bisquick|baking mix/],
   ['cornstarch', /cornstarch|corn starch|arrowroot|tapioca|baking (powder|soda)/],
   ['sugar', /sugar|sweetener/],
   ['yeast', /\byeast\b|sourdough (starter|discard)|\bdiscard\b/],
@@ -50,6 +57,17 @@ const RULES: [Art, RegExp][] = [
   ['dates', /\bdates?\b|raisin|\bfigs?\b|cranberr|apricot/],
   ['seeds', /sesame|chia|flax|hemp|pumpkin seed|sunflower seed|\bseeds?\b/],
   ['sauce', /paste|gochujang|\bmiso\b|sriracha|hot sauce|ketchup|mustard|\bsauce\b|salsa|mayo/],
+  ['radish', /radish/],
+  ['cucumber', /cucumber/],
+  ['corn', /\bcorn\b|\bears? of corn/],
+  ['berries', /berr(y|ies)/],
+  ['artichoke', /artichoke/],
+  ['bread', /bread|toast|bagel|\bbuns?\b|pita|naan/],
+  ['cheese', /cheese|mozzarella|cheddar|parmesan|feta/],
+  ['plantMeat', /chicken|beef|sausage|patty|burger|\bbacon\b|nuggets?|crumbles/],
+  ['egg', /\begg\b|\beggs\b/],
+  ['marshmallow', /marshmallow/],
+  ['seaweed', /kombu|nori|seaweed|wakame/],
 ];
 
 /** The drawing for an ingredient line, or null (water, ice and anything unusual get none). */

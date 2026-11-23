@@ -289,6 +289,127 @@ const DRAWINGS: Record<Art, D> = {
       <Path d="M12 17 C12 14 15 14 15 16 C15 18 17 18 17 16 C17 14 20 14 20 17 C20 20 18 21 16 21 C14 21 12 20 12 17 Z" stroke={c} {...thin} />
     </>
   ),
+  radish: (c) => (
+    <>
+      <Path d="M16 13 C10 13 8 17 9 21 C10 25 14 27 16 29 C18 27 22 25 23 21 C24 17 22 13 16 13 Z" stroke={c} {...k} />
+      <Path d="M16 13 C14 9 11 6 8 6 C9 9 12 12 16 13 Z M16 13 C17 9 20 5 24 5 C23 9 20 12 16 13 Z" stroke={c} {...thin} />
+      <Path d="M12 19 C12.6 21 13.6 22 15 23" stroke={c} {...thin} />
+    </>
+  ),
+  cucumber: (c) => (
+    <>
+      <Path d="M6 24 C4 21 6 18 10 15 C15 11 21 7 25 7 C28 7 28 10 26 13 C23 17 17 22 12 25 C9 26.6 7 26 6 24 Z" stroke={c} {...k} />
+      <Path d="M11 20 L11.6 20.6 M15 17 L15.6 17.6 M19 14 L19.6 14.6 M14 21.6 L14.6 22.2 M18 18.4 L18.6 19" stroke={c} {...thin} />
+      <Path d="M25 7 L27 5" stroke={c} {...thin} />
+    </>
+  ),
+  corn: (c) => (
+    <>
+      <Path d="M16 4 C20 4 22 10 22 17 C22 22 19 26 16 26 C13 26 10 22 10 17 C10 10 12 4 16 4 Z" stroke={c} {...k} />
+      <Path d="M13 9 H19 M12 13 H20 M11.6 17 H20.4 M12 21 H20 M16 5 V25" stroke={c} {...thin} />
+      <Path d="M10 17 C6 19 6 25 9 29 M22 17 C26 19 26 25 23 29" stroke={c} {...k} />
+    </>
+  ),
+  berries: (c) => (
+    <>
+      <Circle cx="11" cy="19" r="5" stroke={c} {...k} />
+      <Circle cx="21" cy="18" r="5" stroke={c} {...k} />
+      <Circle cx="16" cy="11" r="4.5" stroke={c} {...k} />
+      <Path d="M10 17.6 L11 18.6 L12 17.6 M20 16.6 L21 17.6 L22 16.6 M15 9.6 L16 10.6 L17 9.6" stroke={c} {...thin} />
+    </>
+  ),
+  cauliflower: (c) => (
+    <>
+      <Path d="M8 16 C6 13 8 9 11 10 C11 6 16 5 17 8 C19 5 25 7 24 11 C27 11 28 15 25 17 Z" stroke={c} {...k} />
+      <Path d="M12 13 C13 12 14 12 15 13 M18 11 C19 10 20 10 21 11 M15 16 C16 15 17 15 18 16" stroke={c} {...thin} />
+      <Path d="M8 16 C9 22 12 27 16 27 C20 27 23 22 25 17 M12 18 L16 27 L20 18" stroke={c} {...k} />
+    </>
+  ),
+  artichoke: (c) => (
+    <>
+      <Path d="M16 4 C13 6 12.4 9 13 11 C14 12 18 12 19 11 C19.6 9 19 6 16 4 Z" stroke={c} {...k} />
+      <Path d="M10.6 10.6 C8.6 13 8.6 16 10 18 C12 19 20 19 22 18 C23.4 16 23.4 13 21.4 10.6" stroke={c} {...k} />
+      <Path d="M8.4 16.6 C6.6 19.6 7.4 23 10 25 C13 26.4 19 26.4 22 25 C24.6 23 25.4 19.6 23.6 16.6" stroke={c} {...k} />
+      <Path d="M16 12 V18 M13 18.6 L14 25.6 M19 18.6 L18 25.6" stroke={c} {...thin} />
+      <Path d="M16 26 V29.4" stroke={c} {...k} />
+    </>
+  ),
+
+  bread: (c) => (
+    <>
+      <Path d="M7 14 C5 10 8 7 12 7 H20 C24 7 27 10 25 14 V25 C25 26 24 27 23 27 H9 C8 27 7 26 7 25 Z" stroke={c} {...k} />
+      <Path d="M10.4 15 C9.4 12.6 11 10.6 13.4 10.6 H18.6 C21 10.6 22.6 12.6 21.6 15 V23.6 H10.4 Z" stroke={c} {...thin} />
+    </>
+  ),
+
+  dough: (c) => (
+    <>
+      <Path d="M5 20 C5 15 10 13 16 13 C22 13 27 15 27 20 C27 24 22 26 16 26 C10 26 5 24 5 20 Z" stroke={c} {...k} />
+      <Path d="M10 19 C12 17 14 17 16 18 C18 19 20 19 22 17" stroke={c} {...thin} />
+      <Path d="M20 4 L26 10 M18 6 L24 12 M17.4 5.4 L18.6 4.2 M25.4 12.4 L26.6 11.2" stroke={c} {...k} />
+    </>
+  ),
+  tortilla: (c) => (
+    <>
+      <Ellipse cx="16" cy="18" rx="11" ry="7" stroke={c} {...k} />
+      <Ellipse cx="16" cy="15" rx="11" ry="7" stroke={c} {...k} />
+      <Path d="M11 13 L11.4 13.4 M18 12 L18.4 12.4 M15 17 L15.4 17.4 M21 16 L21.4 16.4" stroke={c} {...k} strokeWidth={2} />
+    </>
+  ),
+  cheese: (c) => (
+    <>
+      <Path d="M4 21 L24 10 L28 16 V24 H4 Z M4 21 V24 M24 10 V16 H28" stroke={c} {...k} />
+      <Path d="M4 21 H28" stroke={c} {...k} />
+      <Circle cx="12" cy="18" r="1.4" stroke={c} {...thin} />
+      <Circle cx="18" cy="21.6" r="1.2" stroke={c} {...thin} />
+      <Circle cx="22" cy="16.6" r="1" stroke={c} {...thin} />
+    </>
+  ),
+  plantMeat: (c) => (
+    <>
+      <Ellipse cx="16" cy="17" rx="11" ry="6.5" stroke={c} {...k} />
+      <Path d="M5 17 C5 20.6 10 23.6 16 23.6 C22 23.6 27 20.6 27 17" stroke={c} {...thin} />
+      <Path d="M10 18.6 L14 13 M15 19.6 L19 14 M20 18.6 L23 14.4" stroke={c} {...k} />
+      <Path d="M12 5 C13 6.6 13 7.6 12 9 M17 4 C18 5.6 18 6.6 17 8 M22 5 C23 6.6 23 7.6 22 9" stroke={c} {...thin} />
+    </>
+  ),
+
+  egg: (c) => (
+    <>
+      <Path d="M16 4 C11 4 7 12 7 18 C7 24 11 28 16 28 C21 28 25 24 25 18 C25 12 21 4 16 4 Z" stroke={c} {...k} />
+      <Path d="M13 12 C14 10 15 9 16 9" stroke={c} {...thin} />
+      <Path d="M15 22 C14 20 15 19 16 19 C17 19 18 20 17 22 C16.4 23 15.6 23 15 22 Z" stroke={c} {...thin} />
+    </>
+  ),
+  marshmallow: (c) => (
+    <>
+      <Ellipse cx="11" cy="12" rx="6" ry="2.6" stroke={c} {...k} />
+      <Path d="M5 12 V19 C5 20.6 17 20.6 17 19 V12" stroke={c} {...k} />
+      <Ellipse cx="21" cy="19" rx="6" ry="2.6" stroke={c} {...k} />
+      <Path d="M15 19 V26 C15 27.6 27 27.6 27 26 V19" stroke={c} {...k} />
+    </>
+  ),
+  seaweed: (c) => (
+    <>
+      <Path d="M10 28 C6 22 13 18 9 12 C7 9 9 6 11 4" stroke={c} {...k} />
+      <Path d="M16 28 C13 22 19 18 16 12 C14 8 17 5 19 3" stroke={c} {...k} />
+      <Path d="M22 28 C19 23 25 19 22 14 C20.6 11 22.6 8 24.6 7" stroke={c} {...k} />
+    </>
+  ),
+  wine: (c) => (
+    <>
+      <Path d="M10 4 H22 C22 11 20 15 16 15 C12 15 10 11 10 4 Z" stroke={c} {...k} />
+      <Path d="M16 15 V26 M11 27 H21" stroke={c} {...k} />
+      <Path d="M11 9 C13 10 19 10 21 9" stroke={c} {...thin} />
+    </>
+  ),
+  pickle: (c) => (
+    <>
+      <Path d="M9 9 H23 V12 C24 13 24 14 24 16 V26 C24 28 8 28 8 26 V16 C8 14 8 13 9 12 Z" stroke={c} {...k} />
+      <Path d="M8 5 H24 V9 H8 Z" stroke={c} {...k} />
+      <Path d="M13 15 C11 18 11 22 13 25 C15 22 15 18 13 15 Z M19 15 C17 18 17 22 19 25 C21 22 21 18 19 15 Z" stroke={c} {...thin} />
+    </>
+  ),
   seeds: (c) => (
     <>
       <Ellipse cx="10" cy="11" rx="2.2" ry="3.4" stroke={c} {...k} transform="rotate(-25 10 11)" />

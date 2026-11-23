@@ -23,13 +23,21 @@ describe('artFor', () => {
     ['1 (4 oz) can Thai Red Curry Paste', 'sauce'],
     ['200 g all-purpose flour', 'flour'],
     ['2 tbsp coconut sugar', 'sugar'],
+    ['1 vegan burger patty', 'plantMeat'],
+    ['6-10 small corn tortillas', 'tortilla'],
+    ['6 plant-based egg roll wrappers', 'dough'],
+    ['1 head cauliflower', 'cauliflower'],
+    ['2 tbsp white wine (or white wine vinegar)', 'wine'],
+    ['2 tbsp rice wine vinegar', 'vinegar'],
+    ['1 C frozen corn', 'corn'],
+    ['1C frozen blueberries', 'berries'],
   ])('%s → %s', (line, art) => {
     expect(artFor(line)).toBe(art);
   });
 
   it('leaves water and one-offs without a drawing', () => {
     expect(artFor('2 cups water')).toBe(null);
-    expect(artFor('1 vegan burger patty')).toBe(null);
+    expect(artFor('1 tsp hickory liquid smoke')).toBe(null);
   });
 });
 
