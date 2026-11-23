@@ -88,6 +88,8 @@ export function RecipeScreen({ route, navigation }: Props) {
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
+        {/* A note on the title, not a stray chip: only there once it's been cooked. */}
+        {saved.cookedCount(r.slug) > 0 && <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} style={{ marginTop: -space.s }} />}
         <View style={styles.facts}>
           {facts.map(({ icon: Icon, text }) => (
             <View key={text} style={styles.fact}>
@@ -95,7 +97,6 @@ export function RecipeScreen({ route, navigation }: Props) {
               <Text style={[t.small, { color: p.ink }]}>{text}</Text>
             </View>
           ))}
-          <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
         </View>
 
         {/* Keep it for later, plan it, shop for it: three quiet actions. Cooking is the one big button. */}

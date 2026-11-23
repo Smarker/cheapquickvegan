@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Share } from 'react-native';
+import { mergeLines } from './groceryMerge';
 import { displayTitle, type Recipe } from './recipes';
 
 const KEY = 'cqv:grocery:v1';
@@ -88,7 +89,7 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
         const todo = items.filter((i) => !i.checked);
         const text = AISLES.map((a) => {
           const rows = todo.filter((i) => i.aisle === a);
-          return rows.length ? `${a}\n${rows.map((i) => `☐ ${i.text}`).join('\n')}` : '';
+          return rows.length ? `${a}\n${mergeLines(rows).map((l) => `☐ ${l.text}`).join('\n')}` : '';
         })
           .filter(Boolean)
           .join('\n\n');

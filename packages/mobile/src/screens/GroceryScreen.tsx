@@ -7,6 +7,7 @@ import { CheckIcon } from '../components/Icons';
 import { PencilStrike } from '../components/PencilStrike';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { AISLES, useGrocery } from '../lib/grocery';
+import { mergeLines } from '../lib/groceryMerge';
 import { font, space, type as t, usePalette } from '../theme/tokens';
 
 /** The grocery list: grouped by store section, ticked off with a pencil line, sent as plain text. */
@@ -15,7 +16,10 @@ export function GroceryScreen() {
   const insets = useSafeAreaInsets();
   const reduce = useReducedMotion();
   const g = useGrocery();
-  const left = g.items.filter((i) => !i.checked).length;
+  // One line per ingredient, even when several recipes need it.
+  const byAisle = AISLES.map((aisle) => ({ aisle, lines: mergeLines(g.items.filter((i) => i.aisle === aisle)) }));
+  const left = byAisle.reduce((n, a) => n + a.lines.filter((l) => !l.checked).length, 0);
+  const tick = (ids: string[], checked: boolean) => ids.forEach((id) => g.items.find((i) => i.id === id)?.checked === checked && g.toggle(id));
   const recipes = [...new Map(g.items.map((i) => [i.recipeSlug, i.recipeTitle])).entries()];
 
   return (
@@ -57,8 +61,7 @@ export function GroceryScreen() {
               )}
             </View>
 
-            {AISLES.map((aisle) => {
-              const rows = g.items.filter((i) => i.aisle === aisle);
+            {byAisle.map(({ aisle, lines: rows }) => {
               if (!rows.length) return null;
               return (
                 <View key={aisle} style={{ gap: 2 }}>
@@ -66,11 +69,11 @@ export function GroceryScreen() {
                     {aisle}
                   </Text>
                   {rows.map((item) => (
-                    <Animated.View key={item.id} entering={reduce ? undefined : FadeIn} exiting={reduce ? undefined : FadeOut} layout={reduce ? undefined : LinearTransition}>
+                    <Animated.View key={item.key} entering={reduce ? undefined : FadeIn} exiting={reduce ? undefined : FadeOut} layout={reduce ? undefined : LinearTransition}>
                       <Pressable
                         onPress={() => {
                           Haptics.selectionAsync();
-                          g.toggle(item.id);
+                          tick(item.ids, item.checked);
                         }}
                         accessibilityRole="checkbox"
                         accessibilityState={{ checked: item.checked }}
