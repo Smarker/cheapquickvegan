@@ -11,6 +11,8 @@ import { linking } from './src/linking';
 import { JournalProvider } from './src/lib/journal';
 import { PlannerProvider } from './src/lib/plannerStore';
 import { RecentlyViewedProvider } from './src/lib/recentlyViewed';
+import { CollectionsProvider } from './src/lib/collectionsStore';
+import { RecipeWatchProvider } from './src/lib/recipeWatch';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -39,10 +41,14 @@ export default function App() {
       <JournalProvider>
       <PlannerProvider>
       <RecentlyViewedProvider>
+      <CollectionsProvider>
+      <RecipeWatchProvider>
       <NavigationContainer linking={linking} theme={{ ...base, colors: { ...base.colors, background: p.ground, card: p.ground, text: p.ink, primary: p.ink } }}>
         <RootTabs />
       </NavigationContainer>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      </RecipeWatchProvider>
+      </CollectionsProvider>
       </RecentlyViewedProvider>
       </PlannerProvider>
       </JournalProvider>

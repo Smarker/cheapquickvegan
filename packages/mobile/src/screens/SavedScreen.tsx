@@ -1,10 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CookedStamp } from '../components/CookedStamp';
 import { Cairn } from '../components/Cairn';
+import { Pill } from '../components/Pill';
+import { useCollections } from '../lib/collectionsStore';
+import { useRecipeWatch } from '../lib/recipeWatch';
 import { cairns } from '../lib/cairn';
 import { EmptyBowl } from '../components/Doodles';
 import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
@@ -33,7 +36,14 @@ export function SavedScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const saved = useSaved();
   const words = planWords(usePrefs().planSpan);
-  const list = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
+  const allSaved = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
+  const { collections, rename, remove } = useCollections();
+  const watch = useRecipeWatch();
+  // Which collection the saved list is showing; null is everything saved.
+  const [shelf, setShelf] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const current = collections.find((c) => c.id === shelf) ?? null;
+  const list = current ? allSaved.filter((r) => current.slugs.includes(r.slug)) : allSaved;
   const cooks = recipes.reduce((n, r) => n + saved.cookedCount(r.slug), 0);
   const cookedRecipes = recipes.filter((r) => saved.cookedCount(r.slug) > 0).length;
   // Every hike a summit could have been recorded on: today's hikes plus the full list.
@@ -168,15 +178,57 @@ export function SavedScreen({ navigation }: Props) {
         </View>
       ) : (
         <>
+          {collections.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s }}>
+              <Pill label={`All · ${allSaved.length}`} selected={!current} onPress={() => setShelf(null)} />
+              {collections.map((c) => (
+                <Pill key={c.id} label={`${c.name} · ${c.slugs.length}`} selected={current?.id === c.id} onPress={() => setShelf(c.id)} />
+              ))}
+            </ScrollView>
+          )}
+          {current && (
+            <View style={styles.shelfActions}>
+              {renaming === current.id ? (
+                <TextInput
+                  defaultValue={current.name}
+                  autoFocus
+                  onSubmitEditing={(e) => { rename(current.id, e.nativeEvent.text); setRenaming(null); }}
+                  onBlur={() => setRenaming(null)}
+                  returnKeyType="done"
+                  accessibilityLabel="Collection name"
+                  style={[t.body, styles.renameInput, { color: p.ink, backgroundColor: p.sand, borderColor: p.hairline }]}
+                />
+              ) : (
+                <Pressable onPress={() => setRenaming(current.id)} accessibilityRole="button" hitSlop={8} style={[styles.shelfChip, { borderColor: p.hairline }]}>
+                  <Text style={[t.small, { color: p.greenDeep, fontFamily: font.sansMedium }]}>Rename</Text>
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => { remove(current.id); setShelf(null); }}
+                accessibilityRole="button"
+                accessibilityHint="Deletes the collection. The recipes stay saved."
+                hitSlop={8}
+                style={[styles.shelfChip, { borderColor: p.hairline }]}
+              >
+                <Text style={[t.small, { color: p.greenDeep, fontFamily: font.sansMedium }]}>Delete collection</Text>
+              </Pressable>
+            </View>
+          )}
           <Text style={[t.label, { color: p.greenDeep }]}>
-            {list.length === 1 ? '1 saved recipe. It opens even without signal.' : `${list.length} saved recipes. They open even without signal.`}
+            {current
+              ? list.length === 0
+                ? 'Nothing in here yet. Open a saved recipe and tap "Add to a collection".'
+                : `${list.length} in ${current.name}.`
+              : list.length === 1
+                ? '1 saved recipe. It opens even without signal.'
+                : `${list.length} saved recipes. They open even without signal.`}
           </Text>
           {list.map((r) => (
             <Animated.View key={r.slug} entering={FadeIn} exiting={FadeOut} layout={LinearTransition}>
               <Pressable
                 onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                 accessibilityRole="button"
-                accessibilityLabel={`${displayTitle(r)}, ${r.totalText ?? ''}`}
+                accessibilityLabel={`${displayTitle(r)}, ${r.totalText ?? ''}${watch.changesFor(r.slug).length ? ', updated since you saved it' : ''}`}
                 style={({ pressed }) => [styles.row, { backgroundColor: tintFor(p, r.category), opacity: pressed ? 0.85 : 1 }]}
               >
                 <Photo uri={r.image} width={76} radius={18} />
@@ -187,6 +239,7 @@ export function SavedScreen({ navigation }: Props) {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s, flexWrap: 'wrap' }}>
                     <Text style={[t.hand, { color: p.greenDeep, fontSize: 18, lineHeight: 20 }]}>{r.totalText}</Text>
                     <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
+                    {watch.changesFor(r.slug).length > 0 && <Text style={[t.small, { color: p.ink, fontFamily: font.sansMedium, backgroundColor: p.greenSoft, paddingHorizontal: 8, borderRadius: 8, overflow: 'hidden' }]}>Updated</Text>}
                   </View>
                 </View>
                 <HeartButton saved onToggle={() => saved.toggle(r.slug)} label={displayTitle(r)} size={40} />
@@ -207,6 +260,9 @@ const styles = StyleSheet.create({
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.m },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefs: { minHeight: 44, paddingHorizontal: space.l, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center' },
+  shelfActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, alignItems: 'center' },
+  shelfChip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center' },
+  renameInput: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: space.m, minHeight: 44, minWidth: 180 },
   planHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.s },
   weekRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: 8, borderRadius: 20 },
   weekActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.xs },

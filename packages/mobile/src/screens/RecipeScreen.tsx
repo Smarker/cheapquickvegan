@@ -25,6 +25,10 @@ import { swapsFor, type Swaps } from '../lib/swaps';
 import { hasNotes, useJournal, verdictLabel } from '../lib/journal';
 import { TurnedOut } from '../components/TurnedOut';
 import { useRecentlyViewed } from '../lib/recentlyViewed';
+import { CollectionPicker } from '../components/CollectionPicker';
+import { useCollections } from '../lib/collectionsStore';
+import { collectionsWith } from '../lib/collections';
+import { useRecipeWatch } from '../lib/recipeWatch';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
@@ -46,6 +50,9 @@ export function RecipeScreen({ route, navigation }: Props) {
   const prefs = usePrefs();
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [picking, setPicking] = useState(false);
+  const [filing, setFiling] = useState(false);
+  const { collections } = useCollections();
+  const watch = useRecipeWatch();
   // Cooked it without cook mode (from Directions, or from memory): one tap counts it, and it can be undone.
   const [justMarked, setJustMarked] = useState(false);
   // Once the sheet has scrolled up under the header, the header takes the sheet's colour instead of the photo's tint.
@@ -188,10 +195,22 @@ export function RecipeScreen({ route, navigation }: Props) {
             Icon={ListIcon}
           />
         </View>
+        {/* Collections: a recipe can be in as many as you like. Adding one also saves it. */}
+        {(() => {
+          const inThese = collectionsWith(collections, r.slug).map((c) => c.name);
+          return (
+            <Pressable onPress={() => setFiling(true)} accessibilityRole="button" hitSlop={8} style={styles.units}>
+              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline', textAlign: 'center' }]}>
+                {inThese.length ? `In ${list(inThese)} · Change` : 'Add to a collection'}
+              </Text>
+            </Pressable>
+          );
+        })()}
       </View>
 
       <View style={[styles.sheetHead, { backgroundColor: p.ground }]}>
         <View style={[styles.grabber, { backgroundColor: p.hairline }]} />
+        {saved.isSaved(r.slug) && <RecipeUpdated changes={watch.changesFor(r.slug)} onGotIt={() => watch.acknowledge(r.slug)} />}
         {!!r.description && <Text style={[t.body, { color: p.muted }]}>{r.description}</Text>}
         <RecipeWarning warnings={prefs.warningsFor(r)} swaps={swapsFor(allLines, prefs.avoid)} />
         <YourNotes recipe={r} cooked={saved.cookedCount(r.slug) > 0} />
@@ -329,6 +348,7 @@ export function RecipeScreen({ route, navigation }: Props) {
           ))}
       </View>
     </ScrollView>
+      <CollectionPicker slug={r.slug} title={title} visible={filing} onClose={() => setFiling(false)} />
       <GroceryPicker
         visible={picking}
         groups={[{ slug: r.slug, title: scale.factor !== 1 && r.yieldText ? `${title} · ${scaleYield(r.yieldText, scale.factor)}` : title, lines: shoppable }]}
@@ -431,6 +451,29 @@ function YourNotes({ recipe: r, cooked }: { recipe: Recipe; cooked: boolean }) {
         </ScrollView>
       </Modal>
     </>
+  );
+}
+
+/** "Updated since you saved it": what materially changed on the site, until the cook says Got it. */
+function RecipeUpdated({ changes, onGotIt }: { changes: string[]; onGotIt: () => void }) {
+  const p = usePalette();
+  if (!changes.length) return null;
+  const shown = changes.slice(0, 4);
+  return (
+    <View style={[styles.warn, { backgroundColor: p.greenSoft, borderColor: p.hairline }]} accessibilityRole="summary">
+      <View style={styles.notesHead}>
+        <Text style={[t.label, { color: p.ink }]}>Updated since you saved it</Text>
+        <Pressable onPress={onGotIt} accessibilityRole="button" accessibilityLabel="Got it, hide what changed" hitSlop={10} style={[styles.chip, { borderColor: p.hairline }]}>
+          <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Got it</Text>
+        </Pressable>
+      </View>
+      {shown.map((c) => (
+        <Text key={c} style={[t.body, { color: p.ink }]}>
+          {c}
+        </Text>
+      ))}
+      {changes.length > shown.length && <Text style={[t.small, { color: p.muted }]}>And {changes.length - shown.length} more changes.</Text>}
+    </View>
   );
 }
 
