@@ -82,6 +82,16 @@ function detail(content: string, name: string): string | null {
 }
 
 /** Published recipes with a real slug; drafts, in-progress pages and "untitled" placeholders stay out of the app. */
+/**
+ * The recipe's whole opening paragraph. The site's description is the same paragraph
+ * cut to 160 characters for search results; the app has room to show all of it.
+ * Content that opens with a heading, list, table or quote has no intro paragraph.
+ */
+function intro(content: string): string {
+  const first = content.split("\n").find((line) => line.trim().length > 0)?.trim() ?? "";
+  return /^[#\-*|>]/.test(first) ? "" : first;
+}
+
 export const isAppRecipe = (r: SourceRecipe) => (r.status ?? "Published") === "Published" && !!r.slug && r.slug !== "untitled";
 
 export function toAppRecipe(r: SourceRecipe, siteUrl: string): AppRecipe {
@@ -91,7 +101,7 @@ export function toAppRecipe(r: SourceRecipe, siteUrl: string): AppRecipe {
     slug: r.slug,
     title: r.title,
     shortTitle: r.shortTitle?.trim() || null,
-    description: r.description ?? "",
+    description: intro(r.content) || r.description || "",
     category: r.categories?.[0] ?? null,
     totalMinutes: toMinutes(totalText),
     totalText,

@@ -60,6 +60,20 @@ describe("toAppRecipe", () => {
   });
 });
 
+describe("toAppRecipe description", () => {
+  const long = "Yes, traditional Spanish gazpacho is naturally vegan. ".repeat(5).trim();
+  const make = (content: string) =>
+    toAppRecipe({ slug: "x", title: "X", description: long.slice(0, 160) + "...", content }, "https://example.com");
+
+  it("shows the whole opening paragraph instead of the site's 160-character cut", () => {
+    expect(make(`\n${long}\n\n## Ingredients\n`).description).toBe(long);
+  });
+
+  it("falls back to the site's description when the content opens with a heading", () => {
+    expect(make(CONTENT).description).toBe(long.slice(0, 160) + "...");
+  });
+});
+
 describe("isAppRecipe", () => {
   it("drops drafts and untitled placeholders", () => {
     expect(isAppRecipe({ slug: "a", title: "A", content: "", status: "Published" })).toBe(true);
