@@ -25,6 +25,7 @@ export function GroceryScreen() {
   const left = byAisle.reduce((n, a) => n + a.lines.filter((l) => !l.checked).length, 0);
   const tick = (ids: string[], checked: boolean) => ids.forEach((id) => g.items.find((i) => i.id === id)?.checked === checked && g.toggle(id));
   const recipes = [...new Map(g.items.map((i) => [i.recipeSlug, i.recipeTitle])).entries()];
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
   // "for 2 recipes and a shared list": a pasted list isn't a recipe, so it's named on its own.
   const cooking = recipes.filter(([slug]) => slug !== SHARED);
   const hasShared = cooking.length < recipes.length;
@@ -174,12 +175,15 @@ export function GroceryScreen() {
 
             <View style={{ marginTop: space.xl, gap: space.s }}>
               <Text style={[t.section, { color: p.ink, fontSize: 18 }]}>On this list</Text>
-              {recipes.map(([slug, title]) => (
+              {/* Recipes first; pasted items aren't a recipe, so they're named for what they are, last. */}
+              {[...cooking, ...recipes.filter(([slug]) => slug === SHARED)].map(([slug, title]) => (
                 <View key={slug} style={styles.recipeRow}>
-                  <Text style={[t.body, { color: p.ink, flex: 1 }]}>{title.charAt(0).toUpperCase() + title.slice(1)}</Text>
+                  <Text style={[t.body, { color: slug === SHARED ? p.muted : p.ink, flex: 1 }]}>
+                    {slug === SHARED ? `${plural(g.items.filter((i) => i.recipeSlug === SHARED).length, 'item')} you pasted in` : title}
+                  </Text>
                   <Pressable
-                    onPress={() => removeWithUndo(`Removed ${title}`, g.items.filter((i) => i.recipeSlug === slug), () => g.removeRecipe(slug))}
-                    accessibilityRole="button" accessibilityLabel={`Remove ${title} from the list`} hitSlop={8} style={styles.remove}>
+                    onPress={() => removeWithUndo(slug === SHARED ? 'Removed the pasted items' : `Removed ${title}`, g.items.filter((i) => i.recipeSlug === slug), () => g.removeRecipe(slug))}
+                    accessibilityRole="button" accessibilityLabel={slug === SHARED ? 'Remove the items you pasted in' : `Remove ${title} from the list`} hitSlop={8} style={styles.remove}>
                     <Text style={[t.label, { color: p.greenDeep }]}>Remove</Text>
                   </Pressable>
                 </View>
