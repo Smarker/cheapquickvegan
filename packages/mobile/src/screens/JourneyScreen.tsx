@@ -9,6 +9,7 @@ import { CookCat } from '../components/CookCat';
 import { TrailPostcard } from '../components/TrailPostcard';
 import { dismissHint } from '../lib/hints';
 import { Hut, SummitFlag } from '../components/Doodles';
+import { StoneMark, SummitCairn } from '../components/Cairn';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { CheckIcon } from '../components/Icons';
 import { Photo } from '../components/Photo';
@@ -131,12 +132,13 @@ export function JourneyScreen({ route, navigation }: Props) {
                 <Pressable
                   onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}${isPassed ? ', passed by' : ''}`}
+                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}${count ? ', cooked, your stone is here' : isPassed ? ', passed by' : ''}`}
                   style={({ pressed }) => [styles.stop, { backgroundColor: tintFor(p, r.category), opacity: isPassed ? 0.6 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
                 >
-                  <View style={[styles.node, { backgroundColor: count ? p.green : p.ground, borderColor: p.green }]}>
+                  {/* A cooked stop keeps the stone you left there, the same one in your Kitchen cairn. */}
+                  <View style={[styles.node, count ? styles.stoneNode : { backgroundColor: p.ground, borderColor: p.green }]}>
                     {count ? (
-                      <CheckIcon color="#FFFFFF" size={14} />
+                      <StoneMark slug={r.slug} width={44} />
                     ) : isPassed ? (
                       <Footprints color={p.greenDeep} />
                     ) : (
@@ -199,6 +201,7 @@ export function JourneyScreen({ route, navigation }: Props) {
         <View style={styles.summit} accessible accessibilityLabel="Summit">
           <View style={styles.summitRow}>
             <SummitFlag color={p.ink} />
+            <SummitCairn cooked={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [{ slug: s.recipe.slug, firstCookedOn: saved.firstCookedOn(s.recipe.slug) }] : []))} />
             {!nextSlug && recipeStops.length > 0 && <CookCat outline={p.ink} size={56} mood="happy" />}
           </View>
           <Text style={[t.hand, { color: p.ink, fontSize: 22, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1} textBreakStrategy="simple">The summit</Text>
@@ -313,6 +316,7 @@ const styles = StyleSheet.create({
   signBoard: { borderWidth: 2, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, transform: [{ rotate: '-2deg' }] },
   stop: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: 10, borderRadius: 24 },
   node: { position: 'absolute', left: -42, width: 28, height: 28, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  stoneNode: { borderWidth: 0, backgroundColor: 'transparent', width: 44, left: -50, overflow: 'visible' },
   rest: { borderWidth: 1.5, borderRadius: 24, padding: space.l, gap: space.s },
   shelf: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.xs },
   shelfItem: { width: 72, alignItems: 'center', gap: 2 },
