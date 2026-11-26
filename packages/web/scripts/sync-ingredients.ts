@@ -20,7 +20,7 @@ import * as fs from 'fs';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-import { parseRecipeContent } from '../src/lib/recipe-parser';
+import { parseRecipeContent } from '@cheapquickvegan/shared';
 import { extractIngredient } from '../src/lib/ingredients/extractor';
 import {
   findIngredientByName,
