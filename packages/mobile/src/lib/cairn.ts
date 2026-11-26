@@ -54,6 +54,84 @@ export function stonePath(s: Stone, cx: number, cy: number): string {
   ].join(' ');
 }
 
+/** A stone set in place in a cairn: its centre, with x from the cairn's middle and y up from the ground. */
+export type PlacedStone = Stone & { x: number; y: number };
+
+/** Up to this many stones the cairn is one balanced stack; past it, the older stones become a wide base. */
+export const STACK_UNTIL = 5;
+/** How many of the newest stones balance on top of a big cairn, like the last few a hiker adds. */
+const CAP = 3;
+
+/**
+ * Every stone you've earned, built into one cairn. A few stones stack in a single column. After that the
+ * older ones are laid in courses (the bottom course widest, each above it narrower) with the newest few
+ * balanced on top, so the cairn grows wider as well as taller, the way real ones do. Oldest at the bottom.
+ */
+export function cairnPile(cooked: { slug: string; firstCookedOn?: string }[]): { stones: PlacedStone[]; width: number; height: number } {
+  const ordered = [...cooked].sort((a, b) => (a.firstCookedOn ?? '').localeCompare(b.firstCookedOn ?? '') || a.slug.localeCompare(b.slug));
+  const r = (slug: string, n: number) => hash(`${slug}:${n}`);
+  const shape = (slug: string, width: number, height: number): Stone => ({
+    slug,
+    width,
+    height,
+    tilt: (r(slug, 3) - 0.5) * 10,
+    shift: 0,
+    shade: Math.floor(r(slug, 5) * 3),
+    bumps: [r(slug, 6), r(slug, 7), r(slug, 8)],
+  });
+  const stones: PlacedStone[] = [];
+  let y = 0;
+  // A balanced column: each stone a little smaller than the one it sits on.
+  const column = (list: { slug: string }[], startWidth: number, step: number) => {
+    list.forEach(({ slug }, i) => {
+      const st = shape(slug, startWidth - i * step + (r(slug, 1) - 0.5) * 6, 21 + r(slug, 2) * 5 - i * 1.1);
+      stones.push({ ...st, x: (r(slug, 4) - 0.5) * 7, y: y + st.height / 2 });
+      y += st.height * 0.8;
+    });
+  };
+
+  if (ordered.length <= STACK_UNTIL) {
+    column(ordered, 84, 10);
+  } else {
+    const base = ordered.slice(0, ordered.length - CAP);
+    const cap = ordered.slice(ordered.length - CAP);
+    // Course sizes from the top down, widening by one stone every second course (2, 2, 3, 3, 4…) so the
+    // cairn stands steep and tall rather than slumping into a heap. Trimmed from the top to hold exactly the base.
+    const sizes: number[] = [];
+    for (let i = 0, total = 0; total < base.length; i++) {
+      const n = 2 + Math.floor(i / 2);
+      sizes.push(n);
+      total += n;
+    }
+    let extra = sizes.reduce((a, b) => a + b, 0) - base.length;
+    while (extra > 0) {
+      const cut = Math.min(extra, sizes[0] - 1);
+      sizes[0] -= cut;
+      extra -= cut;
+      if (extra > 0) extra -= sizes.shift()!;
+    }
+    // Lay them bottom up, oldest first, each course's slabs side by side and offset like brickwork.
+    let next = 0;
+    sizes.reverse().forEach((count, ci) => {
+      const slabs = base.slice(next, next + count).map(({ slug }) => shape(slug, 30 + r(slug, 1) * 12, 12 + r(slug, 2) * 4));
+      next += count;
+      const rowW = slabs.reduce((w, s) => w + s.width * 0.9, 0);
+      let x = -rowW / 2 + (ci % 2 ? 4 : -4);
+      const rowH = Math.max(...slabs.map((s) => s.height));
+      slabs.forEach((s) => {
+        stones.push({ ...s, x: x + (s.width * 0.9) / 2, y: y + s.height / 2 + (r(s.slug, 9) - 0.5) * 2 });
+        x += s.width * 0.9;
+      });
+      y += rowH * 0.82;
+    });
+    // The newest few on top, balanced, getting smaller.
+    column(cap, 44, 8);
+  }
+  const width = stones.length ? Math.max(...stones.map((s) => Math.abs(s.x) + s.width / 2)) * 2 : 0;
+  const height = stones.length ? Math.max(...stones.map((s) => s.y + s.height / 2)) : 0;
+  return { stones, width, height };
+}
+
 /** How tall a cairn stands, for sizing the drawing to the tallest one. */
 export const cairnHeight = (stack: Stone[]) => stack.reduce((y, s) => y + s.height * 0.82, 0) + 6;
 
@@ -74,7 +152,7 @@ type Milestone = { reached: (p: Progress) => boolean; line: string };
 
 // Small moments, said once, on the finish screen. Never a badge, never a count to beat.
 const MILESTONES: Milestone[] = [
-  { reached: (p) => p.recipes >= 1, line: 'Your first stone. Your cairn has started.' },
+  { reached: (p) => p.recipes >= 1, line: 'Your first stone. Your cairn has started in Kitchen.' },
   { reached: (p) => p.recipes >= 5, line: 'Five different recipes. Your cairn is taking shape.' },
   { reached: (p) => p.meals >= 10, line: "That's ten meals cooked." },
   { reached: (p) => p.recipes >= 10, line: 'Ten different recipes tried.' },

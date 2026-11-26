@@ -18,6 +18,16 @@ describe('scaleLine', () => {
     expect(scaleLine('200g tofu', 1.5)).toBe('300 g tofu');
     expect(scaleLine('1 (14 oz) can coconut milk', 2)).toBe('2 (14 oz) cans coconut milk');
   });
+  it('scales an amount restated in brackets along with it', () => {
+    expect(scaleLine('2 cups flour (250 g)', 2)).toBe('4 cups flour (500 g)');
+    expect(scaleLine('1 lb potatoes (16 oz)', 0.75)).toBe('¾ lb potatoes (12 oz)');
+  });
+  it('counts phyllo in rolls, to the nearest half roll', () => {
+    expect(scaleLine('1 lb vegan phyllo dough (16 oz)', 0.75)).toBe('1 ½ rolls vegan phyllo dough (about 12 oz)');
+    expect(scaleLine('1 lb vegan phyllo dough (16 oz)', 0.25)).toBe('½ roll vegan phyllo dough (about 4 oz)');
+    expect(scaleLine('1 lb vegan phyllo dough (16 oz)', 2)).toBe('4 rolls vegan phyllo dough (about 32 oz)');
+    expect(scaleLine('1 lb vegan phyllo dough (16 oz)', 1)).toBe('1 lb vegan phyllo dough (16 oz)');
+  });
   it('rounds counts and pluralises', () => {
     expect(scaleLine('1 lemon, juiced', 2)).toBe('2 lemons, juiced');
     expect(scaleLine('1 onion', 0.25)).toBe('¼ onion');

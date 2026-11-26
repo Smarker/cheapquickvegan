@@ -46,6 +46,7 @@ import { factorFor, scaleYield } from '../lib/scale';
 import { planWords } from '../lib/plan';
 import { Blazes } from '../components/Blazes';
 import { Hint } from '../components/Hint';
+import { dismissHint, useHint } from '../lib/hints';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
 import { useJournal } from '../lib/journal';
@@ -95,6 +96,8 @@ export function DiscoverScreen({ navigation }: Props) {
   }, []);
 
   const prefs = usePrefs();
+  const setupHint = useHint('setup-prefs');
+  const showSetup = setupHint && !prefs.avoid.length && !prefs.missingGear.length;
   // What's planned for this week and not cooked yet, so the plan you made is the first thing you see.
   const weekToCook = saved.week
     .filter((w) => !saved.cookedThisWeek(w.slug))
@@ -329,6 +332,22 @@ export function DiscoverScreen({ navigation }: Props) {
             }
           />
         </>
+      )}
+
+      {/* First visit: once they've seen what's cooking, offer to tailor it. Gone once preferences are set or waved off. */}
+      {showSetup && (
+        <View style={[styles.pad, { marginTop: space.l }]}>
+          <View style={[styles.setup, { backgroundColor: p.sand, borderColor: p.hairline }]}>
+            <Text style={[t.rowTitle, { color: p.ink }]}>Make it yours</Text>
+            <Text style={[t.small, { color: p.ink }]}>Tell me what you avoid and which gear you don't have, and I'll only show recipes that fit.</Text>
+            <View style={styles.setupActions}>
+              <Pill label="Set up" selected onPress={() => navigation.getParent()?.navigate('SavedTab', { screen: 'Preferences', initial: false })} accessibilityLabel="Set up what you avoid and your gear" />
+              <Pressable onPress={() => dismissHint('setup-prefs')} accessibilityRole="button" hitSlop={10} style={{ minHeight: 44, justifyContent: 'center' }}>
+                <Text style={[t.label, { color: p.greenDeep }]}>Not now</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
       )}
 
       {weekToCook.length > 0 && (
@@ -582,6 +601,8 @@ const styles = StyleSheet.create({
   weekRow: { paddingHorizontal: space.xl, gap: space.s },
   weekChip: { flexDirection: 'row', alignItems: 'center', gap: space.s, padding: 6, paddingRight: space.l, borderRadius: 26, minHeight: 52 },
   mealWord: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' },
+  setup: { borderRadius: 20, borderWidth: 1, padding: space.l, gap: space.s },
+  setupActions: { flexDirection: 'row', alignItems: 'center', gap: space.l, marginTop: space.xs },
   controls: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.m },
   card: { borderRadius: 26, padding: 10 },
   cardBody: { paddingHorizontal: 8, paddingTop: space.m, paddingBottom: space.s, gap: 4 },

@@ -9,7 +9,6 @@ import { Cairn } from '../components/Cairn';
 import { Pill } from '../components/Pill';
 import { useCollections } from '../lib/collectionsStore';
 import { useRecipeWatch } from '../lib/recipeWatch';
-import { cairns } from '../lib/cairn';
 import { EmptyBowl } from '../components/Doodles';
 import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
 import { HeartButton } from '../components/HeartButton';
@@ -263,13 +262,12 @@ export function SavedScreen({ navigation }: Props) {
         </>
       )}
 
-      {/* The quiet record sits last: what you came for comes first. */}
-      {(cooks > 0 || summitedRegions.length > 0) && (
+      {/* The quiet record sits last: what you came for comes first. Before the first cook it's an empty cairn, waiting. */}
         <>
           <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
             Your record
           </Text>
-          <Cairn stacks={cairns(recipes.filter((r) => saved.cookedCount(r.slug) > 0).map((r) => ({ slug: r.slug, firstCookedOn: saved.firstCookedOn(r.slug) })))} />
+          <Cairn cooked={recipes.filter((r) => saved.cookedCount(r.slug) > 0).map((r) => ({ slug: r.slug, firstCookedOn: saved.firstCookedOn(r.slug) }))} />
           {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
           {/* Finished journeys as plain rows; each one's postcard waits at the end of its journey. */}
           {summitedRegions.map(({ region, recipes: trail }) => (
@@ -292,7 +290,6 @@ export function SavedScreen({ navigation }: Props) {
             </Pressable>
           ))}
         </>
-      )}
     </ScrollView>
       {undo && (
         <Animated.View

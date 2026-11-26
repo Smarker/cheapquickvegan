@@ -91,6 +91,12 @@ function amount(n: number, unit: string | null, rest = ''): string {
   return `${niceNumber(n)} ${unit.trim()}`;
 }
 
+// Phyllo is sold by the box, two rolls to a pound, and used a roll at a time: a scaled amount is counted
+// in rolls, to the nearest half roll, with the weight alongside so it still matches the box.
+const PHYLLO = /\b(?:phyllo|filo|fillo)\b/i;
+const OZ: Record<string, number> = { oz: 1, lb: 16, g: 1 / 28.35, kg: 35.274 };
+const PHYLLO_ROLL_OZ = 8;
+
 /** One ingredient line made `factor` times bigger. Lines without a leading amount stay as written. */
 // "A pinch of salt": about 1/16 teaspoon. Pinches add up (2 pinches), and once there are enough to
 // measure, they become teaspoons (4 pinches is ¼ tsp). Scaling down, a pinch stays a pinch.
@@ -133,6 +139,15 @@ export function scaleLine(line: string, factor: number): string {
     else text = `${countText(low, line.slice(whole.length))}${dash === 'to' ? ' to ' : '–'}${countText(high, line.slice(whole.length))}`;  } else {
     text = amount(low, unit, line.slice(whole.length));
   }
+  const u = unit ? unitKey(unit) : null;
+  if (high == null && u && OZ[u] && PHYLLO.test(rest)) {
+    const rolls = Math.max(0.5, Math.round(((low * OZ[u]) / PHYLLO_ROLL_OZ) * 2) / 2);
+    const plain = rest.replace(/\s*\((?:about\s+)?\d+(?:\.\d+)?\s*(?:oz|g|lbs?)\)/i, '');
+    return `${lead}${niceNumber(rolls)} ${rolls > 1 ? 'rolls' : 'roll'}${gap}${plain} (about ${rolls * PHYLLO_ROLL_OZ} oz)`;
+  }
+  // An amount restated in brackets follows the amount: "1 lb (16 oz)" at ¾ is "¾ lb (12 oz)". A bracket after
+  // a count describes the container instead ("1 (14 oz) can"), and a can doesn't shrink, so it stays.
+  if (unit) rest = rest.replace(/\((about\s+)?(\d+(?:\.\d+)?)\s*(oz|g|ml|lbs?|kg)\)/i, (_, about: string | undefined, n: string, bu: string) => `(${about ?? ''}${amount(+n * factor, bu)})`);
   // "1 lemon" for four people is "2 lemons".
   if (!unit && (high ?? low) > 1) rest = rest.replace(/^(\s*(?:\([^)]*\)\s*)?)([a-z]+)\b/i, (all, sp, w) => (COUNTED.test(w) && !/s$/i.test(w) ? `${sp}${plural(w)}` : all));
   return `${lead}${text}${gap}${rest}`;

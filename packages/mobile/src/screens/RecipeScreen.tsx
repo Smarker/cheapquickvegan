@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
-import { ArrowIcon, CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
+import { ArrowIcon, MinusIcon, PlusIcon, CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
 import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
 import { PencilStrike } from '../components/PencilStrike';
@@ -18,6 +18,7 @@ import { GroceryPicker } from '../components/GroceryPicker';
 import { RecipeGone } from '../components/RecipeGone';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
+import { Hint } from '../components/Hint';
 import { displayTitle, recipes, type Recipe } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { ingredientAmounts, ingredientTerms, toolTerms } from '../lib/cook';
@@ -76,6 +77,7 @@ export function RecipeScreen({ route, navigation }: Props) {
   // Tapping the cooked stamp offers to take one off, for a cook counted by mistake.
   const [fixing, setFixing] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
+  const cookedAnything = recipes.some((x) => saved.cookedCount(x.slug) > 0);
   // How many it's being made for. Every amount below follows it, then the grams/cups choice.
   const scale = useScale(route.params.slug, r?.yieldText, r ? r.ingredients.flatMap((g) => g.items) : []);
   const tint = tintFor(p, r?.category ?? null);
@@ -456,6 +458,12 @@ export function RecipeScreen({ route, navigation }: Props) {
         }}
       />
       <View style={[styles.cookBar, { backgroundColor: p.ground, borderTopColor: p.hairline }]}>
+        {/* Until the first cook: what cook mode is, right where it starts. Gone once they've cooked anything. */}
+        <View style={{ marginBottom: space.s }}>
+          <Hint id="first-cook" doneWhen={cookedAnything}>
+            Cook mode shows one step at a time with its amounts and timers, keeps your screen on, and can go hands-free when your hands are messy.
+          </Hint>
+        </View>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -636,17 +644,20 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
       hitSlop={6}
       style={({ pressed }) => [styles.stepper, { borderColor: p.control, opacity: on ? 1 : 0.35, transform: [{ scale: pressed ? 0.92 : 1 }] }]}
     >
-      <Text style={[t.label, { color: p.ink, fontSize: 20, lineHeight: 22 }]}>{sign}</Text>
+      {sign === '+' ? <PlusIcon color={p.ink} /> : <MinusIcon color={p.ink} />}
     </Pressable>
   );
   return (
-    <View style={styles.servings} accessible={false}>
+    <View style={styles.servingsWrap} accessible={false}>
       <Text style={[t.label, { color: p.muted }]}>Makes</Text>
-      {step(canLess, '−', onLess, 'Fewer servings')}
-      <Text style={[t.label, { color: p.ink, minWidth: 96, textAlign: 'center' }]} accessibilityLiveRegion="polite">
-        {label}
-      </Text>
-      {step(canMore, '+', onMore, 'More servings')}
+      {/* − and + always sit either side of the amount; a long amount wraps between them, never pushing + onto its own line. */}
+      <View style={styles.servings}>
+        {step(canLess, '−', onLess, 'Fewer servings')}
+        <Text style={[t.label, { color: p.ink, flex: 1, textAlign: 'center' }]} accessibilityLiveRegion="polite">
+          {label}
+        </Text>
+        {step(canMore, '+', onMore, 'More servings')}
+      </View>
       {changed && (
         <Pressable onPress={onReset} accessibilityRole="button" accessibilityLabel="Back to the original amount" hitSlop={8} style={[styles.chip, { borderColor: p.hairline }]}>
           <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Reset</Text>
@@ -661,7 +672,8 @@ const styles = StyleSheet.create({
   chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   chipText: { fontFamily: font.sansMedium },
   marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 44, marginTop: space.s },
-  servings: { flexDirection: 'row', alignItems: 'center', gap: space.s, flexWrap: 'wrap' },
+  servingsWrap: { width: '100%', gap: space.s },
+  servings: { flexDirection: 'row', alignItems: 'center', gap: space.m },
   stampRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, marginTop: -space.s },
   fix: { minHeight: 44, justifyContent: 'center' },
   sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.s, marginTop: space.l },
