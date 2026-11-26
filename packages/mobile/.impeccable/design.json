@@ -1,31 +1,528 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T00:00:00Z",
+  "generatedAt": "2026-11-23T17:00:04Z",
   "title": "Design System: CheapQuickVegan",
   "extensions": {
     "colorMeta": {
-      "green": { "role": "primary", "displayName": "Garden Green" },
-      "green-deep": { "role": "primary", "displayName": "Deep Moss" },
-      "sage": { "role": "secondary", "displayName": "Sage Leaf" },
-      "tape": { "role": "secondary", "displayName": "Washi Tape" },
-      "ground": { "role": "neutral", "displayName": "Sand Paper" },
-      "mist": { "role": "neutral", "displayName": "Morning Mist" },
-      "sand": { "role": "neutral", "displayName": "Dry Sand" },
-      "ink": { "role": "neutral", "displayName": "Pencil Ink" },
-      "muted": { "role": "neutral", "displayName": "Graphite" },
-      "cook-ground": { "role": "neutral", "displayName": "Cook Charcoal" }
+      "ground": {
+        "role": "neutral",
+        "displayName": "Sand Paper",
+        "canonical": "oklch(96.5% 0.013 86.8)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262522",
+          "#44423D",
+          "#64615A",
+          "#868279",
+          "#A8A59D",
+          "#CBC9C3",
+          "#F0EEEA"
+        ]
+      },
+      "mist": {
+        "role": "neutral",
+        "displayName": "Morning Mist",
+        "canonical": "oklch(92.9% 0.019 86.1)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#272520",
+          "#45423A",
+          "#656157",
+          "#888275",
+          "#A9A59A",
+          "#CDC9C0",
+          "#F1EEE8"
+        ]
+      },
+      "sand": {
+        "role": "neutral",
+        "displayName": "Dry Sand",
+        "canonical": "oklch(92.7% 0.027 85.7)",
+        "tonalRamp": [
+          "#0D0B08",
+          "#28251E",
+          "#464137",
+          "#676052",
+          "#8A816F",
+          "#ACA495",
+          "#CEC9BC",
+          "#F2EEE5"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Pencil Ink",
+        "canonical": "oklch(28.4% 0.011 99.3)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#262522",
+          "#43423E",
+          "#62615B",
+          "#84837B",
+          "#A6A59F",
+          "#CAC9C4",
+          "#EFEEEB"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(45.5% 0.018 98.6)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262521",
+          "#43423B",
+          "#636157",
+          "#858376",
+          "#A7A59B",
+          "#CBC9C1",
+          "#F0EFE9"
+        ]
+      },
+      "control": {
+        "role": "neutral",
+        "displayName": "Checkbox Stroke",
+        "canonical": "oklch(63.3% 0.022 94.7)",
+        "tonalRamp": [
+          "#0C0B08",
+          "#27251F",
+          "#444239",
+          "#656155",
+          "#878272",
+          "#A9A598",
+          "#CCC9BF",
+          "#F0EEE7"
+        ]
+      },
+      "green": {
+        "role": "primary",
+        "displayName": "Garden Green",
+        "canonical": "oklch(58.9% 0.102 137.9)",
+        "tonalRamp": [
+          "#060E04",
+          "#192B12",
+          "#2F4B24",
+          "#466D38",
+          "#60924F",
+          "#8AB37C",
+          "#B4D4A9",
+          "#E0F6D8"
+        ]
+      },
+      "green-deep": {
+        "role": "primary",
+        "displayName": "Deep Moss",
+        "canonical": "oklch(44.2% 0.083 139.1)",
+        "tonalRamp": [
+          "#060D05",
+          "#1B2A17",
+          "#32492B",
+          "#4B6C42",
+          "#66905B",
+          "#8EB185",
+          "#B7D2B0",
+          "#E2F5DD"
+        ]
+      },
+      "green-soft": {
+        "role": "primary",
+        "displayName": "Green Wash",
+        "canonical": "oklch(93.3% 0.027 129.8)",
+        "tonalRamp": [
+          "#0A0C09",
+          "#232620",
+          "#3F443A",
+          "#5D6456",
+          "#7C8674",
+          "#A0A899",
+          "#C5CCBF",
+          "#ECF0E8"
+        ]
+      },
+      "sage": {
+        "role": "secondary",
+        "displayName": "Sage Leaf",
+        "canonical": "oklch(83.3% 0.075 131.3)",
+        "tonalRamp": [
+          "#080D05",
+          "#1F2916",
+          "#38482A",
+          "#536940",
+          "#718D58",
+          "#96AE83",
+          "#BED0AF",
+          "#E6F4DC"
+        ]
+      },
+      "sage-soft": {
+        "role": "secondary",
+        "displayName": "Sage Wash",
+        "canonical": "oklch(94.1% 0.023 131.1)",
+        "tonalRamp": [
+          "#0A0C09",
+          "#232621",
+          "#3F443B",
+          "#5D6458",
+          "#7D8676",
+          "#A0A89B",
+          "#C6CBC1",
+          "#ECF0E9"
+        ]
+      },
+      "tape": {
+        "role": "secondary",
+        "displayName": "Washi Tape",
+        "canonical": "oklch(82.7% 0.061 84.4)",
+        "tonalRamp": [
+          "#0E0B04",
+          "#2C2414",
+          "#4C4027",
+          "#705F3C",
+          "#957F54",
+          "#B5A37F",
+          "#D6C8AC",
+          "#F7EDDA"
+        ]
+      },
+      "tint-meal": {
+        "role": "neutral",
+        "displayName": "Meal Tint",
+        "canonical": "oklch(94.1% 0.023 131.1)",
+        "tonalRamp": [
+          "#0A0C09",
+          "#232621",
+          "#3F443B",
+          "#5D6458",
+          "#7D8676",
+          "#A0A89B",
+          "#C6CBC1",
+          "#ECF0E9"
+        ]
+      },
+      "tint-side": {
+        "role": "neutral",
+        "displayName": "Side Tint",
+        "canonical": "oklch(93.6% 0.015 98.3)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262521",
+          "#43423C",
+          "#636159",
+          "#858378",
+          "#A7A59C",
+          "#CBC9C2",
+          "#EFEFE9"
+        ]
+      },
+      "tint-breakfast": {
+        "role": "neutral",
+        "displayName": "Breakfast Tint",
+        "canonical": "oklch(93.6% 0.027 85.7)",
+        "tonalRamp": [
+          "#0D0B08",
+          "#28251E",
+          "#464137",
+          "#676052",
+          "#8A816F",
+          "#ACA495",
+          "#CEC9BC",
+          "#F2EEE5"
+        ]
+      },
+      "tint-snack": {
+        "role": "neutral",
+        "displayName": "Snack Tint",
+        "canonical": "oklch(93.5% 0.017 84.6)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#272521",
+          "#45423B",
+          "#656157",
+          "#888276",
+          "#A9A49B",
+          "#CDC9C1",
+          "#F1EEE9"
+        ]
+      },
+      "tint-dessert": {
+        "role": "neutral",
+        "displayName": "Dessert Tint",
+        "canonical": "oklch(93.0% 0.020 70.0)",
+        "tonalRamp": [
+          "#0D0B09",
+          "#282420",
+          "#47413A",
+          "#686056",
+          "#8B8075",
+          "#ACA399",
+          "#CFC8C0",
+          "#F3EDE8"
+        ]
+      },
+      "dark-ground": {
+        "role": "neutral",
+        "displayName": "Night Paper",
+        "canonical": "oklch(21.5% 0.008 118.5)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252523",
+          "#42423F",
+          "#61625D",
+          "#82837D",
+          "#A4A6A1",
+          "#C9CAC6",
+          "#EEEFEC"
+        ]
+      },
+      "dark-mist": {
+        "role": "neutral",
+        "displayName": "Night Mist",
+        "canonical": "oklch(27.3% 0.016 112.6)",
+        "tonalRamp": [
+          "#0B0B09",
+          "#252521",
+          "#42433C",
+          "#616259",
+          "#828478",
+          "#A5A69C",
+          "#C9CAC2",
+          "#EEEFE9"
+        ]
+      },
+      "dark-sand": {
+        "role": "neutral",
+        "displayName": "Night Sand",
+        "canonical": "oklch(28.6% 0.018 88.8)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#272520",
+          "#45423A",
+          "#656157",
+          "#878275",
+          "#A9A59A",
+          "#CCC9C0",
+          "#F1EEE8"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "oklch(94.3% 0.014 93.0)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262521",
+          "#44423C",
+          "#636159",
+          "#858278",
+          "#A7A59D",
+          "#CBC9C3",
+          "#F0EEEA"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Night Graphite",
+        "canonical": "oklch(77.6% 0.020 93.7)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#272520",
+          "#44423A",
+          "#646156",
+          "#868274",
+          "#A8A599",
+          "#CCC9C0",
+          "#F0EEE8"
+        ]
+      },
+      "dark-green": {
+        "role": "primary",
+        "displayName": "Night Garden Green",
+        "canonical": "oklch(76.0% 0.113 136.9)",
+        "tonalRamp": [
+          "#050E03",
+          "#182B0F",
+          "#2D4B20",
+          "#446E31",
+          "#5E9346",
+          "#88B476",
+          "#B3D5A5",
+          "#DFF7D5"
+        ]
+      },
+      "dark-green-deep": {
+        "role": "primary",
+        "displayName": "Night Moss",
+        "canonical": "oklch(85.0% 0.086 134.8)",
+        "tonalRamp": [
+          "#070D04",
+          "#1C2A14",
+          "#344928",
+          "#4E6B3D",
+          "#6A8F54",
+          "#91B080",
+          "#B9D2AD",
+          "#E3F5DB"
+        ]
+      },
+      "dark-sage": {
+        "role": "secondary",
+        "displayName": "Night Sage",
+        "canonical": "oklch(77.6% 0.093 135.5)",
+        "tonalRamp": [
+          "#070E04",
+          "#1B2A13",
+          "#324A26",
+          "#4B6C3A",
+          "#679051",
+          "#8FB17D",
+          "#B8D3AB",
+          "#E2F6D9"
+        ]
+      },
+      "cook-ground": {
+        "role": "neutral",
+        "displayName": "Cook Charcoal",
+        "canonical": "oklch(23.2% 0.009 116.3)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252523",
+          "#42423F",
+          "#61625C",
+          "#82837C",
+          "#A4A6A0",
+          "#C9CAC5",
+          "#EEEFEC"
+        ]
+      },
+      "cook-raised": {
+        "role": "neutral",
+        "displayName": "Raised Charcoal",
+        "canonical": "oklch(28.6% 0.012 113.8)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252522",
+          "#42433D",
+          "#61625B",
+          "#82837A",
+          "#A5A69E",
+          "#C9CAC4",
+          "#EEEFEB"
+        ]
+      },
+      "cook-ink": {
+        "role": "neutral",
+        "displayName": "Cook Chalk",
+        "canonical": "oklch(95.2% 0.016 91.6)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262521",
+          "#44423B",
+          "#646158",
+          "#868276",
+          "#A8A59B",
+          "#CCC9C1",
+          "#F0EEE9"
+        ]
+      },
+      "cook-soft": {
+        "role": "neutral",
+        "displayName": "Cook Soft",
+        "canonical": "oklch(83.9% 0.020 90.6)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#272520",
+          "#45423A",
+          "#656156",
+          "#878274",
+          "#A9A599",
+          "#CCC9C0",
+          "#F1EEE8"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The one question at the top of Discover." },
-      "cook-step": { "displayName": "Cook step", "purpose": "Step text in cook mode, read from arm's length." },
-      "hand": { "displayName": "Hand", "purpose": "Warm notes only: greetings, signposts, encouragement, empty states." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one question at the top of Discover (\"What's for dinner?\"), with the meal word in Bold."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Recipe titles and screen titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings, including step sections in Directions and cook mode."
+      },
+      "row-title": {
+        "displayName": "Row title",
+        "purpose": "Recipe names in lists and cards."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions, ingredient lines, Directions."
+      },
+      "cook-step": {
+        "displayName": "Cook step",
+        "purpose": "Step text in cook mode, read from arm's length."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Captions and facts."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, pills, counts and tab labels."
+      },
+      "hand": {
+        "displayName": "Hand",
+        "purpose": "Greetings, signposts, encouragement, empty states. Never facts."
+      }
     },
     "shadows": [
-      { "name": "lift", "value": "0px 10px 22px -12px rgba(60,52,32,0.14)", "purpose": "Photos, round actions, the heart and the pinned bar only." }
+      {
+        "name": "lift",
+        "value": "0px 10px 22px -12px rgba(60,52,32,0.14)",
+        "purpose": "Photos, round action buttons, the heart and the pinned bar only."
+      },
+      {
+        "name": "lift-dark",
+        "value": "0px 10px 22px -12px rgba(0,0,0,0.5)",
+        "purpose": "The same lift in dark mode."
+      }
     ],
     "motion": [
-      { "name": "spring", "value": "damping 12, stiffness 220, mass 0.8", "purpose": "Press feedback with a small overshoot." },
-      { "name": "glide", "value": "damping 20, stiffness 240, mass 0.9", "purpose": "Settling highlights and layout, no overshoot." }
+      {
+        "name": "spring",
+        "value": "damping 12, stiffness 220, mass 0.8",
+        "purpose": "Press feedback with a small overshoot: card straighten, heart pop, tab icon hop."
+      },
+      {
+        "name": "glide",
+        "value": "damping 20, stiffness 240, mass 0.9",
+        "purpose": "Settling motion with no overshoot: the time-picker highlight, layout."
+      },
+      {
+        "name": "trail-draw",
+        "value": "450ms timing, 200ms + 60ms per card delay",
+        "purpose": "The dotted trail draws in from the left after a card lands."
+      },
+      {
+        "name": "reduce-motion",
+        "value": "still",
+        "purpose": "Under Reduce Motion every motion is replaced by its still end state, not a faster version."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "large-text",
+        "value": "fontScale > 1.2",
+        "purpose": "Gear grid goes two across."
+      },
+      {
+        "name": "larger-text",
+        "value": "fontScale > 1.3",
+        "purpose": "Trail card titles take a third line."
+      }
     ]
   },
   "components": [
@@ -33,46 +530,136 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one big action per screen.",
-      "html": "<button class=\"ds-btn-primary\">Start cooking</button>",
-      "css": ".ds-btn-primary { background: #B7D3A0; color: #2B2A24; font-family: Rubik, sans-serif; font-weight: 600; font-size: 16px; min-height: 56px; padding: 0 24px; border: none; border-radius: 999px; transition: transform .15s; } .ds-btn-primary:active { transform: scale(.97); } .ds-btn-primary:focus-visible { outline: 2px solid #3A5E30; outline-offset: 2px; }"
+      "description": "The one big action per screen: Start cooking, Next step, Send list.",
+      "html": "<button class=\"ds-btn-primary\"><span>Start cooking</span><span class=\"ds-btn-hand\">screen stays on</span></button>",
+      "css": ".ds-btn-primary { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 320px; min-height: 56px; padding: 0 24px; border: none; border-radius: 999px; background: #B7D3A0; color: #2B2A24; font: 600 17px Rubik, sans-serif; cursor: pointer; transition: transform .15s cubic-bezier(.2,.8,.2,1); } .ds-btn-hand { font: 400 17px 'Gochi Hand', cursive; } .ds-btn-primary:hover { background: #AACB91; } .ds-btn-primary:active { transform: scale(.97); } .ds-btn-primary:focus-visible { outline: 2px solid #3A5E30; outline-offset: 3px; }"
     },
     {
-      "name": "Pill",
+      "name": "Outline Chip Action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Small actions that change your data: Mark it cooked, Undo, Take one off, Reset.",
+      "html": "<button class=\"ds-chip-action\">Made it? Mark it cooked</button>",
+      "css": ".ds-chip-action { min-height: 44px; padding: 0 16px; border: 1.5px solid rgba(43,42,36,.10); border-radius: 999px; background: #F7F3EA; color: #3A5E30; font: 500 14px Rubik, sans-serif; cursor: pointer; transition: transform .15s; } .ds-chip-action:hover { background: #EDE7DA; } .ds-chip-action:active { transform: scale(.97); } .ds-chip-action:focus-visible { outline: 2px solid #3A5E30; outline-offset: 2px; }"
+    },
+    {
+      "name": "Time Picker",
       "kind": "chip",
       "refersTo": "pill-selected",
-      "description": "Tabs, time limits and filters.",
-      "html": "<span class=\"ds-pill\">15 min</span><span class=\"ds-pill ds-pill-on\">30 min</span>",
-      "css": ".ds-pill { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 18px; background: #EDE7DA; color: #59574C; font: 500 15px Rubik, sans-serif; margin-right: 8px; } .ds-pill-on { background: #B7D3A0; color: #2B2A24; font-weight: 600; }"
+      "description": "15 min · 30 min · 1 hr · Any on a Mist track; the Sage highlight glides to the chosen time.",
+      "html": "<div class=\"ds-seg\" role=\"tablist\"><button class=\"ds-seg-opt\">15 min</button><button class=\"ds-seg-opt ds-seg-on\">30 min</button><button class=\"ds-seg-opt\">1 hr</button><button class=\"ds-seg-opt\">Any</button></div>",
+      "css": ".ds-seg { display: inline-flex; padding: 4px; border-radius: 22px; background: #EDE7DA; } .ds-seg-opt { min-height: 40px; padding: 0 16px; border: none; border-radius: 18px; background: transparent; color: #59574C; font: 500 14px Rubik, sans-serif; cursor: pointer; transition: background .25s cubic-bezier(.2,.8,.2,1), color .25s; } .ds-seg-opt:hover { color: #2B2A24; } .ds-seg-on { background: #B7D3A0; color: #2B2A24; font-weight: 600; } .ds-seg-opt:focus-visible { outline: 2px solid #3A5E30; outline-offset: 1px; }"
     },
     {
       "name": "Amount Tag",
       "kind": "custom",
       "refersTo": "amount-tag",
-      "description": "Amounts, times and temperatures inside step text.",
-      "html": "<p class=\"ds-step\">Stir in the <b>coconut milk</b> <span class=\"ds-tag\">1 can</span> and simmer <span class=\"ds-tag\">10 min</span>.</p>",
-      "css": ".ds-step { font: 16px/24px Rubik, sans-serif; color: #2B2A24; } .ds-step b { color: #3A5E30; } .ds-tag { display: inline-block; padding: 0 6px; border: 1.5px solid rgba(43,42,36,.1); border-radius: 8px; background: #EFE6D3; font: 500 15px Rubik, sans-serif; font-variant-numeric: tabular-nums; }"
+      "description": "Amounts, times and temperatures inside step text, found by shape.",
+      "html": "<p class=\"ds-step\">Dice <span class=\"ds-tag\">1/2</span> a <b>shallot</b>, then stir in the <b>coconut milk</b> <span class=\"ds-tag\">1 can</span> and simmer <span class=\"ds-tag\">10 min</span>.</p>",
+      "css": ".ds-step { max-width: 34em; font: 16px/26px Rubik, sans-serif; color: #2B2A24; } .ds-step b { color: #3A5E30; font-weight: 600; } .ds-tag { display: inline-block; padding: 0 6px; border: 1.5px solid rgba(43,42,36,.10); border-radius: 8px; background: #EFE6D3; font: 500 15px/21px Rubik, sans-serif; font-variant-numeric: tabular-nums; }"
     },
     {
       "name": "Round Action",
       "kind": "button",
       "refersTo": "action-round",
-      "description": "Save, This week, Grocery list under a recipe title.",
-      "html": "<button class=\"ds-round\">♡</button><button class=\"ds-round ds-round-on\">✓</button>",
-      "css": ".ds-round { width: 48px; height: 48px; border-radius: 50%; border: none; background: #F7F3EA; color: #5E8B4E; box-shadow: 0px 10px 22px -12px rgba(60,52,32,.14); margin-right: 12px; } .ds-round-on { background: #5E8B4E; color: #fff; }"
+      "description": "Save, This week and Grocery list under a recipe title.",
+      "html": "<div class=\"ds-actions\"><button class=\"ds-round\" aria-label=\"Save\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z\"/></svg><span>Save</span></button><button class=\"ds-round ds-round-on\" aria-label=\"This week\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"4\" y=\"5.5\" width=\"16\" height=\"14\" rx=\"3\"/><path d=\"M8 3.5v4M16 3.5v4M4 10h16\"/></svg><span>This week</span></button></div>",
+      "css": ".ds-actions { display: flex; gap: 32px; } .ds-round { display: flex; flex-direction: column; align-items: center; gap: 6px; border: none; background: none; color: #2B2A24; font: 400 14px Rubik, sans-serif; cursor: pointer; } .ds-round svg { box-sizing: content-box; padding: 13px; border-radius: 50%; background: #F7F3EA; color: #5E8B4E; box-shadow: 0px 10px 22px -12px rgba(60,52,32,.14); transition: transform .15s; } .ds-round:hover svg { transform: translateY(-1px); } .ds-round:active svg { transform: scale(.94); } .ds-round-on svg { background: #5E8B4E; color: #FFFFFF; } .ds-round:focus-visible svg { outline: 2px solid #3A5E30; outline-offset: 2px; }"
+    },
+    {
+      "name": "Trail Card",
+      "kind": "card",
+      "refersTo": "recipe-card",
+      "description": "A recipe on the Discover trail: category tint, floating photo, tilted, standing on its minutes marker.",
+      "html": "<div class=\"ds-trail\"><div class=\"ds-card\"><div class=\"ds-photo\"></div><div class=\"ds-card-title\">Creamy Cauliflower Pesto Soup</div><div class=\"ds-card-meta\">Meal · 4–6 bowls of soup</div></div><div class=\"ds-post\"></div><div class=\"ds-marker\">45 min</div><div class=\"ds-post ds-post-short\"></div></div>",
+      "css": ".ds-trail { display: flex; flex-direction: column; align-items: center; width: 250px; background: radial-gradient(circle, #5E8B4E 1.2px, transparent 1.6px) 0 calc(100% - 22px) / 9px 4px repeat-x; } .ds-card { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 24px; background: #E6EFDF; transform: rotate(-1.2deg); transition: transform .3s cubic-bezier(.2,.8,.2,1); cursor: pointer; } .ds-card:hover { transform: rotate(0deg) scale(1.02); } .ds-photo { height: 196px; border-radius: 18px; background: #EAE3D4; box-shadow: 0px 10px 22px -12px rgba(60,52,32,.14); } .ds-card-title { margin: 12px 8px 4px; font: 700 21px/25px 'Source Serif 4', Georgia, serif; letter-spacing: -.2px; color: #2B2A24; } .ds-card-meta { margin: 0 8px 8px; font: 400 14px/20px Rubik, sans-serif; color: #59574C; } .ds-post { width: 3px; height: 14px; border-radius: 2px; background: #2B2A24; } .ds-post-short { height: 10px; } .ds-marker { padding: 2px 10px; border: 2px solid #2B2A24; border-radius: 6px; background: #EFE6D3; font: 500 14px Rubik, sans-serif; color: #2B2A24; }"
+    },
+    {
+      "name": "Gear Tile",
+      "kind": "custom",
+      "description": "Equipment filter on Discover: drawing, name and count; \"Takes longer\" when nothing fits the time.",
+      "html": "<div class=\"ds-gear\"><button class=\"ds-tile ds-tile-on\"><svg width=\"40\" height=\"40\" viewBox=\"0 0 32 32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15h17a1 1 0 0 1 1 1 7 7 0 0 1-7 7H10a7 7 0 0 1-7-7z\"/><path d=\"M21 16l8-3\"/></svg><b>Skillet</b><span>4 recipes</span></button><button class=\"ds-tile ds-tile-none\"><svg width=\"40\" height=\"40\" viewBox=\"0 0 32 32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 13h18v8a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z\"/><path d=\"M4 14h3M25 14h3M13 6c-1 1.5 1 2.5 0 4M18 6c-1 1.5 1 2.5 0 4\"/></svg><b>Big pot</b><span>Takes longer</span></button></div>",
+      "css": ".ds-gear { display: flex; gap: 12px; } .ds-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 112px; padding: 12px 4px; border: 2px solid transparent; border-radius: 20px; background: #E3EDDA; color: #2B2A24; cursor: pointer; transform: rotate(-1.5deg); transition: transform .2s cubic-bezier(.2,.8,.2,1); } .ds-tile:nth-child(2) { transform: rotate(1.5deg); background: #E6EFDF; } .ds-tile:active { transform: scale(.95); } .ds-tile b { font: 500 14px Rubik, sans-serif; } .ds-tile span { font: 500 14px Rubik, sans-serif; color: #3A5E30; } .ds-tile-on { border-color: #3A5E30; } .ds-tile-none, .ds-tile-none span { color: #59574C; } .ds-tile:focus-visible { outline: 2px solid #3A5E30; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "description": "Four labelled tabs on Sand Paper; the active tab gets a soft green pill behind its icon.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab-on\" href=\"#\"><span class=\"ds-tab-pill\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 19c0-8 5-13 14-14 0 9-5 14-13 14z\"/><path d=\"M5 19l7-7\"/></svg></span>Discover</a><a class=\"ds-tab\" href=\"#\"><span class=\"ds-tab-pill\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"6\"/><path d=\"M20 20l-4.5-4.5\"/></svg></span>Search</a></nav>",
+      "css": ".ds-tabs { display: flex; width: 360px; padding: 8px 0; border-top: 1px solid rgba(43,42,36,.10); background: #F7F3EA; } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #59574C; text-decoration: none; font: 500 12px Rubik, sans-serif; } .ds-tab-pill { display: flex; align-items: center; justify-content: center; width: 60px; height: 32px; border-radius: 16px; color: #59574C; transition: background .2s; } .ds-tab:hover .ds-tab-pill { background: #EDE7DA; } .ds-tab-on { color: #2B2A24; } .ds-tab-on .ds-tab-pill, .ds-tab-on:hover .ds-tab-pill { background: #E3EDDA; color: #5E8B4E; } .ds-tab:focus-visible { outline: 2px solid #3A5E30; outline-offset: 2px; border-radius: 8px; }"
+    },
+    {
+      "name": "One-time Hint",
+      "kind": "custom",
+      "description": "Teaching at the point of use: a Dry Sand note with a close cross, gone once read or used.",
+      "html": "<div class=\"ds-hint\"><p>Lines are written for the shop. Long-press any item to see how the recipe writes it.</p><button aria-label=\"Dismiss\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M3 3l8 8M11 3l-8 8\"/></svg></button></div>",
+      "css": ".ds-hint { display: flex; align-items: center; gap: 12px; max-width: 360px; padding: 12px 16px; border: 1.5px solid rgba(43,42,36,.10); border-radius: 18px; background: #EFE6D3; } .ds-hint p { margin: 0; flex: 1; font: 400 15px/21px Rubik, sans-serif; color: #2B2A24; } .ds-hint button { display: flex; padding: 12px; border: none; border-radius: 50%; background: none; color: #2B2A24; cursor: pointer; } .ds-hint button:hover { background: #EDE7DA; } .ds-hint button:focus-visible { outline: 2px solid #3A5E30; }"
     }
   ],
   "narrative": {
     "northStar": "The Garden Trail",
-    "overview": "Cooking is a walk, not a test: recipes along a trail, journeys hiked from easy to summit, sand paper with garden greens and ink drawings, a small tuxedo cat for company in cook mode and on journeys. A calm kitchen tool, not a feed.",
-    "keyCharacteristics": ["Sand paper with garden greens", "Serif names, Rubik facts, handwriting for warmth", "Ink-line drawings", "Photos float, UI flat", "Soft tactile controls", "One helper cat"],
-    "rules": [
-      { "name": "The Food Comes First Rule", "body": "No blues or saturated accents near food.", "section": "colors" },
-      { "name": "The Ink On Fill Rule", "body": "Small text is dark ink; Deep Moss is the only colored text.", "section": "colors" },
-      { "name": "The Feelings, Not Facts Rule", "body": "Handwriting only for warmth; anything to act on is in Rubik.", "section": "typography" },
-      { "name": "The Photos Float Rule", "body": "Only photos and floating controls get a shadow.", "section": "elevation" }
+    "overview": "Cooking here is a walk, not a test. Recipes sit along a trail, quickest first, with handwritten signposts for time. Cuisines become journeys you hike from easy to summit, with refugios where you rest and learn a technique. The ground is warm sand paper; the planting is garden green; the drawings are ink lines by hand. A small tuxedo cat keeps you company on the trail, in cook mode and on journeys, and nowhere else.\n\nThe app is a calm kitchen tool, not a feed. Density is low and deliberate: one question per screen (\"What's for dinner?\"), one big action per screen (\"Start cooking\"), and everything else quiet. Personality lives in the details the cook meets while waiting or after finishing (signposts, the cat, the stirring pot, a pencil line through a ticked ingredient), never in the way of an instruction. In cook mode the phone is propped up and hands are messy, so the app switches to a dark charcoal page with very large step text, amounts inline, and voice.",
+    "keyCharacteristics": [
+      "Sand paper ground with garden greens; no blues next to food.",
+      "Serif for names and headings, Rubik for anything you act on, handwriting only for warmth.",
+      "Ink-line drawings (ingredients, equipment, doodles) in one stroke weight.",
+      "Photos float on a soft shadow; the interface itself is flat.",
+      "Soft, rounded, pressable controls with a small spring and a light haptic.",
+      "One helper cat, only in cook mode and on journeys."
     ],
-    "dos": ["Do keep one primary action per screen", "Do put amounts, times and temperatures in tags", "Do give every motion a Reduce Motion fallback"],
-    "donts": ["Don't use blue near food", "Don't set facts in handwriting", "Don't show the cat outside cook mode and journeys", "Don't add streaks, badges or rewards"]
+    "rules": [
+      {
+        "name": "The Food Comes First Rule",
+        "body": "No blues and no saturated accents anywhere near food photos. Greens and sand only, so the food is the brightest thing on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink On Fill Rule",
+        "body": "Small text is always dark ink. Sage and green are for filled shapes; the only colored text is Deep Moss.",
+        "section": "colors"
+      },
+      {
+        "name": "The Feelings, Not Facts Rule",
+        "body": "Handwriting is for warmth: greetings, signposts, encouragement, empty states. Anything the cook needs to act on or read precisely (counts, amounts, voice hints, errors, instructions) is in Rubik.",
+        "section": "typography"
+      },
+      {
+        "name": "The Android Clip Rule",
+        "body": "Handwritten text on Android always gets `textBreakStrategy=\"simple\"`, a few pixels of right padding, and a line limit, or its last glyph clips.",
+        "section": "typography"
+      },
+      {
+        "name": "The Whole Words Rule",
+        "body": "Text follows Dynamic Type and Android font scale, and nothing that carries meaning truncates at 2.0×. Content text (titles, steps, ingredient lines) always scales fully and gains a line rather than an ellipsis: trail card titles take 3 lines above 1.3×, hike titles 3. Only chrome that shares a fixed row may cap its growth, and it still grows: tab labels to 1.4×, time-picker labels to 1.5×, signpost boards to 1.2×. Test large text only after relaunching the app; a font-scale change while the app is running leaves stale measurements that look like clipping.",
+        "section": "typography"
+      },
+      {
+        "name": "The Photos Float Rule",
+        "body": "Only photos and the few floating controls get a shadow. Cards, chips, sheets and panels are flat and tinted.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep one primary action per screen, in Sage Leaf with ink text.",
+      "Do put amounts, times and temperatures in tags so they're found by shape; keep small text in ink.",
+      "Do use the category tint for recipe cards and rows, and Dry Sand for informational panels.",
+      "Do give every motion a Reduce Motion fallback (still, not just faster).",
+      "Do keep the cook's messy hands in mind: big targets, inline amounts, voice, nothing that needs precise taps.",
+      "Do make on/off chips say what \"on\" means: a tick on Sage Leaf for things you have, a cross in an ink outline for things to avoid, with a plain summary line (\"Avoiding: soy\").",
+      "Do round scaled amounts the way each measure works: cups in quarters and thirds, tablespoons in halves, teaspoons down to ⅛; cloves and eggs whole, cans and blocks in halves, produce in quarters. Never scale below what can be measured.",
+      "Do write the grocery list in shopping words (\"jasmine rice\", \"1 lime\"), with cooking notes (\"for 1 cup cooked\", \"optional\") as a quiet second line.",
+      "Do give anything that removes or counts something a way back: Undo, Reset, \"Take one off\", \"Come back to it\".",
+      "Do style text actions by what they do: underlined green text only navigates (\"See all\", guide links); actions that change your data (Mark it cooked, Take one off, Undo, Reset, Take another path) are small outline chips.",
+      "Do teach at the point of use with one-time hints: a Dry Sand note with a ✕, dismissed for good when closed or when the cook uses the feature. Never a tour, never twice.",
+      "Do treat a summit as a memory: once reached it stays (postcard, date), and the trail shows any stops reopened beside it."
+    ],
+    "donts": [
+      "Don't use blue or saturated accents near food.",
+      "Don't set counts, amounts, instructions, voice hints or errors in the handwriting font.",
+      "Don't put shadows on cards, chips or panels; only photos and floating controls lift.",
+      "Don't show the live cat outside cook mode and journey pages, or let it cover text. On keepsakes (the trail postcard) it is a still drawing.",
+      "Don't add streaks, badges, rewards, confetti or nudges; cooked counts stay quiet records. The Kitchen's record is one plain Graphite sentence (\"You've cooked 10 meals from 4 recipes and summited 1 hike.\"), never a row of big numbers, and it's absent before the first cook.",
+      "Don't use pills for status; status is a tag, a stamp or plain text."
+    ]
   }
 }

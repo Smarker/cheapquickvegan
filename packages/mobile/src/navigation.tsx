@@ -121,7 +121,10 @@ function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 <Icon color={focused ? p.green : p.muted} />
               )}
             </View>
-            <Text style={[t.label, { fontSize: 12, color: focused ? p.ink : p.muted }]}>{label}</Text>
+            {/* Four labels share the bar: they grow with large text, but not so far that they run into each other. */}
+            <Text style={[t.label, { fontSize: 12, color: focused ? p.ink : p.muted }]} numberOfLines={1} maxFontSizeMultiplier={1.4}>
+              {label}
+            </Text>
           </Pressable>
         );
       })}

@@ -166,12 +166,12 @@ Warm neutrals do almost all the work; greens are the garden planted in them, and
 
 ### Secondary
 - **Sage Leaf** (#B7D3A0; dark #9CC488): fills for the primary button ("Start cooking", "Send list") and selected pills, always with dark ink text on top.
-- **Washi Tape** (#D9C49A): the strip of tape holding a recipe card to the trail. Decoration only.
+- **Washi Tape** (#D9C49A): the strip of tape holding a trail postcard or a journey's map in place. Decoration only.
 
 ### Neutral
 - **Sand Paper** (#F7F3EA; dark #191A16): the page.
 - **Morning Mist** (#EDE7DA; dark #27281F): unselected pills, the search field, segmented track.
-- **Dry Sand** (#EFE6D3; dark #2E2A20): tinted panels: Kitchen stats, warnings, amount tags.
+- **Dry Sand** (#EFE6D3; dark #2E2A20): tinted panels: one-time hints, warnings, amount tags, signpost and mile-marker boards.
 - **Pencil Ink** (#2B2A24; dark #EFECE2): all body text and drawings.
 - **Graphite** (#59574C; dark #BAB6A8): secondary text, captions.
 - **Category tints**: Meal #E6EFDF, Side #ECEADF, Breakfast #F2E9D6, Snack #EFE9DD, Dessert #F1E6DA. Recipe cards and rows carry their category's tint.
@@ -193,7 +193,7 @@ Warm neutrals do almost all the work; greens are the garden planted in them, and
 ### Hierarchy
 - **Display** (Source Serif 4 Light, 40/46, -0.6): the one question at the top of Discover ("What's for dinner?"), with the meal word in Bold.
 - **Headline** (Source Serif 4 Bold, 30/36): recipe titles and screen titles (Kitchen, Search).
-- **Title** (Source Serif 4 Bold, 22/27): section headings (Saved recipes, step sections, What's in your fridge?).
+- **Title** (Source Serif 4 Bold, 22/27): section headings (Saved recipes, step sections in Directions and cook mode, What's in your fridge?).
 - **Row title** (Source Serif 4 Bold, 17/21): recipe names in lists and cards.
 - **Body** (Rubik 16/24): descriptions, ingredient lines, Directions.
 - **Cook step** (Rubik 26/36): step text in cook mode, read from arm's length.
@@ -205,11 +205,17 @@ Warm neutrals do almost all the work; greens are the garden planted in them, and
 
 **The Android Clip Rule.** Handwritten text on Android always gets `textBreakStrategy="simple"`, a few pixels of right padding, and a line limit, or its last glyph clips.
 
+**The Whole Words Rule.** Text follows Dynamic Type and Android font scale, and nothing that carries meaning truncates at 2.0×. Content text (titles, steps, ingredient lines) always scales fully and gains a line rather than an ellipsis: trail card titles take 3 lines above 1.3×, hike titles 3. Only chrome that shares a fixed row may cap its growth, and it still grows: tab labels to 1.4×, time-picker labels to 1.5×, signpost boards to 1.2×. Test large text only after relaunching the app; a font-scale change while the app is running leaves stale measurements that look like clipping.
+
 ## Layout
 
-Single column on phones with a 24px side gutter (`space.xl`). Spacing follows a 4/8/12/16/24/32 scale. Sections are separated by generous space rather than rules. Horizontal scroll is reserved for the trail (one recipe card per stop, quickest first, with time signposts on a dotted line beneath) and journey cards.
+Single column on phones with a 24px side gutter (`space.xl`). Spacing follows a 4/8/12/16/24/32 scale. Sections are separated by generous space rather than rules. Horizontal scroll is reserved for the trail, the week's plan chips and journey cards.
 
-The recipe page is a photo and title on the category tint, then a rounded sheet in Sand Paper holding the description, tabs and content; the one primary action, "Start cooking", is pinned at the bottom. Cook mode is full screen: progress trail at the top, one section per page, numbered steps, "Up next" and the buttons at the bottom.
+The trail answers the screen's question first: the meal itself (Breakfast, or Meal for lunch and dinner), quickest first, then a "Sides" signpost and the sides and snacks, quickest first. A signpost also stands wherever the time steps up (15 min, 30 min, 45 min, 1 hr…), and the trail ends at the stirring pot with the next time limit.
+
+Grids are built from a fixed 12px gap and tile widths measured from the screen (rounded down), never `space-between`, so a short last row starts at the left instead of leaving a hole. The gear grid is three across, two across above 1.2× text.
+
+The recipe page is a photo and title on the category tint, then a rounded sheet in Sand Paper holding the description, tabs and content. The Ingredients / Directions / Tips tabs pin under the header once the sheet reaches it, and the header band changes from the category tint to Sand Paper at the same moment, so the band always matches what scrolls beneath it. The one primary action, "Start cooking", is pinned at the bottom. Cook mode is full screen: progress trail at the top, one section per page, numbered steps, "Up next" and the buttons at the bottom.
 
 Touch targets are at least 44pt / 48dp. Lists of choices show four or fewer at a decision point where possible.
 
@@ -225,7 +231,7 @@ Photos float; the interface is flat. Food photos, the round action buttons, the 
 
 ## Shapes
 
-Soft and round throughout. Cards and rows are 24px; recipe photos 28px; pills and chips 18px or fully round; buttons fully round; amount tags 8px; checkboxes 7px. Round icon buttons are 48px circles. Recipe cards on the trail are tilted a degree or two and held by a strip of washi tape. Ink drawings use rounded caps and joins at one stroke weight (1.8 on a 24 or 32 grid).
+Soft and round throughout. Cards and rows are 24px; recipe photos 28px; pills and chips 18px or fully round; buttons fully round; amount tags 8px; checkboxes 7px. Round icon buttons are 48px circles. Recipe cards on the trail are tilted a degree or two and stand on an ink mile marker showing their minutes; trail postcards and journey maps are held by a strip of washi tape. Ink drawings use rounded caps and joins at one stroke weight (1.8 on a 24 or 32 grid).
 
 ## Components
 
@@ -242,9 +248,10 @@ Soft and round throughout. Cards and rows are 24px; recipe photos 28px; pills an
 ### Pills and segmented choices
 - **Style:** Mist fill, Graphite label; selected is Sage Leaf with ink. The time picker is a segmented track whose highlight slides.
 - **Use:** tabs (Ingredients, Directions, Tips), time limits, filters. Pills mean choices; they are never used for status.
+- **Before the highlight has measured:** the chosen time carries its own Sage Leaf fill, so its ink label never sits on a dark track.
 
 ### Amount tags
-- **Style:** small rounded tags (Dry Sand on the recipe page, raised charcoal in cook mode) with tabular numbers, placed right after an ingredient name, or wherever a time, temperature or stated quantity appears in a step. Found by shape, not color.
+- **Style:** small rounded tags (Dry Sand on the recipe page, raised charcoal in cook mode) with tabular numbers, placed right after an ingredient name, or wherever a time, temperature or stated quantity appears in a step, including a bare count before an ingredient ("Dice **1/2** a shallot"). Found by shape, not color. Quantities follow the batch size; times and temperatures never scale.
 
 ### Step list
 - **Style:** a 26–30px numbered circle, then the step text. The current step's number is filled green and its text full ink; upcoming steps are quieter; ticked steps dim with a strike-through. Ingredient names bold Deep Moss; tools underlined with a green line.
@@ -252,8 +259,13 @@ Soft and round throughout. Cards and rows are 24px; recipe photos 28px; pills an
 ### Cards and rows
 - **Corner style:** 24px. **Background:** the recipe's category tint. **Shadow:** none (the photo inside floats). **Padding:** 10px around a rounded photo.
 
+### Gear tiles
+- **Style:** an ink equipment drawing over a Rubik Medium name and a Deep Moss count, on a category-style tint, tilted like a sticker; the selected tile gets a 2px Deep Moss border, and the doodle wiggles on tap.
+- **Nothing this quick:** the drawing and count go Graphite and the count reads "Takes longer"; a tap opens the time limit to the next one that has recipes. With nothing at any time, it reads "None for [meal]" and can't be tapped. No opacity fades, so the text keeps its contrast.
+
 ### Navigation
 - **Tab bar:** four labelled tabs (Discover, Search, Kitchen, List) on Sand Paper with a hairline top border; the active tab gets a soft green pill behind its icon. Tapping the active tab returns to its first screen; Search always opens on the search page.
+- **Cook mode header:** "Close" on the left, "Part 2 of 3" in the middle (parts, never steps: the step badges carry their own numbers), Hands-free on the right.
 
 ### The helper cat (signature)
 A small tuxedo cat in ink line: black body with a cream outline, white muzzle, bib and paws, green eyes, pink inner ears, green collar with a tag, soft fur clumps along the back. It lives only in cook mode (walks the progress trail; sits, blinks, licks a paw, kneads, loafs, naps and rolls over when things are quiet; perks its ears for voice; paw-taps a finished timer; hops and chases its tail on the finish screen) and on journey pages (waiting at your next stop). It is still under Reduce Motion and never covers content.
@@ -282,5 +294,5 @@ Ink-line drawings on a 32×32 grid for 56 ingredients and the equipment tags, sh
 - **Don't** set counts, amounts, instructions, voice hints or errors in the handwriting font.
 - **Don't** put shadows on cards, chips or panels; only photos and floating controls lift.
 - **Don't** show the live cat outside cook mode and journey pages, or let it cover text. On keepsakes (the trail postcard) it is a still drawing.
-- **Don't** add streaks, badges, rewards, confetti or nudges; cooked counts stay quiet records.
+- **Don't** add streaks, badges, rewards, confetti or nudges; cooked counts stay quiet records. The Kitchen's record is one plain Graphite sentence ("You've cooked 10 meals from 4 recipes and summited 1 hike."), never a row of big numbers, and it's absent before the first cook.
 - **Don't** use pills for status; status is a tag, a stamp or plain text.

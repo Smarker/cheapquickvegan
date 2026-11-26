@@ -48,11 +48,12 @@ export function SavedScreen({ navigation }: Props) {
     region,
     recipes: journey(region, saved.trailFor(region.id)).flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : [])),
   }));
-  const stats = [
-    { n: cooks, label: cooks === 1 ? 'meal cooked' : 'meals cooked' },
-    { n: cookedRecipes, label: cookedRecipes === 1 ? 'recipe tried' : 'recipes tried' },
-    { n: summits, label: summits === 1 ? 'journey summited' : 'journeys summited' },
-  ];
+  // A quiet record, not a scoreboard: one plain line, and nothing at all before the first cook.
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const record =
+    cooks > 0
+      ? `You've cooked ${plural(cooks, 'meal', 'meals')} from ${plural(cookedRecipes, 'recipe', 'recipes')}${summits > 0 ? ` and summited ${plural(summits, 'hike', 'hikes')}` : ''}.`
+      : null;
 
   return (
     <View style={{ flex: 1, backgroundColor: p.ground }}>
@@ -71,14 +72,7 @@ export function SavedScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      <View style={[styles.stats, { backgroundColor: p.sand }]} accessible accessibilityLabel={stats.map((s) => `${s.n} ${s.label}`).join(', ')}>
-        {stats.map((s) => (
-          <View key={s.label} style={styles.stat}>
-            <Text style={[t.display, { color: p.ink, fontFamily: font.serif, fontSize: 30, lineHeight: 36 }]}>{s.n}</Text>
-            <Text style={[t.small, { color: p.muted, textAlign: 'center' }]}>{s.label}</Text>
-          </View>
-        ))}
-      </View>
+      {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
 
       <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.s }]} accessibilityRole="header">
         {words.title}
@@ -205,8 +199,6 @@ const styles = StyleSheet.create({
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.m },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefs: { minHeight: 44, paddingHorizontal: space.l, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center' },
-  stats: { flexDirection: 'row', borderRadius: 24, paddingVertical: space.l, paddingHorizontal: space.s },
-  stat: { flex: 1, alignItems: 'center', gap: 2 },
   weekRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: 8, borderRadius: 20 },
   weekActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.xs },
   weekBtn: { minHeight: 46, paddingHorizontal: space.l, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },

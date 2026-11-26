@@ -44,13 +44,19 @@ const CATEGORIES: Record<Meal, string[]> = {
   dinner: ['Meal', 'Side', 'Snack'],
 };
 
-/** Recipes for this meal within the time limit, quickest first. The trail reads left to right like a timeline. */
+/** Is this the meal itself (a breakfast, a main), rather than something on the side? */
+export const isMain = (r: Recipe, meal: Meal) => r.category === CATEGORIES[meal][0];
+
+/**
+ * Recipes for this meal within the time limit. The meal itself comes first, then sides and snacks,
+ * each quickest first, so "What's for breakfast?" is answered by a breakfast, not a sauce.
+ */
 export function tonight(limit: TimeLimit, equipment: string | null, meal: Meal = 'dinner'): Recipe[] {
   return recipes
     .filter((r) => r.category != null && CATEGORIES[meal].includes(r.category))
     .filter((r) => r.totalMinutes != null && (limit == null || r.totalMinutes <= limit))
     .filter((r) => !equipment || r.equipment.includes(equipment))
-    .sort((a, b) => (a.totalMinutes ?? 0) - (b.totalMinutes ?? 0));
+    .sort((a, b) => Number(!isMain(a, meal)) - Number(!isMain(b, meal)) || (a.totalMinutes ?? 0) - (b.totalMinutes ?? 0));
 }
 
 /** How many trail recipes a piece of equipment would give, within the current time limit. */

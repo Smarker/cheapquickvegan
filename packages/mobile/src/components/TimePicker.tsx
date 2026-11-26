@@ -40,9 +40,12 @@ export function TimePicker({ value, onChange }: { value: TimeLimit; onChange: (v
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
             accessibilityLabel={o.value == null ? 'Any amount of time' : `${o.label} or less`}
-            style={styles.option}
+            // Until the sliding highlight has measured, the chosen time carries its own fill, so its dark label never sits on a dark track.
+            style={[styles.option, on && !current && { backgroundColor: p.accent, borderRadius: 18 }]}
           >
-            <Text style={{ fontFamily: on ? font.sansBold : font.sansMedium, fontSize: 14, color: on ? '#2B2A24' : p.muted }}>{o.label}</Text>
+            <Text maxFontSizeMultiplier={1.5} style={{ fontFamily: on ? font.sansBold : font.sansMedium, fontSize: 14, color: on ? '#2B2A24' : p.muted }}>
+              {o.label}
+            </Text>
           </Pressable>
         );
       })}

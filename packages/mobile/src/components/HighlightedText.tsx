@@ -3,6 +3,9 @@ import { MEASURE, amountFor, type IngredientAmount } from '../lib/cook';
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/** A bare count right before an ingredient name: "Dice 1/2 a shallot", "add 2 small onions". */
+const BARE_AMOUNT = /(^|\s)(\d+(?:\s*\/\s*\d+)?|\d*\s*[½¼¾⅓⅔])(\s+(?:(?:a|an|of|the|small|medium|large)\s+)*)$/i;
+
 type Props = {
   text: string;
   /** Ingredient names to pick out. */
@@ -47,7 +50,15 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
     if (kind === 'ingredient' && prev?.kind === 'ingredient' && /^\s+$/.test(gap)) {
       prev.s += gap + m[0]; // only a space between two names: one ingredient
     } else {
-      if (gap) parts.push({ s: gap, kind: 'text' });
+      // "Dice 1/2 a shallot": a bare amount just before an ingredient becomes a tag like any other,
+      // so it's found by shape and follows the batch size.
+      const bare = kind === 'ingredient' && amountTag ? gap.match(BARE_AMOUNT) : null;
+      if (bare) {
+        const before = gap.slice(0, bare.index! + bare[1].length);
+        if (before) parts.push({ s: before, kind: 'text' });
+        parts.push({ s: bare[2], kind: 'measure' });
+        parts.push({ s: bare[3], kind: 'text' });
+      } else if (gap) parts.push({ s: gap, kind: 'text' });
       parts.push({ s: m[0], kind });
     }
     last = m.index! + m[0].length;
@@ -76,7 +87,7 @@ export function HighlightedText({ text, terms, style, highlight, amounts, amount
         const between = parts[i - 1]?.kind === 'text' ? parts[i - 1].s : '';
         const statedAlready =
           parts[i - 1]?.kind === 'measure' ||
-          (parts[i - 2]?.kind === 'measure' && /^\s*(of\s+)?(the\s+)?$/i.test(between)) ||
+          (parts[i - 2]?.kind === 'measure' && /^\s*((of|the|a|an|small|medium|large)\s+)*$/i.test(between)) ||
           // "Dice 1/2 a shallot", "add 2 onions": a bare number just before the name
           /(\d|[½¼¾⅓⅔])\s*(\/\s*\d+)?\s+((a|an|of|the|small|medium|large)\s+)*$/i.test(between) ||
           // "add more vinegar", "the remaining oil": a top-up, not the recipe's whole amount

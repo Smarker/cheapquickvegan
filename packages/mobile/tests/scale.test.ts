@@ -39,6 +39,9 @@ describe('steps and yields', () => {
     expect(scaleInStep('2 cups', 2)).toBe('4 cups');
     expect(scaleInStep('20 min', 2)).toBe('20 min');
     expect(scaleInStep('400F', 2)).toBe('400F');
+    // A bare count before an ingredient ("Dice 1/2 a shallot") follows the batch too.
+    expect(scaleInStep('1/2', 2)).toBe('1');
+    expect(scaleInStep('2', 0.5)).toBe('1');
   });
   it('reads and scales yields', () => {
     expect(baseServings('2-4 servings')).toBe(2);

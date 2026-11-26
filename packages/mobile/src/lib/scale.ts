@@ -155,11 +155,15 @@ export function floorOf(lines: string[]): { factor: number; limit: string | null
   return { factor: Math.min(1, floor), limit: floor > 0 ? limit : null };
 }
 
-/** An amount written inside a step ("2 cups"), scaled when it's a measured quantity. Times and temperatures never match. */
+/**
+ * An amount written inside a step, scaled when it's a quantity: "2 cups", or a bare count
+ * before an ingredient ("1/2" in "Dice 1/2 a shallot"). Times and temperatures never match.
+ */
 export function scaleInStep(amountText: string, factor: number): string {
   if (factor === 1) return amountText;
   const m = amountText.match(LEAD);
-  if (!m || !m[5]) return amountText;
+  const bareCount = !!m && m[0].trim() === amountText.trim();
+  if (!m || (!m[5] && !bareCount)) return amountText;
   return scaleLine(amountText, factor);
 }
 
