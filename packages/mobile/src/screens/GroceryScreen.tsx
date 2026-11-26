@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyBowl } from '../components/Doodles';
@@ -9,8 +9,9 @@ import { PencilStrike } from '../components/PencilStrike';
 import { Hint } from '../components/Hint';
 import { dismissHint } from '../lib/hints';
 import { IngredientDoodle } from '../components/IngredientDoodle';
-import { AISLES, useGrocery, type GroceryItem } from '../lib/grocery';
+import { AISLES, SHARED, useGrocery, type GroceryItem } from '../lib/grocery';
 import { mergeLines } from '../lib/groceryMerge';
+import { parsePastedList } from '../lib/pasteList';
 import { font, space, type as t, usePalette } from '../theme/tokens';
 
 /** The grocery list: grouped by store section, ticked off with a pencil line, sent as plain text. */
@@ -24,6 +25,15 @@ export function GroceryScreen() {
   const left = byAisle.reduce((n, a) => n + a.lines.filter((l) => !l.checked).length, 0);
   const tick = (ids: string[], checked: boolean) => ids.forEach((id) => g.items.find((i) => i.id === id)?.checked === checked && g.toggle(id));
   const recipes = [...new Map(g.items.map((i) => [i.recipeSlug, i.recipeTitle])).entries()];
+  // "for 2 recipes and a shared list": a pasted list isn't a recipe, so it's named on its own.
+  const cooking = recipes.filter(([slug]) => slug !== SHARED);
+  const hasShared = cooking.length < recipes.length;
+  const forWhat =
+    cooking.length > 1
+      ? ` for ${cooking.length} recipes${hasShared ? ' and a shared list' : ''}`
+      : cooking.length === 1
+        ? `, for ${cooking[0][1]}${hasShared ? ' and a shared list' : ''}`
+        : ', from a shared list';
   // Long-press a line to see the recipe's own wording ("1 C jasmine rice (cooked)").
   const [shown, setShown] = useState<Set<string>>(new Set());
   // Removing is quick to undo: the last removal can be put back for a few seconds.
@@ -33,6 +43,7 @@ export function GroceryScreen() {
     const id = setTimeout(() => setUndo(null), 6000);
     return () => clearTimeout(id);
   }, [undo]);
+  const [pasting, setPasting] = useState(false);
   const removeWithUndo = (label: string, gone: GroceryItem[], run: () => void) => {
     run();
     setUndo({ label, items: gone });
@@ -51,11 +62,14 @@ export function GroceryScreen() {
             <Text style={[t.hand, { color: p.ink, textAlign: 'center', fontSize: 22, lineHeight: 28 }]}>
               Your list is empty.{'\n'}Open a recipe and tap "Add to grocery list".
             </Text>
+            <Pressable onPress={() => setPasting(true)} accessibilityRole="button" accessibilityHint="Add items from a list someone sent you" hitSlop={8} style={styles.pasteLink}>
+              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Got a list from someone? Paste it</Text>
+            </Pressable>
           </View>
         ) : (
           <>
             <Text style={[t.label, { color: p.greenDeep }]} accessibilityLiveRegion="polite">
-              {left === 0 ? 'All done. Happy cooking!' : `${left} to get${recipes.length > 1 ? ` for ${recipes.length} recipes` : `, for ${recipes[0][1]}`}`}
+              {left === 0 ? 'All done. Happy cooking!' : `${left} to get${forWhat}`}
             </Text>
 
             <Hint id="grocery-long-press">Lines are written for the shop. Long-press any item to see how the recipe writes it.</Hint>
@@ -71,6 +85,14 @@ export function GroceryScreen() {
                 style={({ pressed }) => [styles.primary, { backgroundColor: p.accent, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
               >
                 <Text style={{ fontFamily: font.sansBold, fontSize: 16, color: '#2B2A24' }}>Send list</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setPasting(true)}
+                accessibilityRole="button"
+                accessibilityHint="Add items from a list someone sent you"
+                style={({ pressed }) => [styles.primary, styles.quiet, { borderColor: p.hairline, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
+              >
+                <Text style={{ fontFamily: font.sansBold, fontSize: 16, color: p.ink }}>Paste a list</Text>
               </Pressable>
               {g.items.some((i) => i.checked) && (
                 <Pressable
@@ -154,7 +176,7 @@ export function GroceryScreen() {
               <Text style={[t.section, { color: p.ink, fontSize: 18 }]}>On this list</Text>
               {recipes.map(([slug, title]) => (
                 <View key={slug} style={styles.recipeRow}>
-                  <Text style={[t.body, { color: p.ink, flex: 1 }]}>{title}</Text>
+                  <Text style={[t.body, { color: p.ink, flex: 1 }]}>{title.charAt(0).toUpperCase() + title.slice(1)}</Text>
                   <Pressable
                     onPress={() => removeWithUndo(`Removed ${title}`, g.items.filter((i) => i.recipeSlug === slug), () => g.removeRecipe(slug))}
                     accessibilityRole="button" accessibilityLabel={`Remove ${title} from the list`} hitSlop={8} style={styles.remove}>
@@ -167,7 +189,68 @@ export function GroceryScreen() {
         )}
       </ScrollView>
       <View pointerEvents="none" style={[styles.band, { height: insets.top, backgroundColor: p.ground }]} />
+      <PasteList visible={pasting} onClose={() => setPasting(false)} onAdd={(found) => { g.addShared(found); setPasting(false); }} />
     </View>
+  );
+}
+
+/**
+ * Paste a list someone sent (from this app, Notes or a text). The phone's own Paste goes into
+ * the box, so there's no clipboard permission to ask for; the items found show before adding.
+ */
+function PasteList({ visible, onClose, onAdd }: { visible: boolean; onClose: () => void; onAdd: (lines: string[]) => void }) {
+  const p = usePalette();
+  const [text, setText] = useState('');
+  const found = parsePastedList(text);
+  const close = () => {
+    setText('');
+    onClose();
+  };
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}>
+      <ScrollView style={{ backgroundColor: p.ground }} contentContainerStyle={styles.sheet} keyboardShouldPersistTaps="handled">
+        <View style={styles.sheetHead}>
+          <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
+            Paste a list
+          </Text>
+          <Pressable onPress={close} accessibilityRole="button" hitSlop={10}>
+            <Text style={[t.label, { color: p.greenDeep }]}>Cancel</Text>
+          </Pressable>
+        </View>
+        <Text style={[t.body, { color: p.muted }]}>Copy the list from your messages or notes, then press and hold the box below and choose Paste.</Text>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          multiline
+          autoFocus
+          placeholder={'2 red onions\n1 block firm tofu\nlimes'}
+          placeholderTextColor={p.muted}
+          accessibilityLabel="Pasted list"
+          style={[t.body, styles.pasteBox, { color: p.ink, backgroundColor: p.sand, borderColor: p.hairline }]}
+        />
+        {found.length > 0 && (
+          <Text style={[t.small, { color: p.muted }]} accessibilityLiveRegion="polite">
+            Found {found.length} {found.length === 1 ? 'item' : 'items'}: {found.slice(0, 4).join(', ')}
+            {found.length > 4 ? `, and ${found.length - 4} more` : ''}.
+          </Text>
+        )}
+        <Pressable
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            onAdd(found);
+            setText('');
+          }}
+          disabled={!found.length}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !found.length }}
+          style={[styles.primary, { backgroundColor: p.accent, opacity: found.length ? 1 : 0.4 }]}
+        >
+          <Text style={{ fontFamily: font.sansBold, fontSize: 16, color: '#2B2A24' }}>
+            {found.length ? `Add ${found.length} to my list` : 'Add to my list'}
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </Modal>
   );
 }
 
@@ -177,7 +260,12 @@ const styles = StyleSheet.create({
   chipText: { fontFamily: font.sansMedium },
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.s },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.l, paddingBottom: 80 },
-  actions: { flexDirection: 'row', gap: space.m, marginTop: space.s },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.s },
+  quiet: { borderWidth: 2 },
+  pasteLink: { minHeight: 44, justifyContent: 'center' },
+  sheet: { padding: space.xl, gap: space.l },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  pasteBox: { borderWidth: 1.5, borderRadius: 16, padding: space.m, minHeight: 160, textAlignVertical: 'top' },
   primary: { minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   secondary: { minHeight: 48, paddingHorizontal: space.l, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   item: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 48, paddingVertical: 4 },

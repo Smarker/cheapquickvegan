@@ -5,6 +5,8 @@ import { mergeLines } from './groceryMerge';
 import { displayTitle, type Recipe } from './recipes';
 
 const KEY = 'cqv:grocery:v1';
+/** Items pasted from someone else's list sit together under this, apart from any recipe. */
+export const SHARED = 'shared-list';
 
 export type GroceryItem = { id: string; text: string; aisle: Aisle; recipeSlug: string; recipeTitle: string; checked: boolean };
 
@@ -32,6 +34,8 @@ type Grocery = {
   /** Adds a recipe's ingredients, or just the lines given (the ones the cook doesn't already have). */
   addRecipe: (r: Recipe, only?: string[]) => number;
   hasRecipe: (slug: string) => boolean;
+  /** Adds pasted lines that came from someone else's list, grouped as "From a shared list". Returns how many were new. */
+  addShared: (lines: string[]) => number;
   toggle: (id: string) => void;
   removeRecipe: (slug: string) => void;
   clearChecked: () => void;
@@ -78,10 +82,24 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
     return lines.length;
   }, []);
 
+  const addShared = useCallback((lines: string[]) => {
+    let added = 0;
+    setItems((prev) => {
+      const have = new Set(prev.filter((i) => i.recipeSlug === SHARED).map((i) => i.text.toLowerCase()));
+      const fresh = lines
+        .filter((text) => !have.has(text.toLowerCase()) && !isJustWater(text))
+        .map((text, n) => ({ id: `${SHARED}:${Date.now()}:${n}`, text, aisle: aisleFor(text), recipeSlug: SHARED, recipeTitle: 'a shared list', checked: false }));
+      added = fresh.length;
+      return [...prev, ...fresh];
+    });
+    return added;
+  }, []);
+
   const value = useMemo<Grocery>(
     () => ({
       items,
       addRecipe,
+      addShared,
       hasRecipe: (slug) => items.some((i) => i.recipeSlug === slug),
       toggle: (id) => setItems((prev) => prev.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i))),
       removeRecipe: (slug) => setItems((prev) => prev.filter((i) => i.recipeSlug !== slug)),
@@ -100,7 +118,7 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
         await Share.share({ title: 'Grocery list', message: `Grocery list for ${recipesLine}\n\n${text}` }).catch(() => {});
       },
     }),
-    [items, addRecipe],
+    [items, addRecipe, addShared],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
