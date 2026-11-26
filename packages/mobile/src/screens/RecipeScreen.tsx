@@ -187,6 +187,8 @@ export function RecipeScreen({ route, navigation }: Props) {
         style={[styles.top, HERO === 'sheet' ? [styles.topSheet, { backgroundColor: tint }] : null]}
         onLayout={(e) => setTopH(e.nativeEvent.layout.height)}
       >
+        {/* The grabber sits on whichever sheet meets the photo: this one in 'sheet', the next one in 'fade'. */}
+        {HERO === 'sheet' && <View style={[styles.grabber, styles.grabberTop, { backgroundColor: p.ink + '26' }]} />}
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
@@ -264,7 +266,7 @@ export function RecipeScreen({ route, navigation }: Props) {
       </View>
 
       <View style={[styles.sheetHead, { backgroundColor: p.ground }]}>
-        <View style={[styles.grabber, { backgroundColor: p.hairline }]} />
+        {HERO === 'fade' && <View style={[styles.grabber, { backgroundColor: p.hairline }]} />}
         {saved.isSaved(r.slug) && <RecipeUpdated changes={watch.changesFor(r.slug)} onGotIt={() => watch.acknowledge(r.slug)} />}
         {!!r.description && <Text style={[t.body, { color: p.muted }]}>{r.description}</Text>}
         <RecipeWarning warnings={prefs.warningsFor(r)} swaps={swapsFor(allLines, prefs.avoid)} />
@@ -649,7 +651,9 @@ const styles = StyleSheet.create({
   sheet: { padding: space.xl, paddingTop: space.xxl, gap: space.xl },
   aheadRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s },
   top: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xl, gap: space.l },
-  topSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  topSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: space.m },
+  // Tucked close to the sheet's edge; the block's own gap spaces the title below it.
+  grabberTop: { marginBottom: -space.s },
   hero: { position: 'absolute', top: 0, left: 0, overflow: 'hidden' },
   heroFade: { position: 'absolute', left: 0, bottom: 0 },
   bar: { position: 'absolute', top: 0, left: 0, right: 0 },

@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line, Path } from 'react-native-svg';
-import { Peaks, StirringPot, Squiggle } from '../components/Doodles';
+import { StirringPot, Squiggle } from '../components/Doodles';
 import { usePrefs } from '../lib/prefs';
 import { GEAR } from '../components/GearDoodles';
 import { CookedStamp } from '../components/CookedStamp';
@@ -63,10 +63,7 @@ type Props = NativeStackScreenProps<DiscoverStack, 'Discover'>;
 export function DiscoverScreen({ navigation }: Props) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
-  const { width, fontScale } = useWindowDimensions();
-  // Large text: gear tiles go two to a row so their names and counts stay whole.
-  const gearCols = fontScale > 1.2 ? 2 : 3;
-  const gearW = Math.floor((width - space.xl * 2 - space.m * (gearCols - 1)) / gearCols);
+  const { width } = useWindowDimensions();
   const saved = useSaved();
   const cardW = Math.min(width * 0.62, 270);
   const net = useNetInfo();
@@ -75,6 +72,9 @@ export function DiscoverScreen({ navigation }: Props) {
   const [limit, setLimit] = useState<TimeLimit>(30);
   const [gear, setGear] = useState<string | null>(null);
   const [meal, setMeal] = useState<Meal>(mealWord());
+  // The heading's meal, the time chip and the gear chip each open their choices in one row under the heading.
+  const [choosing, setChoosing] = useState<'meal' | 'time' | 'gear' | null>(null);
+  const choose = (c: 'meal' | 'time' | 'gear') => setChoosing((cur) => (cur === c ? null : c));
   // The time before a gear tap widened it, so clearing the gear puts the cook's own choice back.
   const [limitBeforeGear, setLimitBeforeGear] = useState<TimeLimit | undefined>();
   // When the cook last picked a meal themselves. An hour later, the clock picks again.
@@ -139,12 +139,18 @@ export function DiscoverScreen({ navigation }: Props) {
   // The shelves stay on the meal being asked about, and don't repeat what the trail already shows.
   const onTrail = new Set(featured.map((r) => r.slug));
   const forMeal = (r: Recipe) => fitsMeal(r, meal) && !onTrail.has(r.slug);
+  // One shelf: the ones you loved first, most-cooked first, then more like them you haven't cooked yet.
   const faves = favorites(recipes, loved, saved.cookedCount).filter(forMeal);
   const moreLike = moreLikeLoved(recipes, loved, saved.cookedCount, prefs.fits).filter(forMeal).slice(0, 10);
+  const forYou = [...faves, ...moreLike.filter((r) => !faves.some((x) => x.slug === r.slug))];
 
-  // The switch offers the clock's meal back once you've left it, so lunch is never lost.
+  // Picking the clock's own meal hands the choice back to the clock.
   const clockMeal = mealWord();
-  const otherMeal: Meal = meal !== clockMeal ? clockMeal : meal === 'breakfast' ? 'dinner' : 'breakfast';
+  const pickMeal = (m: Meal) => {
+    setMeal(m);
+    mealChosenAt.current = m === clockMeal ? null : Date.now();
+    setChoosing(null);
+  };
   const mealPlural = { breakfast: 'breakfasts', lunch: 'lunches', dinner: 'dinners' }[meal];
   const gearLabel = GEAR.find((g) => g.tag === gear)?.label;
 
@@ -190,31 +196,73 @@ export function DiscoverScreen({ navigation }: Props) {
         <Text style={[t.hand, { color: p.muted }]}>{greeting()}</Text>
         <Text style={[t.display, { color: p.ink, marginTop: 2 }]} accessibilityRole="header">
           What's for{'\n'}
-          <Text style={{ fontFamily: font.serif }}>{meal}?</Text>
+          <Text
+            style={{ fontFamily: font.serif }}
+            onPress={() => choose('meal')}
+            accessibilityRole="button"
+            accessibilityLabel={`${meal}. Choose another meal`}
+            suppressHighlighting
+          >
+            {meal}?<Text style={{ fontSize: 26, color: p.muted }}> ▾</Text>
+          </Text>
         </Text>
         <View style={{ marginTop: -4, marginBottom: 4 }} accessible={false}>
           <Squiggle key={meal} color={p.harvest} width={meal.length * 21 + 16} />
         </View>
-        <Pressable
-          onPress={() => {
-            setMeal(otherMeal);
-            mealChosenAt.current = otherMeal === clockMeal ? null : Date.now();
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={`Show ${otherMeal} recipes instead`}
-          hitSlop={10}
-          style={{ alignSelf: 'flex-start' }}
-        >
-          <Text style={[t.label, { color: p.greenDeep }]}>Want {otherMeal} instead?</Text>
-        </Pressable>
         {net.isConnected === false && (
           <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>You're offline. Saved recipes still open.</Text>
         )}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-        <TimePicker value={limit} onChange={chooseLimit} />
-      </ScrollView>
+      {/* One row of controls: the time, and the gear. The meal is the heading's own word. */}
+      <View style={[styles.pad, styles.controls]}>
+        <Pill label={`${limitLabel ?? 'Any time'} ▾`} selected={choosing === 'time'} onPress={() => choose('time')} accessibilityLabel={`Time: ${limitLabel ?? 'any'}. Change`} />
+        {gearLabel ? (
+          <Pill label={`${gearLabel}  ×`} selected onPress={clearGear} accessibilityLabel={`Showing ${gearLabel.toLowerCase()} recipes. Clear`} />
+        ) : (
+          <Pill label="Gear ▾" selected={choosing === 'gear'} onPress={() => choose('gear')} accessibilityLabel="Cook with a pan or gadget" />
+        )}
+      </View>
+      {choosing === 'meal' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+          {(['breakfast', 'lunch', 'dinner'] as const).map((m) => (
+            <Pill key={m} label={m[0].toUpperCase() + m.slice(1)} selected={m === meal} role="tab" onPress={() => pickMeal(m)} />
+          ))}
+        </ScrollView>
+      )}
+      {choosing === 'time' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+          <TimePicker
+            value={limit}
+            onChange={(v) => {
+              chooseLimit(v);
+              setChoosing(null);
+            }}
+          />
+        </ScrollView>
+      )}
+      {choosing === 'gear' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+          {GEAR.filter((g) => !prefs.missingGear.includes(g.tag)).map(({ tag, label }) => {
+            const count = equipmentCount(tag, limit, meal);
+            // Nothing this quick: say how much time it needs, and a tap opens the time up to there.
+            const widen = count === 0 ? widerFor(tag) : undefined;
+            if (count === 0 && widen === undefined) return null;
+            const more = TIME_OPTIONS.find((o) => o.value === widen)?.label;
+            return (
+              <Pill
+                key={tag}
+                label={count > 0 ? `${label} · ${count}` : `${label} · ${more}`}
+                onPress={() => {
+                  pickGear(tag, widen);
+                  setChoosing(null);
+                }}
+                accessibilityLabel={count > 0 ? `${label}, ${count} ${count === 1 ? 'recipe' : 'recipes'}` : `${label}, needs ${more}`}
+              />
+            );
+          })}
+        </ScrollView>
+      )}
 
       {featured.length === 0 ? (
         <View style={[styles.pad, { gap: space.m, marginTop: space.xl }]}>
@@ -237,23 +285,6 @@ export function DiscoverScreen({ navigation }: Props) {
               )}
             </View>
           )}
-          <View style={[styles.pad, styles.note]} accessible={false}>
-            <Text style={[t.label, { color: p.greenDeep, paddingRight: 6, flexShrink: 1 }]} textBreakStrategy="simple">
-              {featured.length}{' '}
-              {noMains ? (featured.length === 1 ? 'side or snack' : 'sides and snacks') : featured.length === 1 ? 'recipe' : 'recipes'}
-              {gearLabel
-                ? ` with a ${gearLabel.toLowerCase()}${limitBeforeGear === undefined ? '' : limit == null ? ', any time' : `, up to ${limitLabel}`}`
-                : ', quickest first'}
-            </Text>
-            {gearLabel && (
-              <Pressable onPress={clearGear} accessibilityRole="button" accessibilityLabel={`Clear the ${gearLabel} filter`} hitSlop={10}>
-                <Text style={[t.label, { color: p.greenDeep }]}>Clear</Text>
-              </Pressable>
-            )}
-            <Svg width={44} height={14} viewBox="0 0 44 14">
-              <Path d="M2 8 C12 4 24 10 38 6 M32 2 L39 6 L33 11" stroke={p.greenDeep} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          </View>
           <FlatList
             key={`${limit}-${gear}-${meal}`}
             horizontal
@@ -302,7 +333,6 @@ export function DiscoverScreen({ navigation }: Props) {
                 <Text style={[t.label, { color: p.greenDeep }]}>See all</Text>
               </Pressable>
             </View>
-            <Text style={[t.hand, { color: p.muted, marginTop: 2, paddingRight: 6 }]} textBreakStrategy="simple">{weekToCook.length} to cook</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weekRow}>
             {weekToCook.map((r) => (
@@ -323,95 +353,43 @@ export function DiscoverScreen({ navigation }: Props) {
         </View>
       )}
 
-      <Shelf title="Your favorites" note="The ones you loved, most-cooked first." items={faves} onOpen={open} />
-      <Shelf title="More like what you loved" note="Same kind of dish or cuisine, not cooked yet." items={moreLike} onOpen={open} />
+      <Shelf title="For you" items={forYou} onOpen={open} />
 
-      <View style={{ marginTop: space.xl }}>
-        <View style={styles.pad}>
-          <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
+      {/* One journey: the one you're partway through, or an easy place to begin. The rest live on the map. */}
+      <View style={[styles.pad, { marginTop: space.xl, gap: space.m }]}>
+        <View style={styles.weekHead}>
+          <Text style={[t.section, { color: p.ink, flexShrink: 1, paddingRight: 4 }]} accessibilityRole="header">
             Cooking journeys
           </Text>
-          <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>New to a cuisine? Cook your way through it, easy dishes first.</Text>
-          <View style={{ marginTop: space.m }}>
-            <Hint id="journeys" lead={<Blazes level="Easy" color={p.green} />}>
-              A journey is a few recipes from one cuisine, easiest first. The green bars show how much work: one is easy, three is a weekend project.
-            </Hint>
-          </View>
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
-          <Pressable
-            onPress={() => navigation.navigate('JourneyMap')}
-            accessibilityRole="button"
-            accessibilityLabel="See every journey"
-            style={({ pressed }) => [styles.journey, styles.mapCard, { borderColor: p.ink, backgroundColor: p.ground, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
-          >
-            <Peaks color={p.ink} width={130} />
-            <Text style={[t.hand, { color: p.greenDeep, fontSize: 17 }]}>Every cuisine</Text>
-            <Text style={[t.rowTitle, { color: p.ink }]}>See every journey</Text>
+          <Pressable onPress={() => navigation.navigate('JourneyMap')} accessibilityRole="link" accessibilityLabel="See every journey" hitSlop={10}>
+            <Text style={[t.label, { color: p.greenDeep }]}>See all</Text>
           </Pressable>
-          {hikeCards.map(({ region, stops, done }, i) => {
-            return (
-              <Pressable
-                key={region.id}
-                onPress={() => navigation.navigate('Journey', { id: region.id })}
-                accessibilityRole="button"
-                accessibilityLabel={`${region.trail}, ${region.name}, ${stops.length} recipes, ${done} cooked`}
-                style={({ pressed }) => [
-                  styles.journey,
-                  { backgroundColor: p[AREA_TINT[region.area] ?? 'sand'], transform: [{ scale: pressed ? 0.97 : 1 }] },
-                ]}
-              >
-                <Text style={[t.hand, { color: p.greenDeep, fontSize: 17, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
-                  {AREAS.find((a) => a.id === region.area)?.short ?? region.name}
-                </Text>
-                <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={3}>
-                  {region.trail}
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s }}>
-                  <Blazes level={region.grade} color={p.green} />
-                  <Text style={[t.small, { color: p.muted }]}>
-                    {done ? `${done} of ${stops.length} cooked` : `${gradeLabel(region)}, ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      <View style={[styles.pad, { marginTop: space.xl }]}>
-        <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
-          Cook with your gear
-        </Text>
-        <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Tap a pan or gadget and I'll show what it can make.</Text>
-        <View style={styles.gearGrid}>
-          {GEAR.filter((g) => !prefs.missingGear.includes(g.tag)).map(({ tag, label, Doodle }, i) => {
-            const on = gear === tag;
-            const count = equipmentCount(tag, limit, meal);
-            // Nothing this quick: say so, and a tap opens the time up to where there is something.
-            const wider = count === 0 ? widerFor(tag) : undefined;
-            const none = count === 0 && wider === undefined;
-            const countText = count > 0 ? `${count} ${count === 1 ? 'recipe' : 'recipes'}` : none ? `None for ${meal}` : `Needs ${TIME_OPTIONS.find((o) => o.value === wider)?.label ?? 'more time'}`;
-            return (
-              <GearTile
-                key={tag}
-                index={i}
-                width={gearW}
-                disabled={none}
-                onPress={() => pickGear(tag, wider)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: on, disabled: none }}
-                accessibilityLabel={`${label}, ${countText}`}
-                accessibilityHint={wider !== undefined ? `Shows ${label.toLowerCase()} recipes up to ${TIME_OPTIONS.find((o) => o.value === wider)?.label}` : undefined}
-                style={[styles.gear, { backgroundColor: p.greenSoft, borderColor: on ? p.greenDeep : 'transparent' }]}
-                doodle={<Doodle color={count === 0 ? p.muted : p.ink} />}
-              >
-                <Text style={[t.label, { color: p.ink, textAlign: 'center', alignSelf: 'stretch' }]}>{label}</Text>
-                <Text style={[t.label, { color: count === 0 ? p.muted : p.greenDeep, alignSelf: 'stretch', textAlign: 'center' }]}>{countText}</Text>
-              </GearTile>
-            );
-          })}
         </View>
+        <Hint id="journeys" lead={<Blazes level="Easy" color={p.green} />}>
+          A journey is a few recipes from one cuisine, easiest first. The green bars show how much work: one is easy, three is a weekend project.
+        </Hint>
+        {hikeCards.slice(0, 1).map(({ region, stops, done, started }) => (
+          <Pressable
+            key={region.id}
+            onPress={() => navigation.navigate('Journey', { id: region.id })}
+            accessibilityRole="button"
+            accessibilityLabel={`${started ? 'Continue: ' : ''}${region.trail}, ${region.name}, ${stops.length} recipes, ${done} cooked`}
+            style={({ pressed }) => [styles.journey, { backgroundColor: p[AREA_TINT[region.area] ?? 'sand'], transform: [{ scale: pressed ? 0.98 : 1 }] }]}
+          >
+            <Text style={[t.label, { color: p.greenDeep }]} numberOfLines={1}>
+              {started ? 'Continue' : 'Start here'} · {AREAS.find((a) => a.id === region.area)?.short ?? region.name}
+            </Text>
+            <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
+              {region.trail}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s }}>
+              <Blazes level={region.grade} color={p.green} />
+              <Text style={[t.small, { color: p.muted }]}>
+                {done ? `${done} of ${stops.length} cooked` : `${gradeLabel(region)}, ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
+              </Text>
+            </View>
+          </Pressable>
+        ))}
       </View>
 
       {/* Bigger cooks on weekends, when there's time. Weekdays, they're one tap away in Search. */}
@@ -421,7 +399,6 @@ export function DiscoverScreen({ navigation }: Props) {
             <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
               For a slow weekend
             </Text>
-            <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Breads, soups and bigger cooks. Worth the wait.</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
             {slow.map((r) => (
@@ -551,49 +528,8 @@ function Signpost({ p, label, left }: { p: Palette; label: string; left: number 
   );
 }
 
-type GearTileProps = {
-  index: number;
-  width: number;
-  disabled: boolean;
-  onPress: () => void;
-  doodle: React.ReactNode;
-  style: object;
-  children: React.ReactNode;
-  accessibilityRole: 'button';
-  accessibilityState: { selected: boolean; disabled: boolean };
-  accessibilityLabel: string;
-  accessibilityHint?: string;
-};
-
-/** An equipment tile, tilted like a sticker. Its doodle gives a little wiggle when tapped. */
-function GearTile({ index, width, disabled, onPress, doodle, style, children, ...a11y }: GearTileProps) {
-  const reduce = useReducedMotion();
-  const wiggle = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const tileStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${index % 2 ? 1.5 : -1.5}deg` }, { scale: scale.value }] }));
-  const doodleStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${wiggle.value}deg` }] }));
-  return (
-    <Pressable
-      {...a11y}
-      disabled={disabled}
-      onPress={() => {
-        if (!reduce) wiggle.value = withSequence(withTiming(-9, { duration: 70 }), withTiming(8, { duration: 90 }), withTiming(-5, { duration: 80 }), withSpring(0, spring));
-        onPress();
-      }}
-      onPressIn={() => (scale.value = withSpring(0.95, spring))}
-      onPressOut={() => (scale.value = withSpring(1, spring))}
-      style={{ width }}
-    >
-      <Animated.View style={[style, { width: '100%' }, tileStyle]}>
-        <Animated.View style={doodleStyle}>{doodle}</Animated.View>
-        {children}
-      </Animated.View>
-    </Pressable>
-  );
-}
-
 /** A row of recipe photos under a heading, like "For a slow weekend". Nothing at all when empty. */
-function Shelf({ title, note, items, onOpen }: { title: string; note: string; items: Recipe[]; onOpen: (r: Recipe) => void }) {
+function Shelf({ title, items, onOpen }: { title: string; items: Recipe[]; onOpen: (r: Recipe) => void }) {
   const p = usePalette();
   // Wider cards at large text sizes, so titles wrap between words instead of inside them.
   const { fontScale } = useWindowDimensions();
@@ -605,7 +541,6 @@ function Shelf({ title, note, items, onOpen }: { title: string; note: string; it
         <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
-        <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>{note}</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
         {items.map((r) => (
@@ -637,7 +572,7 @@ const styles = StyleSheet.create({
   weekHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   weekRow: { paddingHorizontal: space.xl, gap: space.s },
   weekChip: { flexDirection: 'row', alignItems: 'center', gap: space.s, padding: 6, paddingRight: space.l, borderRadius: 26, minHeight: 52 },
-  note: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.l },
+  controls: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.m },
   card: { borderRadius: 26, padding: 10 },
   cardBody: { paddingHorizontal: 8, paddingTop: space.m, paddingBottom: space.s, gap: 4 },
   heart: { position: 'absolute', right: 10, top: 10 },
@@ -647,12 +582,9 @@ const styles = StyleSheet.create({
   marker: { alignItems: 'center' },
   markerPost: { width: 3, borderRadius: 2 },
   markerBoard: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 2 },
-  gearGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.m, rowGap: space.m, marginTop: space.l },
-  gear: { alignItems: 'center', gap: 4, paddingVertical: space.m, paddingHorizontal: 4, borderRadius: 20, borderWidth: 2 },
   sign: { position: 'absolute', bottom: 22, width: SIGN_W, alignItems: 'center' },
   board: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, transform: [{ rotate: '-4deg' }] },
   post: { width: 2.5, height: 34, borderRadius: 2 },
-  journey: { width: 190, borderRadius: 24, padding: space.l, gap: 6 },
-  mapCard: { borderWidth: 2, borderStyle: 'dashed' },
+  journey: { borderRadius: 24, padding: space.l, gap: 6 },
   slowRow: { paddingHorizontal: space.xl, gap: space.l, paddingTop: space.l },
 });
