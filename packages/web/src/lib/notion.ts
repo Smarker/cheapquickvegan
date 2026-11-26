@@ -37,6 +37,9 @@ interface RecipePageProperties {
   "Related Recipes"?: { relation: Array<{ id: string }> };
   "Recipe Cuisine"?: { select?: NotionSelectOption };
   Status?: { status?: { name: string } };
+  // Optional, used by the app: a short card title and Easy / Medium / Challenge.
+  "Short Title"?: { rich_text: NotionRichText[] };
+  Difficulty?: { select?: NotionSelectOption | null };
 }
 
 interface GuidePageProperties {
@@ -224,6 +227,8 @@ export async function getRecipeFromNotion(pageId: string): Promise<Recipe | null
       relatedRecipes: properties["Related Recipes"]?.relation?.map((r) => r.id) || [],
       recipeCuisine: properties["Recipe Cuisine"]?.select?.name || "",
       status: properties.Status?.status?.name || "Published",
+      shortTitle: properties["Short Title"]?.rich_text?.map((t) => t.plain_text).join("").trim() || undefined,
+      difficulty: properties.Difficulty?.select?.name || undefined,
     };
 
     return recipe;

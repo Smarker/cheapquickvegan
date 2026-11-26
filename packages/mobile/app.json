@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "CheapQuickVegan",
+    "slug": "cheapquickvegan",
+    "scheme": "cheapquickvegan",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cheapquickvegan.app",
+      "associatedDomains": [
+        "applinks:www.cheapquickvegan.com"
+      ]
+    },
+    "android": {
+      "package": "com.cheapquickvegan.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": true,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.cheapquickvegan.com",
+              "pathPrefix": "/recipes/"
+            },
+            {
+              "scheme": "https",
+              "host": "www.cheapquickvegan.com",
+              "pathPrefix": "/guides/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow CheapQuickVegan to hear voice commands like \"next step\" while you cook.",
+          "speechRecognitionPermission": "Allow CheapQuickVegan to understand voice commands while you cook.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
+      ]
+    ]
+  }
+}

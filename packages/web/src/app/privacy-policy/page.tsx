@@ -14,15 +14,16 @@ export default function PrivacyPolicy() {
             <li><a href="#how-we-use-your-information" className="text-primary hover:underline break-words">2. How We Use Your Information</a></li>
             <li><a href="#user-generated-content" className="text-primary hover:underline break-words">3. User-Generated Content (Comments & Ratings)</a></li>
             <li><a href="#local-storage" className="text-primary hover:underline break-words">4. Local Storage</a></li>
-            <li><a href="#cookies-and-tracking-technologies" className="text-primary hover:underline break-words">5. Cookies and Tracking Technologies</a></li>
-            <li><a href="#third-party-services" className="text-primary hover:underline break-words">6. Third-Party Services</a></li>
-            <li><a href="#data-retention" className="text-primary hover:underline break-words">7. Data Retention</a></li>
-            <li><a href="#data-security" className="text-primary hover:underline break-words">8. Data Security</a></li>
-            <li><a href="#your-rights" className="text-primary hover:underline break-words">9. Your Rights</a></li>
-            <li><a href="#childrens-privacy" className="text-primary hover:underline break-words">10. Children's Privacy</a></li>
-            <li><a href="#changes-to-this-privacy-policy" className="text-primary hover:underline break-words">11. Changes to This Privacy Policy</a></li>
-            <li><a href="#gdpr-compliance" className="text-primary hover:underline break-words">12. GDPR Compliance</a></li>
-            <li><a href="#contact-us" className="text-primary hover:underline break-words">13. Contact Us</a></li>
+            <li><a href="#mobile-app-and-voice-commands" className="text-primary hover:underline break-words">5. Mobile App and Voice Commands</a></li>
+            <li><a href="#cookies-and-tracking-technologies" className="text-primary hover:underline break-words">6. Cookies and Tracking Technologies</a></li>
+            <li><a href="#third-party-services" className="text-primary hover:underline break-words">7. Third-Party Services</a></li>
+            <li><a href="#data-retention" className="text-primary hover:underline break-words">8. Data Retention</a></li>
+            <li><a href="#data-security" className="text-primary hover:underline break-words">9. Data Security</a></li>
+            <li><a href="#your-rights" className="text-primary hover:underline break-words">10. Your Rights</a></li>
+            <li><a href="#childrens-privacy" className="text-primary hover:underline break-words">11. Children's Privacy</a></li>
+            <li><a href="#changes-to-this-privacy-policy" className="text-primary hover:underline break-words">12. Changes to This Privacy Policy</a></li>
+            <li><a href="#gdpr-compliance" className="text-primary hover:underline break-words">13. GDPR Compliance</a></li>
+            <li><a href="#contact-us" className="text-primary hover:underline break-words">14. Contact Us</a></li>
           </ul>
         </nav>
       </div>
@@ -30,13 +31,15 @@ export default function PrivacyPolicy() {
       {/* Section Blocks */}
       <section className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
         <p><strong>Effective date:</strong> January 31, 2026</p>
+        <p><strong>Last updated:</strong> November 22, 2026</p>
         <p className="mt-2 break-words">
           CheapQuickVegan (“we”, “our”, or “us”) respects your privacy and is
           committed to protecting it. This Privacy Policy explains how we collect,
           use, and share information when you visit our website{" "}
           <Link href="https://www.cheapquickvegan.com" className="text-primary hover:underline break-all">
             https://www.cheapquickvegan.com
-          </Link>.
+          </Link>{" "}
+          or use the CheapQuickVegan app for iOS and Android.
         </p>
       </section>
 
@@ -111,15 +114,28 @@ export default function PrivacyPolicy() {
         </p>
       </section>
 
+      <section id="mobile-app-and-voice-commands" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
+        <h2 className="text-2xl font-semibold mb-3">5. Mobile App and Voice Commands</h2>
+        <p className="break-words">
+          The CheapQuickVegan app has an optional Hands-free mode for cooking. It uses your microphone only while Hands-free is switched on, a recipe is open in cook mode, and the app is on screen. It stops when you leave cook mode, switch to another app, or after 10 minutes without a command.
+        </p>
+        <p className="mt-2 break-words">
+          Your speech is turned into text by your phone&apos;s built-in speech service: Apple Speech on iPhone, or Google&apos;s speech service on Android. Depending on your phone, this happens on the device itself or on Apple&apos;s or Google&apos;s servers, under their privacy policies. The app reads the text only to recognise commands such as &ldquo;next step&rdquo;, then discards it. We do not record, store, or send your voice or transcripts to our servers.
+        </p>
+        <p className="mt-2 break-words">
+          Your saved recipes, weekly plan, grocery list, cooked counts, and preferences (such as measurements, equipment, and things to avoid) are stored on your phone only. Deleting the app removes them.
+        </p>
+      </section>
+
       <section id="cookies-and-tracking-technologies" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">5. Cookies and Tracking Technologies</h2>
+        <h2 className="text-2xl font-semibold mb-3">6. Cookies and Tracking Technologies</h2>
         <p className="break-words">
           We use cookies and similar technologies to enhance your experience on our site and analyze site traffic. You can manage or disable cookies in your browser settings, but some features of the site may not function properly if cookies are disabled.
         </p>
       </section>
 
       <section id="third-party-services" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">6. Third-Party Services</h2>
+        <h2 className="text-2xl font-semibold mb-3">7. Third-Party Services</h2>
         <p className="break-words">
           Our site may use third-party services such as Google AdSense, analytics tools, or social media widgets. These services may collect information about your use of the site to provide personalized ads, measure performance, or improve their services.
         </p>
@@ -129,7 +145,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section id="data-retention" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">7. Data Retention</h2>
+        <h2 className="text-2xl font-semibold mb-3">8. Data Retention</h2>
         <p className="break-words">We retain your personal data for as long as necessary to fulfill the purposes outlined in this policy:</p>
         <ul className="list-disc ml-4 sm:ml-6 mt-2 space-y-1 break-words">
           <li><strong>Comments and ratings:</strong> Retained indefinitely unless you request deletion or we remove them for violating our guidelines.</li>
@@ -150,14 +166,14 @@ export default function PrivacyPolicy() {
       </section>
 
       <section id="data-security" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">8. Data Security</h2>
+        <h2 className="text-2xl font-semibold mb-3">9. Data Security</h2>
         <p className="break-words">
           We take reasonable measures to protect your information from unauthorized access, use, or disclosure. However, no method of transmission over the Internet or electronic storage is completely secure, and we cannot guarantee absolute security.
         </p>
       </section>
 
       <section id="your-rights" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">9. Your Rights</h2>
+        <h2 className="text-2xl font-semibold mb-3">10. Your Rights</h2>
         <p className="break-words">You have the right to:</p>
         <ul className="list-disc ml-4 sm:ml-6 mt-2 space-y-1 break-words">
           <li>Access or request a copy of the personal data we hold about you.</li>
@@ -179,21 +195,21 @@ export default function PrivacyPolicy() {
       </section>
 
       <section id="childrens-privacy" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">10. Children's Privacy</h2>
+        <h2 className="text-2xl font-semibold mb-3">11. Children's Privacy</h2>
         <p className="break-words">
           Our website is not directed to children under 13, and we do not knowingly collect personal information from children. If we learn that we have inadvertently collected information from a child under 13, we will take steps to delete it.
         </p>
       </section>
 
       <section id="changes-to-this-privacy-policy" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">11. Changes to This Privacy Policy</h2>
+        <h2 className="text-2xl font-semibold mb-3">12. Changes to This Privacy Policy</h2>
         <p className="break-words">
           We may update this Privacy Policy from time to time. The "Effective Date" at the top will indicate the latest version. We encourage you to review this page periodically for any changes.
         </p>
       </section>
 
       <section id="gdpr-compliance" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">12. GDPR Compliance</h2>
+        <h2 className="text-2xl font-semibold mb-3">13. GDPR Compliance</h2>
         <p className="break-words">
           If you are visiting from the European Union, we comply with the General Data Protection Regulation (GDPR). This means:
         </p>
@@ -216,7 +232,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section id="contact-us" className="bg-secondary/10 border border-secondary/30 rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-3">13. Contact Us</h2>
+        <h2 className="text-2xl font-semibold mb-3">14. Contact Us</h2>
         <ul className="list-disc ml-4 sm:ml-6 space-y-1 break-words">
           <li>
             Email:{" "}

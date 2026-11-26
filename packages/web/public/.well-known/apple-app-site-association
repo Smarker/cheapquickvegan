@@ -1,6 +1,15 @@
 {
   "applinks": {
-    "apps": [],
-    "details": []
+    "details": [
+      {
+        "appIDs": ["APPLE_TEAM_ID.com.cheapquickvegan.app"],
+        "components": [
+          { "/": "/recipes/category/*", "exclude": true },
+          { "/": "/recipes/*" },
+          { "/": "/guides/category/*", "exclude": true },
+          { "/": "/guides/*" }
+        ]
+      }
+    ]
   }
 }
