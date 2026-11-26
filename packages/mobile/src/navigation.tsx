@@ -15,6 +15,7 @@ import { JourneyMapScreen } from './screens/JourneyMapScreen';
 import { CookScreen } from './screens/CookScreen';
 import { RecipeScreen } from './screens/RecipeScreen';
 import { PreferencesScreen } from './screens/PreferencesScreen';
+import { PlannerScreen } from './screens/PlannerScreen';
 import { SavedScreen } from './screens/SavedScreen';
 import { SearchScreen } from './screens/SearchScreen';
 import { font, spring, type as t, usePalette } from './theme/tokens';
@@ -27,7 +28,7 @@ export type DiscoverStack = {
   JourneyMap: undefined;
   Guide: { slug: string };
 };
-export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string } };
+export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string }; Planner: undefined };
 
 const Stack = createNativeStackNavigator<DiscoverStack>();
 const SavedNav = createNativeStackNavigator<SavedStack>();
@@ -75,6 +76,7 @@ function SavedTab() {
       <SavedNav.Screen name="Saved" component={SavedScreen} options={{ headerShown: false }} />
       <SavedNav.Screen name="Recipe" component={RecipeScreen} options={{ title: '' }} />
       <SavedNav.Screen name="Preferences" component={PreferencesScreen} options={{ title: 'Preferences' }} />
+      <SavedNav.Screen name="Planner" component={PlannerScreen} options={{ title: 'Planner' }} />
       <SavedNav.Screen name="Journey" component={JourneyScreen as never} options={{ title: '' }} />
       <SavedNav.Screen name="Guide" component={GuideScreen as never} options={{ title: '' }} />
     </SavedNav.Navigator>

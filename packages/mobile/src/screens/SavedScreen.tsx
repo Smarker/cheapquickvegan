@@ -74,9 +74,14 @@ export function SavedScreen({ navigation }: Props) {
 
       {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
 
-      <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.s }]} accessibilityRole="header">
-        {words.title}
-      </Text>
+      <View style={styles.planHead}>
+        <Text style={[t.section, { color: p.ink, fontSize: 20 }]} accessibilityRole="header">
+          {words.title}
+        </Text>
+        <Pressable onPress={() => navigation.navigate('Planner')} accessibilityRole="link" hitSlop={10} style={{ minHeight: 44, justifyContent: 'center' }}>
+          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Plan by day</Text>
+        </Pressable>
+      </View>
       {week.length === 0 ? (
         <Text style={[t.body, { color: p.muted }]}>{words.empty}</Text>
       ) : (
@@ -199,6 +204,7 @@ const styles = StyleSheet.create({
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.m },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefs: { minHeight: 44, paddingHorizontal: space.l, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center' },
+  planHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.s },
   weekRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: 8, borderRadius: 20 },
   weekActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.xs },
   weekBtn: { minHeight: 46, paddingHorizontal: space.l, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
