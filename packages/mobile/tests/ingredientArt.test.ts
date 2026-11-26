@@ -15,6 +15,7 @@ describe('artFor', () => {
     ['2 tbsp peanut butter', 'nutButter'],
     ['1 tbsp vegan butter', 'butter'],
     ['1 tsp vanilla extract', 'vanilla'],
+    ['½ cup vegan vanilla yogurt (Forager is ideal)', 'yogurt'],
     ['2 scallions, sliced', 'scallion'],
     ['1 red onion, sliced', 'onion'],
     ['1 block firm tofu', 'tofu'],

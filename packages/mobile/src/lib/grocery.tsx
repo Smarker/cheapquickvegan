@@ -3,12 +3,22 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Share } from 'react-native';
 import { mergeLines } from './groceryMerge';
 import { displayTitle, type Recipe } from './recipes';
+import { factorFor, scaleYield } from './scale';
 
 const KEY = 'cqv:grocery:v1';
 /** Items pasted from someone else's list sit together under this, apart from any recipe. */
 export const SHARED = 'shared-list';
 
-export type GroceryItem = { id: string; text: string; aisle: Aisle; recipeSlug: string; recipeTitle: string; checked: boolean };
+export type GroceryItem = {
+  id: string;
+  text: string;
+  aisle: Aisle;
+  recipeSlug: string;
+  recipeTitle: string;
+  checked: boolean;
+  /** How much the recipe was making when it was added ("4 bowls"), so scaled amounts make sense. */
+  recipeServings?: string;
+};
 
 export const AISLES = ['Produce', 'Fridge & freezer', 'Pantry', 'Spices & oils', 'Bakery', 'Other'] as const;
 export type Aisle = (typeof AISLES)[number];
@@ -38,6 +48,8 @@ type Grocery = {
   addShared: (lines: string[]) => number;
   toggle: (id: string) => void;
   removeRecipe: (slug: string) => void;
+  /** Takes single items off the list (one line can stand for the same thing from several recipes). */
+  removeItems: (ids: string[]) => void;
   clearChecked: () => void;
   /** Put back items just removed (Undo). */
   restore: (items: GroceryItem[]) => void;
@@ -76,6 +88,7 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
           recipeSlug: r.slug,
           recipeTitle: displayTitle(r),
           checked: false,
+          recipeServings: r.yieldText ? scaleYield(r.yieldText, factorFor(r.slug, r.yieldText)) : undefined,
         }));
       return [...prev, ...fresh];
     });
@@ -103,6 +116,7 @@ export function GroceryProvider({ children }: { children: React.ReactNode }) {
       hasRecipe: (slug) => items.some((i) => i.recipeSlug === slug),
       toggle: (id) => setItems((prev) => prev.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i))),
       removeRecipe: (slug) => setItems((prev) => prev.filter((i) => i.recipeSlug !== slug)),
+      removeItems: (ids) => setItems((prev) => prev.filter((i) => !ids.includes(i.id))),
       clearChecked: () => setItems((prev) => prev.filter((i) => !i.checked)),
       clearAll: () => setItems([]),
       restore: (back) => setItems((prev) => [...prev, ...back.filter((b) => !prev.some((i) => i.id === b.id))]),

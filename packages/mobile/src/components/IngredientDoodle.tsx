@@ -104,12 +104,14 @@ const DRAWINGS: Record<Art, D> = {
       <Rect x="13" y="18" width="6" height="6" rx="1" stroke={c} {...thin} />
     </>
   ),
+  // A little extract bottle with a vanilla pod leaning on it (two lines alone read as a % sign).
   vanilla: (c) => (
     <>
-      <Path d="M6 26 C12 20 18 12 26 5" stroke={c} {...k} />
-      <Path d="M8 27 C14 21 20 13 27 7" stroke={c} {...k} />
-      <Path d="M12 21 L13 22 M16 17 L17 18 M20 13 L21 14" stroke={c} {...thin} />
-      <Path d="M24 22 C22 18 26 16 27 19 C28 22 26 25 24 22 Z" stroke={c} {...thin} />
+      <Path d="M12 4.5 H17 V8.5 H12 Z" stroke={c} {...k} />
+      <Path d="M13 8.5 V11.5 C10.5 12.5 9.5 14 9.5 16.5 V26 C9.5 27.4 19.5 27.4 19.5 26 V16.5 C19.5 14 18.5 12.5 16 11.5 V8.5" stroke={c} {...k} />
+      <Path d="M9.5 18.5 H19.5 M9.5 23 H19.5" stroke={c} {...thin} />
+      <Path d="M21.5 27.5 C21.8 20 23.6 13 27.2 6.5 C27.6 13.5 25.6 20.5 23.6 27.5 Z" stroke={c} {...k} />
+      <Path d="M24.6 15 L24.3 16.6 M23.6 20 L23.3 21.6" stroke={c} {...thin} />
     </>
   ),
   sauce: (c) => (

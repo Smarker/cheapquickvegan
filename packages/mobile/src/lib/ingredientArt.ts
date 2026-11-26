@@ -12,7 +12,8 @@ export const ART = [
 export type Art = (typeof ART)[number];
 
 const RULES: [Art, RegExp][] = [
-  ['vanilla', /vanilla/],
+  // Vanilla itself (extract, bean, paste); a vanilla-flavoured yogurt or milk gets that thing's own drawing.
+  ['vanilla', /vanilla(?!\s+(?:\w+\s+)?(?:yogh?urt|milk|protein|ice cream|creamer))/],
   ['nutButter', /\b(peanut|almond|cashew|nut|seed|sunflower) butter\b|tahini/],
   ['oil', /\boil\b|cooking spray/],
   ['soySauce', /soy sauce|\btamari\b|coconut aminos|liquid aminos/],
