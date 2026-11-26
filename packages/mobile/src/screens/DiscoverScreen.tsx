@@ -22,6 +22,7 @@ import { HeartButton } from '../components/HeartButton';
 import { Photo } from '../components/Photo';
 import { Pill } from '../components/Pill';
 import { TimePicker } from '../components/TimePicker';
+import { ChevronDownIcon, CrossIcon } from '../components/Icons';
 import {
   displayTitle,
   equipmentCount,
@@ -195,17 +196,13 @@ export function DiscoverScreen({ navigation }: Props) {
       <View style={styles.pad}>
         <Text style={[t.hand, { color: p.muted }]}>{greeting()}</Text>
         <Text style={[t.display, { color: p.ink, marginTop: 2 }]} accessibilityRole="header">
-          What's for{'\n'}
-          <Text
-            style={{ fontFamily: font.serif }}
-            onPress={() => choose('meal')}
-            accessibilityRole="button"
-            accessibilityLabel={`${meal}. Choose another meal`}
-            suppressHighlighting
-          >
-            {meal}?<Text style={{ fontSize: 26, color: p.muted }}> ▾</Text>
-          </Text>
+          What's for
         </Text>
+        {/* The meal is the heading's own word: tap it to choose another. */}
+        <Pressable onPress={() => choose('meal')} accessibilityRole="button" accessibilityLabel={`${meal}. Choose another meal`} style={styles.mealWord}>
+          <Text style={[t.display, { color: p.ink, fontFamily: font.serif }]}>{meal}?</Text>
+          <ChevronDownIcon color={p.muted} size={26} />
+        </Pressable>
         <View style={{ marginTop: -4, marginBottom: 4 }} accessible={false}>
           <Squiggle key={meal} color={p.harvest} width={meal.length * 21 + 16} />
         </View>
@@ -216,11 +213,23 @@ export function DiscoverScreen({ navigation }: Props) {
 
       {/* One row of controls: the time, and the gear. The meal is the heading's own word. */}
       <View style={[styles.pad, styles.controls]}>
-        <Pill label={`${limitLabel ?? 'Any time'} ▾`} selected={choosing === 'time'} onPress={() => choose('time')} accessibilityLabel={`Time: ${limitLabel ?? 'any'}. Change`} />
+        <Pill
+          label={limitLabel ?? 'Any time'}
+          iconAfter={<ChevronDownIcon color={choosing === 'time' ? '#262420' : p.muted} size={14} />}
+          selected={choosing === 'time'}
+          onPress={() => choose('time')}
+          accessibilityLabel={`Time: ${limitLabel ?? 'any'}. Change`}
+        />
         {gearLabel ? (
-          <Pill label={`${gearLabel}  ×`} selected onPress={clearGear} accessibilityLabel={`Showing ${gearLabel.toLowerCase()} recipes. Clear`} />
+          <Pill label={gearLabel} iconAfter={<CrossIcon color="#262420" size={13} />} selected onPress={clearGear} accessibilityLabel={`Showing ${gearLabel.toLowerCase()} recipes. Clear`} />
         ) : (
-          <Pill label="Gear ▾" selected={choosing === 'gear'} onPress={() => choose('gear')} accessibilityLabel="Cook with a pan or gadget" />
+          <Pill
+            label="Gear"
+            iconAfter={<ChevronDownIcon color={choosing === 'gear' ? '#262420' : p.muted} size={14} />}
+            selected={choosing === 'gear'}
+            onPress={() => choose('gear')}
+            accessibilityLabel="Cook with a pan or gadget"
+          />
         )}
       </View>
       {choosing === 'meal' && (
@@ -572,6 +581,7 @@ const styles = StyleSheet.create({
   weekHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   weekRow: { paddingHorizontal: space.xl, gap: space.s },
   weekChip: { flexDirection: 'row', alignItems: 'center', gap: space.s, padding: 6, paddingRight: space.l, borderRadius: 26, minHeight: 52 },
+  mealWord: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' },
   controls: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s, marginTop: space.m },
   card: { borderRadius: 26, padding: 10 },
   cardBody: { paddingHorizontal: 8, paddingTop: space.m, paddingBottom: space.s, gap: 4 },

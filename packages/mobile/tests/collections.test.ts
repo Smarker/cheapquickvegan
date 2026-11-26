@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectionsWith, createCollection, deleteCollection, removeEverywhere, renameCollection, toggleInCollection } from '../src/lib/collections';
+import { collectionsWith, createCollection, deleteCollection, removeEverywhere, renameCollection, restoreCollection, toggleInCollection } from '../src/lib/collections';
 
 describe('collections', () => {
   it('creates named collections, refusing blanks and duplicate names', () => {
@@ -23,5 +23,13 @@ describe('collections', () => {
     expect(list[0].name).toBe('Soups');
     expect(removeEverywhere(list, 'x').every((c) => c.slugs.length === 0)).toBe(true);
     expect(deleteCollection(list, 'a').map((c) => c.id)).toEqual(['b']);
+  });
+
+  it('puts a deleted collection back in its place, once', () => {
+    const list = createCollection(createCollection(createCollection([], 'A', 'a'), 'B', 'b'), 'C', 'c');
+    const gone = deleteCollection(list, 'b');
+    const back = restoreCollection(gone, list[1], 1);
+    expect(back).toEqual(list);
+    expect(restoreCollection(back, list[1], 1)).toBe(back);
   });
 });

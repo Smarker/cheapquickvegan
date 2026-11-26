@@ -27,9 +27,9 @@ export function cairns(cooked: { slug: string; firstCookedOn?: string }[]): Ston
     const r = (n: number) => hash(`${slug}:${n}`);
     out[out.length - 1].push({
       slug,
-      // Wide flat stones at the bottom, smaller rounder ones on top, each a little different.
-      width: 64 - level * 6 + (r(1) - 0.5) * 12,
-      height: 20 + r(2) * 7 - level * 0.6,
+      // A broad flat stone at the bottom, each one above it smaller, the way a cairn is built; no two alike.
+      width: 84 - level * 10 + (r(1) - 0.5) * 6,
+      height: 21 + r(2) * 6 - level * 1.1,
       tilt: (r(3) - 0.5) * 12,
       shift: (r(4) - 0.5) * 8,
       shade: Math.floor(r(5) * 3),

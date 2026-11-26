@@ -16,13 +16,20 @@ import { useSavedBounce } from '../lib/saved';
 import { lift, spring, usePalette } from '../theme/tokens';
 import { HeartIcon } from './Icons';
 
-type Props = { saved: boolean; onToggle: () => void; label: string; size?: number };
+type Props = {
+  saved: boolean;
+  onToggle: () => void;
+  label: string;
+  size?: number;
+  /** A list of things already saved: a plain outline heart, no badge, so it doesn't outshout the recipes. */
+  quiet?: boolean;
+};
 
 // Three little leaves that scatter when you save: angle in degrees from straight up.
 const LEAVES = [-55, 0, 55];
 
 /** Green save button. Saving pops it and scatters three tiny leaves; the Saved tab bounces in reply. */
-export function HeartButton({ saved, onToggle, label, size = 52 }: Props) {
+export function HeartButton({ saved, onToggle, label, size = 52, quiet }: Props) {
   const p = usePalette();
   const reduce = useReducedMotion();
   const bounce = useSavedBounce();
@@ -53,12 +60,12 @@ export function HeartButton({ saved, onToggle, label, size = 52 }: Props) {
         {burstKey > 0 && LEAVES.map((deg) => <Leaf key={`${burstKey}-${deg}`} deg={deg} progress={burst} color={p.green} size={size} />)}
         <Animated.View
           style={[
-            { width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? p.heart : p.ground },
-            lift(p),
+            { width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: quiet ? 'transparent' : saved ? p.heart : p.ground },
+            !quiet && lift(p),
             anim,
           ]}
         >
-          <HeartIcon color={saved ? '#FFFFFF' : p.heart} filled={saved} size={size * 0.42} />
+          <HeartIcon color={quiet ? p.heart : saved ? '#FFFFFF' : p.heart} filled={saved && !quiet} size={size * (quiet ? 0.55 : 0.42)} />
         </Animated.View>
       </View>
     </Pressable>

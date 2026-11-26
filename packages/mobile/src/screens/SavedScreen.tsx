@@ -1,7 +1,8 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
+import { Blazes } from '../components/Blazes';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CookedStamp } from '../components/CookedStamp';
 import { Cairn } from '../components/Cairn';
@@ -12,7 +13,6 @@ import { cairns } from '../lib/cairn';
 import { EmptyBowl } from '../components/Doodles';
 import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
 import { HeartButton } from '../components/HeartButton';
-import { TrailPostcard } from '../components/TrailPostcard';
 import { Photo } from '../components/Photo';
 import { journey, openHikes, REGIONS } from '../lib/journeys';
 import { displayTitle, recipes } from '../lib/recipes';
@@ -37,7 +37,34 @@ export function SavedScreen({ navigation }: Props) {
   const saved = useSaved();
   const words = planWords(usePrefs().planSpan);
   const allSaved = saved.slugs.map((s) => recipes.find((r) => r.slug === s)).filter((r): r is (typeof recipes)[number] => !!r);
-  const { collections, rename, remove } = useCollections();
+  const { collections, rename, remove, restore, toggle: toggleIn } = useCollections();
+  const reduce = useReducedMotion();
+  // Taking something away is one tap, so it can be put back for a few seconds.
+  const [undo, setUndo] = useState<{ label: string; run: () => void } | null>(null);
+  useEffect(() => {
+    if (!undo) return;
+    const id = setTimeout(() => setUndo(null), 6000);
+    return () => clearTimeout(id);
+  }, [undo]);
+  const unsave = (slug: string, title: string) => {
+    const inThese = collections.filter((c) => c.slugs.includes(slug)).map((c) => c.id);
+    saved.toggle(slug);
+    setUndo({
+      label: `Removed ${title}`,
+      run: () => {
+        saved.toggle(slug);
+        inThese.forEach((id) => toggleIn(id, slug));
+      },
+    });
+  };
+  const deleteShelf = (id: string) => {
+    const at = collections.findIndex((c) => c.id === id);
+    const gone = collections[at];
+    if (!gone) return;
+    remove(id);
+    setShelf(null);
+    setUndo({ label: `Deleted ${gone.name}`, run: () => restore(gone, at) });
+  };
   const watch = useRecipeWatch();
   // Which collection the saved list is showing; null is everything saved.
   const [shelf, setShelf] = useState<string | null>(null);
@@ -60,6 +87,10 @@ export function SavedScreen({ navigation }: Props) {
     region,
     recipes: journey(region, saved.trailFor(region.id)).flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : [])),
   }));
+  const finishedOn = (id: string) => {
+    const at = saved.summits[id];
+    return at ? ` ${new Date(at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : '';
+  };
   // A quiet record, not a scoreboard: one plain line, and nothing at all before the first cook.
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const record =
@@ -83,9 +114,6 @@ export function SavedScreen({ navigation }: Props) {
           <Text style={[t.label, { color: p.ink }]}>Preferences</Text>
         </Pressable>
       </View>
-
-      <Cairn stacks={cairns(recipes.filter((r) => saved.cookedCount(r.slug) > 0).map((r) => ({ slug: r.slug, firstCookedOn: saved.firstCookedOn(r.slug) })))} />
-      {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
 
       <View style={styles.planHead}>
         <Text style={[t.section, { color: p.ink, fontSize: 20 }]} accessibilityRole="header">
@@ -162,7 +190,7 @@ export function SavedScreen({ navigation }: Props) {
         <View style={styles.empty}>
           <EmptyBowl color={p.ink} size={130} />
           <Text style={[t.hand, { color: p.ink, textAlign: 'center', fontSize: 22, lineHeight: 30, paddingHorizontal: 8 }]} textBreakStrategy="simple">
-            Nothing saved yet. Tap the heart on any recipe and it'll be waiting here.
+            Nothing saved yet. Tap the heart on any recipe and it'll be waiting here, even offline.
           </Text>
         </View>
       ) : (
@@ -193,9 +221,9 @@ export function SavedScreen({ navigation }: Props) {
                 </Pressable>
               )}
               <Pressable
-                onPress={() => { remove(current.id); setShelf(null); }}
+                onPress={() => deleteShelf(current.id)}
                 accessibilityRole="button"
-                accessibilityHint="Deletes the collection. The recipes stay saved."
+                accessibilityHint="Deletes the collection. The recipes stay saved, and you can undo it."
                 hitSlop={8}
                 style={[styles.shelfChip, { borderColor: p.hairline }]}
               >
@@ -203,15 +231,12 @@ export function SavedScreen({ navigation }: Props) {
               </Pressable>
             </View>
           )}
-          <Text style={[t.label, { color: p.greenDeep }]}>
-            {current
-              ? list.length === 0
-                ? 'Nothing in here yet. Open a saved recipe and tap "Add to a collection".'
-                : `${list.length} in ${current.name}.`
-              : list.length === 1
-                ? '1 saved recipe, kept on your phone so it works offline.'
-                : `${list.length} saved recipes, kept on your phone so they work offline.`}
-          </Text>
+          {/* The count lives on the chips when there are collections; a collection that's empty says how to fill it. */}
+          {current && list.length === 0 ? (
+            <Text style={[t.label, { color: p.greenDeep }]}>Nothing in here yet. Open a saved recipe and tap "Add to a collection".</Text>
+          ) : !collections.length ? (
+            <Text style={[t.label, { color: p.greenDeep }]}>{list.length === 1 ? '1 saved recipe' : `${list.length} saved recipes`}</Text>
+          ) : null}
           {list.map((r) => (
             <Animated.View key={r.slug} entering={FadeIn} exiting={FadeOut} layout={LinearTransition}>
               <Pressable
@@ -231,24 +256,67 @@ export function SavedScreen({ navigation }: Props) {
                     {watch.changesFor(r.slug).length > 0 && <Text style={[t.small, { color: p.ink, fontFamily: font.sansMedium, backgroundColor: p.greenSoft, paddingHorizontal: 8, borderRadius: 8, overflow: 'hidden' }]}>Updated</Text>}
                   </View>
                 </View>
-                <HeartButton saved onToggle={() => saved.toggle(r.slug)} label={displayTitle(r)} size={40} />
+                <HeartButton saved quiet onToggle={() => unsave(r.slug, displayTitle(r))} label={displayTitle(r)} size={44} />
               </Pressable>
             </Animated.View>
           ))}
         </>
       )}
 
-      {summitedRegions.length > 0 && (
+      {/* The quiet record sits last: what you came for comes first. */}
+      {(cooks > 0 || summitedRegions.length > 0) && (
         <>
           <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
-            Your journeys
+            Your record
           </Text>
+          <Cairn stacks={cairns(recipes.filter((r) => saved.cookedCount(r.slug) > 0).map((r) => ({ slug: r.slug, firstCookedOn: saved.firstCookedOn(r.slug) })))} />
+          {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
+          {/* Finished journeys as plain rows; each one's postcard waits at the end of its journey. */}
           {summitedRegions.map(({ region, recipes: trail }) => (
-            <TrailPostcard key={region.id} region={region} recipes={trail} onPress={() => navigation.navigate('Journey', { id: region.id })} />
+            <Pressable
+              key={region.id}
+              onPress={() => navigation.navigate('Journey', { id: region.id })}
+              accessibilityRole="button"
+              accessibilityLabel={`${region.trail}, finished${finishedOn(region.id)}, ${trail.length} cooked. Opens its postcard`}
+              style={({ pressed }) => [styles.journeyRow, { backgroundColor: p.sand, opacity: pressed ? 0.85 : 1 }]}
+            >
+              <Blazes level={region.grade} color={p.green} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
+                  {region.trail}
+                </Text>
+                <Text style={[t.small, { color: p.greenDeep }]}>
+                  Finished{finishedOn(region.id)} · {trail.length} cooked
+                </Text>
+              </View>
+            </Pressable>
           ))}
         </>
       )}
     </ScrollView>
+      {undo && (
+        <Animated.View
+          entering={reduce ? undefined : FadeIn}
+          exiting={reduce ? undefined : FadeOut}
+          style={[styles.undo, { backgroundColor: p.sand, borderColor: p.hairline }]}
+          accessibilityLiveRegion="polite"
+        >
+          <Text style={[t.small, { color: p.ink, flex: 1 }]} numberOfLines={2}>
+            {undo.label}.
+          </Text>
+          <Pressable
+            onPress={() => {
+              undo.run();
+              setUndo(null);
+            }}
+            accessibilityRole="button"
+            hitSlop={10}
+            style={[styles.undoBtn, { borderColor: p.hairline }]}
+          >
+            <Text style={[t.label, { color: p.greenDeep }]}>Undo</Text>
+          </Pressable>
+        </Animated.View>
+      )}
       {/* Paper behind the status bar, like the other tabs, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.band, { height: insets.top, backgroundColor: p.ground }]} />
     </View>
@@ -269,4 +337,7 @@ const styles = StyleSheet.create({
   weekBtn: { minHeight: 46, paddingHorizontal: space.l, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.l, paddingBottom: 80 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.l, padding: 10, borderRadius: 24 },
+  journeyRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, paddingVertical: space.m, paddingHorizontal: space.l, borderRadius: 20 },
+  undo: { position: 'absolute', left: space.l, right: space.l, bottom: space.l, flexDirection: 'row', alignItems: 'center', gap: space.m, borderRadius: 18, borderWidth: 1, paddingLeft: space.l, paddingRight: space.s, minHeight: 52 },
+  undoBtn: { minHeight: 40, paddingHorizontal: space.l, borderRadius: 16, borderWidth: 1.5, justifyContent: 'center' },
 });

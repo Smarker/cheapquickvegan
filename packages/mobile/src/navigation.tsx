@@ -23,16 +23,16 @@ import { font, spring, type as t, usePalette } from './theme/tokens';
 export type DiscoverStack = {
   Discover: undefined;
   Recipe: { slug: string };
-  Cook: { slug: string };
+  Cook: { slug: string; part?: number };
   Journey: { id: string };
   JourneyMap: undefined;
   Guide: { slug: string };
 };
-export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string }; Planner: undefined };
+export type SavedStack = { Saved: undefined; Recipe: { slug: string }; Cook: { slug: string; part?: number }; Preferences: undefined; Journey: { id: string }; Guide: { slug: string }; Planner: undefined };
 
 const Stack = createNativeStackNavigator<DiscoverStack>();
 const SavedNav = createNativeStackNavigator<SavedStack>();
-export type SearchStack = { Search: undefined; Recipe: { slug: string }; Cook: { slug: string }; Guide: { slug: string } };
+export type SearchStack = { Search: undefined; Recipe: { slug: string }; Cook: { slug: string; part?: number }; Guide: { slug: string } };
 const SearchNav = createNativeStackNavigator<SearchStack>();
 
 function useStackOptions() {
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   pill: { width: 60, height: 32, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
 });
 
-type RootStack = { Tabs: undefined; Cook: { slug: string } };
+type RootStack = { Tabs: undefined; Cook: { slug: string; part?: number } };
 const Root = createNativeStackNavigator<RootStack>();
 
 /** Cook mode sits above the tabs so it takes the whole screen; Recipe screens in either tab open it. */

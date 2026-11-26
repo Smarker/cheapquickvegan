@@ -9,12 +9,14 @@ type Props = {
   onPress?: () => void;
   accessibilityLabel?: string;
   icon?: React.ReactNode;
+  /** An icon after the label, like a chevron that says the chip opens choices. */
+  iconAfter?: React.ReactNode;
   style?: ViewStyle;
   role?: 'button' | 'tab';
 };
 
 /** Soft rounded filter or tab. Selected fills mustard with ink text. */
-export function Pill({ label, selected, onPress, accessibilityLabel, icon, style, role = 'button' }: Props) {
+export function Pill({ label, selected, onPress, accessibilityLabel, icon, iconAfter, style, role = 'button' }: Props) {
   const p = usePalette();
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
@@ -51,6 +53,7 @@ export function Pill({ label, selected, onPress, accessibilityLabel, icon, style
         <Text style={{ fontFamily: selected ? font.sansBold : font.sansMedium, fontSize: 14, color: selected ? '#262420' : p.muted }}>
           {label}
         </Text>
+        {iconAfter}
       </Animated.View>
     </Pressable>
   );

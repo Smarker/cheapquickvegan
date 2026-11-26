@@ -23,6 +23,8 @@ const light = {
   // Relief map land, lowland to snowy peak (contour levels 0 to 6). The sea is mist; shelf is the shallows.
   relief: ['#E3E7CC', '#D5DCB1', '#DCD9AE', '#E1CEA2', '#D5B98E', '#C6A57E', '#F6F1E6'],
   shelf: '#F2EADD',
+  // Cairn stones: warm field-stone greys, so a stack reads as rock, not as cards.
+  stone: ['#CBC3B3', '#B8B0A0', '#D8D1C3'],
   hairline: 'rgba(46,46,46,0.10)',
   control: '#8E8A7B',
   photoFallback: '#EAE0CE',
@@ -53,6 +55,7 @@ const dark: typeof light = {
   harvest: '#C08A4C',
   relief: ['#313626', '#384027', '#3F4128', '#48422B', '#52472E', '#5E4F34', '#7C7462'],
   shelf: '#2D3022',
+  stone: ['#77705F', '#686252', '#837C6B'],
   hairline: 'rgba(244,239,224,0.12)',
   control: '#8A8676',
   photoFallback: '#2B2B22',

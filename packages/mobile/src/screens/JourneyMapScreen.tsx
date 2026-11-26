@@ -20,6 +20,7 @@ import Animated, {
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import { Blazes } from '../components/Blazes';
 import { CookCat } from '../components/CookCat';
+import { CrossIcon } from '../components/Icons';
 import { Pill } from '../components/Pill';
 import { AREAS, gradeLabel, journey, openHikes, type Area, type Difficulty, type Region } from '../lib/journeys';
 import { useDataVersion } from '../lib/data';
@@ -587,7 +588,7 @@ function StopCard({ p, slug, n, of, cooked, inWeek, onWeek, atTop, onOpen, onClo
         </View>
       </View>
       <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close preview" hitSlop={10} style={styles.cardClose}>
-        <Text style={[t.label, { color: p.muted, fontSize: 18 }]}>×</Text>
+        <CrossIcon color={p.muted} size={18} />
       </Pressable>
     </View>
   );

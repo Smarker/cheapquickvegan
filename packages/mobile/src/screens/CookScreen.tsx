@@ -47,7 +47,7 @@ const k = {
   line: 'rgba(243,239,227,0.14)',
 };
 
-type Props = NativeStackScreenProps<{ Cook: { slug: string } }, 'Cook'>;
+type Props = NativeStackScreenProps<{ Cook: { slug: string; part?: number } }, 'Cook'>;
 
 export function CookScreen({ route, navigation }: Props) {
   useDataVersion(); // re-render when live recipe data arrives
@@ -68,7 +68,8 @@ export function CookScreen({ route, navigation }: Props) {
   const scaledYield = factor !== 1 && r?.yieldText ? scaleYield(r.yieldText, factor) : null;
   const lines = useMemo(() => (r ? linesIn(r.ingredients.flatMap((g) => g.items).map((l) => scaleLine(l, factor)), units) : []), [r, units, factor]);
   const amounts = useMemo(() => ingredientAmounts(lines), [lines]);
-  const [index, setIndex] = useState(0);
+  // Opened from a section of Directions ('Cook from here'), cook mode starts on that part.
+  const [index, setIndex] = useState(() => Math.min(Math.max(route.params.part ?? 0, 0), Math.max(pages.length - 1, 0)));
   const [done, setDone] = useState(false);
   const [milestone, setMilestone] = useState<string | null>(null);
   const [timer, setTimer] = useState<RunningTimer | null>(null);
@@ -369,6 +370,8 @@ export function CookScreen({ route, navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, i) => String(i)}
         getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+        // Opened at a later part ('Cook from here'): the pager starts there too, not just the header.
+        initialScrollIndex={index}
         onMomentumScrollEnd={(e) => {
           const i = Math.round(e.nativeEvent.contentOffset.x / width);
           if (i !== index) {

@@ -41,7 +41,7 @@ import { shareRecipe } from '../lib/share';
 import { font, lift, space, tintFor, type as t, usePalette } from '../theme/tokens';
 
 /** Shared by the Discover and Saved stacks; both define Recipe with the same params. */
-type Props = NativeStackScreenProps<{ Recipe: { slug: string }; Cook: { slug: string } }, 'Recipe'>;
+type Props = NativeStackScreenProps<{ Recipe: { slug: string }; Cook: { slug: string; part?: number } }, 'Recipe'>;
 type Tab = 'ingredients' | 'steps' | 'tips';
 
 /**
@@ -339,7 +339,28 @@ export function RecipeScreen({ route, navigation }: Props) {
         {tab === 'steps' &&
           r.steps.map((g, gi) => (
             <View key={gi} style={[styles.group, gi === 0 && { marginTop: space.m }]}>
-              {g.name && <Text style={[t.section, { color: p.ink }]}>{g.name}</Text>}
+              {g.name && (
+                <View style={styles.partHead}>
+                  <Text style={[t.section, { color: p.ink, flexShrink: 1 }]}>{g.name}</Text>
+                  {/* Directions is for reading ahead; cooking happens in cook mode, from any part. The first part is Start cooking itself. */}
+                  {gi > 0 && (
+                    <Pressable
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        navigation.navigate('Cook', { slug: r.slug, part: gi });
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Cook from ${g.name}`}
+                      accessibilityHint="Opens cook mode at this part and keeps your screen on"
+                      hitSlop={10}
+                      style={styles.fromHere}
+                    >
+                      <Text style={[t.label, { color: p.greenDeep }]}>Cook from here</Text>
+                      <ArrowIcon color={p.greenDeep} size={16} />
+                    </Pressable>
+                  )}
+                </View>
+              )}
               {g.items.map((step) => {
                 stepNo += 1;
                 return (
@@ -672,6 +693,8 @@ const styles = StyleSheet.create({
   sheetBody: { flexGrow: 1, paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
   grabber: { alignSelf: 'center', width: 64, height: 5, borderRadius: 3, marginBottom: space.s },
   group: { gap: space.s },
+  partHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', columnGap: space.m },
+  fromHere: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44 },
   ing: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },
   art: { width: 28, alignItems: 'center' },
   units: { minHeight: 44, justifyContent: 'center' },

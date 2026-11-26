@@ -10,6 +10,10 @@ export const ArrowIcon = ({ color, size = 18 }: P) => (
 export const CheckIcon = ({ color, size = 16 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24"><Path d="M5 12.5l4.5 4.5L19 7.5" stroke={color} {...base} strokeWidth={2.4} /></Svg>
 );
+/** A small down chevron: this opens choices. */
+export const ChevronDownIcon = ({ color, size = 16 }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24"><Path d="M6 9.5l6 6 6-6" stroke={color} {...base} strokeWidth={2.2} /></Svg>
+);
 export const CrossIcon = ({ color, size = 16 }: P) => (
   <Svg width={size} height={size} viewBox="0 0 24 24"><Path d="M7 7l10 10M17 7L7 17" stroke={color} {...base} strokeWidth={2.4} /></Svg>
 );
