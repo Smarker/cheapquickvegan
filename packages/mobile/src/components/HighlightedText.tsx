@@ -17,7 +17,7 @@ type Props = {
   amountStyle?: TextStyle;
   /** Draws amounts, temperatures and times as small rounded tags, findable by shape rather than colour. */
   amountTag?: ViewStyle;
-  /** Equipment names ("air fryer", "blender"), underlined so they read differently from ingredients. */
+  /** Equipment names ("air fryer", "blender"), styled so they read differently from ingredients. */
   tools?: string[];
   toolStyle?: TextStyle;
   /** Rewrites an amount in the step ("2 cups" before "flour") into the cook's units. */
@@ -28,7 +28,7 @@ type Part = { s: string; kind: 'text' | 'ingredient' | 'tool' | 'measure' };
 
 /**
  * Step text made skimmable: ingredient names in bold with their amount after the first mention,
- * tools underlined, and temperatures and times as tags. Neighbouring ingredient words merge into
+ * tools in medium ink, and temperatures and times as tags. Neighbouring ingredient words merge into
  * one name ("Thai red curry paste").
  */
 export function HighlightedText({ text, terms, style, highlight, amounts, amountStyle, amountTag, tools = [], toolStyle, convertAmount }: Props) {

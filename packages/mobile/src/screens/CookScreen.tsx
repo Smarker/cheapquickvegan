@@ -491,8 +491,8 @@ const styles = StyleSheet.create({
   badgeHit: { paddingTop: 3 },
   // Amounts as tags: findable by shape (not colour), with even-width digits for quick scanning.
   amountTag: { backgroundColor: k.raised, borderColor: k.line, borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 1, transform: [{ translateY: 5 }] },
-  // Tools read as underlined ink: different from ingredients (bold green) and numbers (tags) without relying on colour.
-  tool: { fontFamily: font.sansMedium, color: k.ink, textDecorationLine: 'underline', textDecorationStyle: 'solid', textDecorationColor: k.green },
+  // Tools read as medium-weight ink: different from ingredients (bold green) and numbers (tags) without relying on colour.
+  tool: { fontFamily: font.sansMedium, color: k.ink },
   amountText: { fontFamily: font.sansMedium, fontSize: 19, lineHeight: 26, color: k.ink, fontVariant: ['tabular-nums'] },
   timerChip: { alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 2, justifyContent: 'center' },
   bottom: { paddingHorizontal: space.xl, gap: space.m },

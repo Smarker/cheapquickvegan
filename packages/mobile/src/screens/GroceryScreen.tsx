@@ -64,7 +64,7 @@ export function GroceryScreen() {
               Your list is empty.{'\n'}Open a recipe and tap "Add to grocery list".
             </Text>
             <Pressable onPress={() => setPasting(true)} accessibilityRole="button" accessibilityHint="Add items from a list someone sent you" hitSlop={8} style={styles.pasteLink}>
-              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Got a list from someone? Paste it</Text>
+              <Text style={[t.label, { color: p.greenDeep }]}>Got a list from someone? Paste it</Text>
             </Pressable>
           </View>
         ) : (
@@ -259,7 +259,7 @@ function PasteList({ visible, onClose, onAdd }: { visible: boolean; onClose: () 
 }
 
 const styles = StyleSheet.create({
-  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; green text links only ever navigate. No underlines anywhere.
   chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   chipText: { fontFamily: font.sansMedium },
   root: { paddingHorizontal: space.xl, paddingBottom: 48, gap: space.s },

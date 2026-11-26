@@ -47,13 +47,16 @@ const CATEGORIES: Record<Meal, string[]> = {
 /** Is this the meal itself (a breakfast, a main), rather than something on the side? */
 export const isMain = (r: Recipe, meal: Meal) => r.category === CATEGORIES[meal][0];
 
+/** Does this recipe belong at this meal at all (the meal itself, or a side or snack)? Desserts never do. */
+export const fitsMeal = (r: Recipe, meal: Meal) => r.category != null && CATEGORIES[meal].includes(r.category);
+
 /**
  * Recipes for this meal within the time limit. The meal itself comes first, then sides and snacks,
  * each quickest first, so "What's for breakfast?" is answered by a breakfast, not a sauce.
  */
 export function tonight(limit: TimeLimit, equipment: string | null, meal: Meal = 'dinner'): Recipe[] {
   return recipes
-    .filter((r) => r.category != null && CATEGORIES[meal].includes(r.category))
+    .filter((r) => fitsMeal(r, meal))
     .filter((r) => r.totalMinutes != null && (limit == null || r.totalMinutes <= limit))
     .filter((r) => !equipment || r.equipment.includes(equipment))
     .sort((a, b) => Number(!isMain(a, meal)) - Number(!isMain(b, meal)) || (a.totalMinutes ?? 0) - (b.totalMinutes ?? 0));

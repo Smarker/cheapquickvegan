@@ -11,7 +11,7 @@ describe('scaleLine', () => {
     expect(scaleLine('3 tbsp soy sauce', 2)).toBe('6 tbsp soy sauce');
     expect(scaleLine('2 tbsp soy sauce', 2)).toBe('¼ cup soy sauce');
     expect(scaleLine('1 tsp cumin', 0.5)).toBe('½ tsp cumin');
-    expect(scaleLine('4 tbsp vinegar', 1 / 3)).toBe('4 tsp vinegar');
+    expect(scaleLine('4 tbsp vinegar', 1 / 3)).toBe('1 tbsp + 1 tsp vinegar');
     expect(scaleLine('1 ½ cups rice', 2)).toBe('3 cups rice');
   });
   it('scales weights and keeps grams round', () => {
@@ -64,6 +64,17 @@ describe('conventional rounding', () => {
   it('rounds spoons to what spoons measure', () => {
     expect(scaleLine('1 tsp salt', 1 / 6)).toBe('⅛ tsp salt');
     expect(scaleLine('1 tbsp oil', 0.5)).toBe('½ tbsp oil');
+  });
+  it('writes big spoon counts as the bigger measure plus a little', () => {
+    // The chimichurri at 7 servings instead of 6.
+    expect(scaleLine('1 cup fresh cilantro, chopped', 7 / 6)).toBe('1 cup + 2 ½ tbsp fresh cilantro, chopped');
+    expect(scaleLine('1/2 cup olive oil', 7 / 6)).toBe('½ cup + 1 ½ tbsp olive oil');
+    expect(scaleLine('3 1/2 tsp lemon juice', 2)).toBe('2 tbsp + 1 tsp lemon juice');
+    // 3 tsp is a tablespoon, so 3 ½ tsp is a tablespoon and a bit.
+    expect(scaleLine('1 tbsp lemon juice', 7 / 6)).toBe('1 tbsp + ½ tsp lemon juice');
+    // Small counts stay as one measure.
+    expect(scaleLine('3 tbsp soy sauce', 2)).toBe('6 tbsp soy sauce');
+    expect(scaleLine('4 tbsp vinegar', 1 / 3)).toBe('1 tbsp + 1 tsp vinegar');
     expect(scaleLine('1/4 tsp cayenne', 0.25)).toBe('a pinch cayenne');
   });
   it('keeps whole things whole and halves packages', () => {
@@ -86,5 +97,18 @@ describe('pinches', () => {
     expect(scaleLine('A pinch of salt', 0.5)).toBe('A pinch of salt');
     expect(scaleLine('A pinch of salt', 2)).toBe('2 pinches of salt');
     expect(scaleLine('a pinch of cayenne', 4)).toBe('¼ tsp cayenne');
+  });
+});
+
+describe('compound amounts downstream', () => {
+  it('are read whole as an amount, so step tags match the ingredient list', async () => {
+    const { amountOf } = await import('../src/lib/cook');
+    expect(amountOf('1 cup + 2 ½ tbsp fresh cilantro, chopped')).toBe('1 cup + 2 ½ tbsp');
+    expect(amountOf('1 tbsp + ½ tsp lemon juice')).toBe('1 tbsp + ½ tsp');
+  });
+  it('weigh as one amount in grams', async () => {
+    const { convertLine } = await import('../src/lib/units');
+    expect(convertLine('½ cup + 1 ½ tbsp olive oil', 'grams')).toBe('130 g olive oil');
+    expect(convertLine('1 tbsp + ½ tsp lemon juice', 'grams')).toBe('1 tbsp + ½ tsp lemon juice');
   });
 });

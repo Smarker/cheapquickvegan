@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isMain, tonight } from '../src/lib/recipes';
+import { fitsMeal, isMain, recipes, tonight } from '../src/lib/recipes';
 
 describe('tonight', () => {
   for (const meal of ['breakfast', 'lunch', 'dinner'] as const) {
@@ -15,4 +15,15 @@ describe('tonight', () => {
       }
     });
   }
+});
+
+describe('fitsMeal', () => {
+  it('keeps desserts out of every meal', () => {
+    const desserts = recipes.filter((r) => r.category === 'Dessert');
+    for (const meal of ['breakfast', 'lunch', 'dinner'] as const) expect(desserts.some((r) => fitsMeal(r, meal))).toBe(false);
+  });
+
+  it('agrees with the trail: everything on it fits the meal', () => {
+    for (const meal of ['breakfast', 'lunch', 'dinner'] as const) expect(tonight(null, null, meal).every((r) => fitsMeal(r, meal))).toBe(true);
+  });
 });

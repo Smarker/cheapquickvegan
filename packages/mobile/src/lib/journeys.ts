@@ -320,7 +320,7 @@ export function journey(region: Region, pinned?: string[]): Stop[] {
 }
 
 export const STRETCH_LABEL: Record<Difficulty, string> = {
-  Easy: 'An easy stroll',
-  Medium: 'A steady climb',
-  Challenge: 'The summit climb',
+  Easy: 'Easy dishes',
+  Medium: 'A bit more work',
+  Challenge: 'Weekend projects',
 };

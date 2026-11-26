@@ -87,16 +87,16 @@ export function JourneyScreen({ route, navigation }: Props) {
       </Text>
       <View style={styles.grade}>
         <Blazes level={region.grade} color={p.green} />
-        <Text style={[t.label, { color: p.ink }]}>{gradeLabel(region)} hike</Text>
+        <Text style={[t.label, { color: p.ink }]}>{gradeLabel(region)} journey</Text>
       </View>
       <Text style={[t.body, { color: p.muted }]}>{region.blurb}</Text>
       <Text style={[t.label, { color: p.greenDeep, marginTop: space.s }]}>
         {reopened
-          ? `Summited ${new Date(summitedOn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}. ${reopened} ${reopened === 1 ? 'stop' : 'stops'} open again, whenever you like.`
+          ? `Finished ${new Date(summitedOn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}. ${reopened} ${reopened === 1 ? 'stop' : 'stops'} open again, whenever you like.`
           : allCooked
           ? cooked === recipeStops.length
-            ? `You've cooked the whole trail. Summit reached!`
-            : `Summit reached, your way. ${cooked} cooked along the trail.`
+            ? `You've cooked every stop. Journey finished!`
+            : `Finished, your way. ${cooked} cooked along the way.`
           : cooked === 0
             ? `${recipeStops.length} stops. Start at the bottom and take your time.`
             : `${cooked} of ${recipeStops.length} cooked. Keep going!`}
@@ -113,8 +113,8 @@ export function JourneyScreen({ route, navigation }: Props) {
           if (stop.kind === 'section') {
             return (
               <Animated.View key={key} entering={enter} style={styles.signRow}>
-                <View style={[styles.signBoard, { borderColor: p.ink, backgroundColor: p.sand }]}>
-                  <Text style={[t.hand, { color: p.ink, fontSize: 18, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">{STRETCH_LABEL[stop.difficulty]}</Text>
+                <View style={[styles.signBoard, { borderColor: p.ink, backgroundColor: p.harvest }]}>
+                  <Text style={[t.hand, { color: '#2E2E2E', fontSize: 18, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">{STRETCH_LABEL[stop.difficulty]}</Text>
                 </View>
                 <Blazes level={stop.difficulty} color={p.green} />
               </Animated.View>
@@ -132,7 +132,7 @@ export function JourneyScreen({ route, navigation }: Props) {
                 <Pressable
                   onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}${count ? ', cooked, your stone is here' : isPassed ? ', passed by' : ''}`}
+                  accessibilityLabel={`Stop ${n}: ${displayTitle(r)}, ${stop.difficulty}, ${r.totalText ?? ''}${count ? ', cooked' : isPassed ? ', skipped' : ''}`}
                   style={({ pressed }) => [styles.stop, { backgroundColor: tintFor(p, r.category), opacity: isPassed ? 0.6 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
                 >
                   {/* A cooked stop keeps the stone you left there, the same one in your Kitchen cairn. */}
@@ -163,12 +163,12 @@ export function JourneyScreen({ route, navigation }: Props) {
                   <Pressable
                     onPress={() => saved.togglePassed(region.id, r.slug)}
                     accessibilityRole="button"
-                    accessibilityHint={isPassed ? 'Puts this stop back on your trail' : 'Moves on to the next stop without cooking this one'}
+                    accessibilityHint={isPassed ? 'Puts this recipe back on your journey' : 'Skips to the next recipe without cooking this one'}
                     hitSlop={8}
                     style={[styles.pathLink, styles.chip, { borderColor: p.hairline }]}
                   >
                     <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>
-                      {isPassed ? 'Passed by. Come back to it' : 'Not feeling this one? Take another path'}
+                      {isPassed ? 'Skipped. Put it back' : 'Not feeling this one? Skip it'}
                     </Text>
                   </Pressable>
                 )}
@@ -182,7 +182,7 @@ export function JourneyScreen({ route, navigation }: Props) {
                 <Pressable
                   onPress={() => navigation.navigate('Guide', { slug: g.slug })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Rest stop guide: ${g.title}`}
+                  accessibilityLabel={`Guide: ${g.title}`}
                   style={({ pressed }) => [styles.rest, { borderColor: p.hairline, backgroundColor: p.ground, opacity: pressed ? 0.85 : 1 }]}
                 >
                   <Photo uri={g.image} width={300} height={120} radius={18} style={{ alignSelf: 'stretch', width: '100%' }} />
@@ -198,13 +198,13 @@ export function JourneyScreen({ route, navigation }: Props) {
           return <RestStop key={key} stop={stop} p={p} enter={enter} onOpenGuide={(slug) => navigation.navigate('Guide', { slug })} />;
         })}
 
-        <View style={styles.summit} accessible accessibilityLabel="Summit">
+        <View style={styles.summit} accessible accessibilityLabel="The finish">
           <View style={styles.summitRow}>
             <SummitFlag color={p.ink} />
             <SummitCairn cooked={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [{ slug: s.recipe.slug, firstCookedOn: saved.firstCookedOn(s.recipe.slug) }] : []))} />
             {!nextSlug && recipeStops.length > 0 && <CookCat outline={p.ink} size={56} mood="happy" />}
           </View>
-          <Text style={[t.hand, { color: p.ink, fontSize: 22, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1} textBreakStrategy="simple">The summit</Text>
+          <Text style={[t.hand, { color: p.ink, fontSize: 22, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1} textBreakStrategy="simple">The finish</Text>
           {(hasPostcard || !!summitedOn) && (
             <View style={styles.postcard}>
               <TrailPostcard region={region} recipes={recipeStops.flatMap((s) => (s.kind === 'recipe' && saved.cookedCount(s.recipe.slug) > 0 ? [s.recipe] : []))} />
@@ -215,13 +215,13 @@ export function JourneyScreen({ route, navigation }: Props) {
               <Text style={[t.hand, { color: p.greenDeep }]} textBreakStrategy="simple">
                 New since you started
               </Text>
-              <Text style={[t.small, { color: p.muted }]}>Optional side trips. Your trail and your summit stay as they are.</Text>
+              <Text style={[t.small, { color: p.muted }]}>Optional extras. Your journey and what you've cooked stay as they are.</Text>
               {extras.map((r) => (
                 <Pressable
                   key={r.slug}
                   onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Side trip: ${displayTitle(r)}`}
+                  accessibilityLabel={`Extra: ${displayTitle(r)}`}
                   style={({ pressed }) => [styles.extra, { borderColor: p.hairline, opacity: pressed ? 0.85 : 1 }]}
                 >
                   <Photo uri={r.image} width={52} radius={14} />
@@ -243,7 +243,7 @@ export function JourneyScreen({ route, navigation }: Props) {
           >
             <Text style={[t.small, { color: p.muted, textAlign: 'center' }]}>
               Something you'd love to see on this trail?{' '}
-              <Text style={{ color: p.greenDeep, textDecorationLine: 'underline' }}>Suggest a recipe</Text>
+              <Text style={{ color: p.greenDeep }}>Suggest a recipe</Text>
             </Text>
           </Pressable>
         </View>
@@ -265,8 +265,8 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.m }}>
         <Hut color={p.ink} size={48} />
         <View style={{ flex: 1 }}>
-          <Text style={[t.hand, { color: p.greenDeep }]}>{stop.kind === 'lesson' ? 'Refugio lesson' : 'Pantry stop'}</Text>
-          <Text style={[t.rowTitle, { color: p.ink }]}>{stop.kind === 'lesson' ? stop.title : 'Stock up before you set off'}</Text>
+          <Text style={[t.hand, { color: p.greenDeep }]}>{stop.kind === 'lesson' ? 'Lesson' : 'Pantry'}</Text>
+          <Text style={[t.rowTitle, { color: p.ink }]}>{stop.kind === 'lesson' ? stop.title : 'Stock up before you start'}</Text>
         </View>
       </View>
       {stop.kind === 'lesson' ? (
@@ -294,7 +294,7 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
           hitSlop={8}
           style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}
         >
-          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>
+          <Text style={[t.label, { color: p.greenDeep }]}>
             {stop.kind === 'pantry' ? 'My pantry essentials guide →' : 'Read the full guide →'}
           </Text>
         </Pressable>
@@ -306,7 +306,7 @@ function RestStop({ stop, p, enter, onOpenGuide }: RestProps) {
 const joinList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
 const styles = StyleSheet.create({
-  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; green text links only ever navigate. No underlines anywhere.
   chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
   chipText: { fontFamily: font.sansMedium },
   root: { padding: space.xl, paddingTop: space.s, paddingBottom: 64, gap: space.s },

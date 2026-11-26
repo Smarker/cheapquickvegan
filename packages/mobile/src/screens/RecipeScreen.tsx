@@ -1,11 +1,16 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { Image as ExpoImage } from 'expo-image';
+import { StatusBar } from 'expo-status-bar';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
-import { CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
-import { Photo } from '../components/Photo';
+import { ArrowIcon, CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
 import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
 import { PencilStrike } from '../components/PencilStrike';
@@ -38,6 +43,16 @@ import { font, lift, space, tintFor, type as t, usePalette } from '../theme/toke
 /** Shared by the Discover and Saved stacks; both define Recipe with the same params. */
 type Props = NativeStackScreenProps<{ Recipe: { slug: string }; Cook: { slug: string } }, 'Recipe'>;
 type Tab = 'ingredients' | 'steps' | 'tips';
+
+/**
+ * How the photo meets the page. 'sheet': the page slides up over the photo with rounded corners.
+ * 'fade': the photo's bottom edge dissolves into the page, like the trail map's edges.
+ */
+const HERO: 'sheet' | 'fade' = 'sheet';
+// An uneven fade, solid at the bottom, tinted to the page's colour where it's used.
+const HERO_FADE = require('../../assets/hero-fade.png');
+// How far the page rides up over the photo in 'sheet' mode.
+const OVERLAP = 28;
 
 export function RecipeScreen({ route, navigation }: Props) {
   useDataVersion(); // re-render when live recipe data arrives
@@ -72,24 +87,43 @@ export function RecipeScreen({ route, navigation }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params.slug, exists]);
 
+  // The photo runs edge to edge under the status bar, so this screen draws its own floating buttons.
   useLayoutEffect(() => {
-    navigation.setOptions({
-      headerStyle: { backgroundColor: inSheet ? p.ground : tint },
-      headerRight: () =>
-        r ? (
-          <Pressable onPress={() => shareRecipe(r)} accessibilityRole="button" accessibilityLabel="Share this recipe" hitSlop={12} style={{ padding: 6 }}>
-            <ShareIcon color={p.ink} size={24} />
-          </Pressable>
-        ) : null,
-    });
-  }, [navigation, tint, inSheet, r, p.ink, p.ground]);
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
+  const insets = useSafeAreaInsets();
+  const focused = useIsFocused();
+  const barH = insets.top + 56; // the floating buttons' row; the page scrolls beneath it
+  const hero = width; // the recipe photos are square
+  // In 'fade' the title rises into the dissolving part of the photo; in 'sheet' the page overlaps it a little.
+  const spacer = hero - barH - (HERO === 'sheet' ? OVERLAP : Math.round(hero * 0.2));
+  const scrollY = useSharedValue(0);
+  const stage = useSharedValue(0);
+  // 0: the photo shows; 1: the page has reached the buttons' row; 2: the sheet has (so the row takes the sheet's colour).
+  const [overPhoto, setOverPhoto] = useState(true);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    const y = e.contentOffset.y;
+    scrollY.value = y;
+    const next = y >= spacer + topH - 1 && topH > 0 ? 2 : y >= spacer - 1 ? 1 : 0;
+    if (next !== stage.value) {
+      stage.value = next;
+      runOnJS(setInSheet)(next === 2);
+      runOnJS(setOverPhoto)(next === 0);
+    }
+  });
+  // In 'sheet' the photo drifts up at half the page's speed and dims a little as the page covers it.
+  // In 'fade' it moves with the page, so the title always stays on the faded part, never on the photo.
+  const drift = HERO === 'sheet' ? 0.5 : 1;
+  const heroStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -Math.max(0, scrollY.value) * drift }] }));
+  const dimStyle = useAnimatedStyle(() => ({ opacity: HERO === 'sheet' ? interpolate(scrollY.value, [0, spacer], [0, 0.35], Extrapolation.CLAMP) : 0 }));
+  // The buttons' row fills in just as the page arrives under it.
+  const barStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [spacer - 24, spacer], [0, 1], Extrapolation.CLAMP) }));
 
   if (!r) return <RecipeGone slug={route.params.slug} onBack={() => navigation.goBack()} />;
   const title = displayTitle(r);
-  const photo = width - 48;
   const ingredientCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
   // Directions read like cook mode: amounts after each ingredient, times and temperatures as tags,
-  // tools underlined, all in the cook's units.
+  // tools in medium ink, all in the cook's units.
   const sized = (l: string) => scaleLine(l, scale.factor);
   const allLines = r.ingredients.flatMap((g) => g.items);
   const stepTerms = ingredientTerms(allLines);
@@ -120,20 +154,39 @@ export function RecipeScreen({ route, navigation }: Props) {
   let stepNo = 0;
 
   return (
-    <View style={{ flex: 1, backgroundColor: p.ground }}>
-    <ScrollView
-      style={{ backgroundColor: tint }}
+    <View style={{ flex: 1, backgroundColor: HERO === 'fade' ? tint : p.ground }}>
+      {focused && <StatusBar style={overPhoto ? 'light' : 'auto'} />}
+      {/* The photo sits behind the page, full width and up under the status bar. */}
+      <Animated.View style={[styles.hero, { width: hero, height: hero, backgroundColor: p.photoFallback }, heroStyle]}>
+        <ExpoImage source={{ uri: r.image }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} cachePolicy="disk" accessibilityIgnoresInvertColors />
+        {/* a soft shade at the top, so the status bar and buttons read over any photo */}
+        <Svg width={hero} height={barH + 48} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id="heroTop" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#000" stopOpacity={0.38} />
+              <Stop offset="1" stopColor="#000" stopOpacity={0} />
+            </LinearGradient>
+          </Defs>
+          <Rect x={0} y={0} width={hero} height={barH + 48} fill="url(#heroTop)" />
+        </Svg>
+        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#000' }, dimStyle]} />
+        {HERO === 'fade' && <Image source={HERO_FADE} style={[styles.heroFade, { width: hero, height: hero * 0.42, tintColor: tint }]} resizeMode="stretch" />}
+      </Animated.View>
+    <Animated.ScrollView
+      style={{ marginTop: barH }}
       contentContainerStyle={{ flexGrow: 1 }}
-      // The Ingredients / Directions / Tips tabs stay pinned under the header on a long recipe.
+      // The Ingredients / Directions / Tips tabs stay pinned under the buttons' row on a long recipe.
       stickyHeaderIndices={[2]}
       scrollEventThrottle={16}
-      onScroll={(e) => {
-        const under = topH > 0 && e.nativeEvent.contentOffset.y >= topH - 1;
-        if (under !== inSheet) setInSheet(under);
-      }}
+      onScroll={onScroll}
     >
-      <View style={styles.top} onLayout={(e) => setTopH(e.nativeEvent.layout.height)}>
-        <Photo uri={r.image.replace('-1x1', '-4x3')} width={photo} height={photo * 0.75} radius={28} floating />
+      <View>
+      <View style={{ height: spacer }} />
+      <View
+        // In 'fade' the top is clear, so the photo dissolves straight into the page behind the title.
+        style={[styles.top, HERO === 'sheet' ? [styles.topSheet, { backgroundColor: tint }] : null]}
+        onLayout={(e) => setTopH(e.nativeEvent.layout.height)}
+      >
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
         </Text>
@@ -195,17 +248,19 @@ export function RecipeScreen({ route, navigation }: Props) {
             Icon={ListIcon}
           />
         </View>
-        {/* Collections: a recipe can be in as many as you like. Adding one also saves it. */}
+        {/* Collections: a recipe can be in as many as you like. Offered once it's saved, so a new recipe shows fewer choices. */}
         {(() => {
           const inThese = collectionsWith(collections, r.slug).map((c) => c.name);
+          if (!inThese.length && !saved.isSaved(r.slug)) return null;
           return (
             <Pressable onPress={() => setFiling(true)} accessibilityRole="button" hitSlop={8} style={styles.units}>
-              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline', textAlign: 'center' }]}>
+              <Text style={[t.label, { color: p.greenDeep, textAlign: 'center' }]}>
                 {inThese.length ? `In ${list(inThese)} · Change` : 'Add to a collection'}
               </Text>
             </Pressable>
           );
         })()}
+      </View>
       </View>
 
       <View style={[styles.sheetHead, { backgroundColor: p.ground }]}>
@@ -248,7 +303,7 @@ export function RecipeScreen({ route, navigation }: Props) {
           const other = shown === 'grams' ? 'volume' : 'grams';
           return (
             <Pressable onPress={() => setUnits(other)} accessibilityRole="button" hitSlop={8} style={styles.units}>
-              <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>
+              <Text style={[t.label, { color: p.greenDeep }]}>
                 {other === 'grams' ? 'Show in grams' : 'Show in cups & spoons'}
               </Text>
             </Pressable>
@@ -281,7 +336,7 @@ export function RecipeScreen({ route, navigation }: Props) {
 
         {tab === 'steps' &&
           r.steps.map((g, gi) => (
-            <View key={gi} style={styles.group}>
+            <View key={gi} style={[styles.group, gi === 0 && { marginTop: space.m }]}>
               {g.name && <Text style={[t.section, { color: p.ink }]}>{g.name}</Text>}
               {g.items.map((step) => {
                 stepNo += 1;
@@ -297,7 +352,7 @@ export function RecipeScreen({ route, navigation }: Props) {
                       amountStyle={StyleSheet.flatten([styles.amountText, { color: p.ink }])}
                       amountTag={StyleSheet.flatten([styles.amountTag, { backgroundColor: p.sand, borderColor: p.hairline }])}
                       tools={stepTools}
-                      toolStyle={{ fontFamily: font.sansMedium, textDecorationLine: 'underline', textDecorationColor: p.green }}
+                      toolStyle={{ fontFamily: font.sansMedium }}
                       convertAmount={(amount, after) => convertInStep(scaleInStep(amount, scale.factor), after, units)}
                     />
                   </View>
@@ -347,7 +402,25 @@ export function RecipeScreen({ route, navigation }: Props) {
             </View>
           ))}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
+      {/* The buttons' row: clear over the photo, filling in with the page's colour once the page reaches it. */}
+      <Animated.View pointerEvents="none" style={[styles.bar, { height: barH, backgroundColor: inSheet ? p.ground : tint }, barStyle]} />
+      <View style={[styles.floating, { top: insets.top + 6 }]} pointerEvents="box-none">
+        <Pressable
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          hitSlop={8}
+          style={[styles.round, { backgroundColor: p.ground + 'E6' }]}
+        >
+          <View style={{ transform: [{ rotate: '180deg' }] }}>
+            <ArrowIcon color={p.ink} size={22} />
+          </View>
+        </Pressable>
+        <Pressable onPress={() => shareRecipe(r)} accessibilityRole="button" accessibilityLabel="Share this recipe" hitSlop={8} style={[styles.round, { backgroundColor: p.ground + 'E6' }]}>
+          <ShareIcon color={p.ink} size={22} />
+        </Pressable>
+      </View>
       <CollectionPicker slug={r.slug} title={title} visible={filing} onClose={() => setFiling(false)} />
       <GroceryPicker
         visible={picking}
@@ -439,7 +512,7 @@ function YourNotes({ recipe: r, cooked }: { recipe: Recipe; cooked: boolean }) {
         </View>
       ) : (
         <Pressable onPress={() => setEditing(true)} accessibilityRole="button" hitSlop={8} style={styles.units}>
-          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>How did it turn out?</Text>
+          <Text style={[t.label, { color: p.greenDeep }]}>How did it turn out?</Text>
         </Pressable>
       )}
       <Modal visible={editing} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditing(false)}>
@@ -561,7 +634,7 @@ function Servings({ label, canLess, canMore, onLess, onMore, changed, onReset }:
 }
 
 const styles = StyleSheet.create({
-  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; underlined text only ever navigates.
+  // Quiet actions that change your data (mark cooked, undo, reset) wear a small outline; green text links only ever navigate. No underlines anywhere.
   chip: { borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, minHeight: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   chipText: { fontFamily: font.sansMedium },
   marked: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'flex-start', minHeight: 44, marginTop: space.s },
@@ -575,7 +648,13 @@ const styles = StyleSheet.create({
   notesHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s },
   sheet: { padding: space.xl, paddingTop: space.xxl, gap: space.xl },
   aheadRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s },
-  top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
+  top: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xl, gap: space.l },
+  topSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  hero: { position: 'absolute', top: 0, left: 0, overflow: 'hidden' },
+  heroFade: { position: 'absolute', left: 0, bottom: 0 },
+  bar: { position: 'absolute', top: 0, left: 0, right: 0 },
+  floating: { position: 'absolute', left: space.l, right: space.l, flexDirection: 'row', justifyContent: 'space-between' },
+  round: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   facts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.l, rowGap: space.s },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   actions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: space.xs },

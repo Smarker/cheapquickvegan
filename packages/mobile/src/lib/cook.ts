@@ -58,8 +58,8 @@ export function cookPages(r: Recipe): CookPage[] {
   return pages.map((pg) => ({ ...pg, ingredients: ingredientsFor(pg.steps.join(' '), all) }));
 }
 
-// "1 (4 oz) can …", "2–3 tbsp …", "½ cup …", "200 g …", "1 block …"
-const AMOUNT = /^\s*((?:\d+(?:[.,]\d+)?|[½¼¾⅓⅔⅛])(?:\s*(?:[-–]|to)\s*\d+(?:[.,]\d+)?)?(?:\s+\d\/\d|\s*[½¼¾⅓⅔⅛]|\/\d+)?\s*(?:\([^)]*\)\s*)?(?:cups?|c\b|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|g\b|grams?|kg|ml|l\b|lbs?|pounds?|cans?|blocks?|packs?|packages?|cloves?|pinch(?:es)?|bunch(?:es)?|slices?|sheets?|sticks?|stalks?|heads?|jars?|handfuls?|large|small|medium)?)/i;
+// "1 (4 oz) can …", "2–3 tbsp …", "½ cup …", "200 g …", "1 block …", "1 cup + 2 ½ tbsp …"
+const AMOUNT = /^\s*((?:\d+(?:[.,]\d+)?|[½¼¾⅓⅔⅛])(?:\s*(?:[-–]|to)\s*\d+(?:[.,]\d+)?)?(?:\s+\d\/\d|\s*[½¼¾⅓⅔⅛]|\/\d+)?\s*(?:\([^)]*\)\s*)?(?:cups?|c\b|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|g\b|grams?|kg|ml|l\b|lbs?|pounds?|cans?|blocks?|packs?|packages?|cloves?|pinch(?:es)?|bunch(?:es)?|slices?|sheets?|sticks?|stalks?|heads?|jars?|handfuls?|large|small|medium)?(?:\s*\+\s*(?:\d+(?:\s*[½¼¾⅓⅔⅛])?|[½¼¾⅓⅔⅛])\s*(?:cups?|tbsp|tsp))?)/i;
 
 /** The amount at the start of an ingredient line ("1 can", "2–3 tbsp"), or null for "Black pepper, to taste". */
 export function amountOf(line: string): string | null {

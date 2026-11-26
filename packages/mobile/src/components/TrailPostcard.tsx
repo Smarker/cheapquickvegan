@@ -36,7 +36,7 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
     const list = recipes.map((r) => `✓ ${displayTitle(r)}`).join('\n');
     Share.share({
       title: region.trail,
-      message: `I hiked "${region.trail}" on CheapQuickVegan${summited ? `, summited ${day(summited)}` : ''}.\n\n${list}\n\nhttps://www.cheapquickvegan.com`,
+      message: `I cooked my way through "${region.trail}" on CheapQuickVegan${summited ? `, finished ${day(summited)}` : ''}.\n\n${list}\n\nhttps://www.cheapquickvegan.com`,
     }).catch(() => {});
   };
 
@@ -45,7 +45,7 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
       onPress={onPress}
       disabled={!onPress}
       accessibilityRole={onPress ? 'button' : undefined}
-      accessibilityLabel={`Postcard: ${region.trail}${summited ? `, summited ${day(summited)}` : ''}`}
+      accessibilityLabel={`Postcard: ${region.trail}${summited ? `, finished ${day(summited)}` : ''}`}
       style={({ pressed }) => [styles.card, { backgroundColor: p.sand, opacity: pressed ? 0.92 : 1 }]}
     >
       <View style={[styles.tape, { backgroundColor: p.tape }]} />
@@ -65,7 +65,7 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
       <View style={styles.head}>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[t.cardTitle, { color: p.ink }]}>{region.trail}</Text>
-          {summited && <Text style={[t.label, { color: p.greenDeep }]}>Summited {day(summited)}</Text>}
+          {summited && <Text style={[t.label, { color: p.greenDeep }]}>Finished {day(summited)}</Text>}
         </View>
       </View>
       <View style={{ gap: 6 }}>
@@ -81,7 +81,7 @@ export function TrailPostcard({ region, recipes, onPress }: Props) {
       </View>
       <View style={styles.foot}>
         <Pressable onPress={share} accessibilityRole="button" hitSlop={8} style={styles.share}>
-          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Share postcard</Text>
+          <Text style={[t.label, { color: p.greenDeep }]}>Share postcard</Text>
         </Pressable>
         <CookCat outline={p.ink} size={48} still />
       </View>

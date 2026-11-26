@@ -110,6 +110,15 @@ export function mergeLines(input: MergeInput[]): MergedLine[] {
       const shown = amounts.filter((a): a is string => !!a);
       amountText = [...new Set(shown)].join(' + ');
     }
-    return { ...base, text: amountText ? `${amountText} ${name}` : name };
+    // "1 red onion" + "2 red onions" is "3 red onions": a bare count of 2 or more makes the thing plural.
+    const counted = parsed.every((p) => p && !p.unit) && parsed.reduce((s, p) => s + p!.n, 0) >= 2;
+    return { ...base, text: amountText ? `${amountText} ${counted ? pluralName(name) : name}` : name };
   });
+}
+
+const COUNTABLE = /(onion|lemon|lime|carrot|potato|tomato|pepper|banana|avocado|cucumber|shallot|apple|orange|tortilla|date|leek|artichoke|zucchini)$/i;
+/** "red onion" → "red onions", "potato" → "potatoes"; anything not counted by the piece stays as written. */
+function pluralName(name: string): string {
+  if (!COUNTABLE.test(name)) return name;
+  return /o$/i.test(name) && !/avocado$/i.test(name) ? `${name}es` : /zucchini$/i.test(name) ? name : `${name}s`;
 }

@@ -80,7 +80,7 @@ const MILESTONES: Milestone[] = [
   { reached: (p) => p.recipes >= 10, line: 'Ten different recipes tried.' },
   { reached: (p) => p.ingredients >= 25, line: "You've cooked with 25 different fresh ingredients." },
   { reached: (p) => p.recipes >= 25, line: 'Twenty-five different recipes. That cairn can be seen from the trail.' },
-  { reached: (p) => p.summits >= 1, line: 'Your first hike summited.' },
+  { reached: (p) => p.summits >= 1, line: 'Your first journey finished.' },
 ];
 
 /** The milestone this cook just crossed, if any. When several land at once, the biggest one. */

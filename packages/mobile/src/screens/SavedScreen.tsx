@@ -64,7 +64,7 @@ export function SavedScreen({ navigation }: Props) {
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const record =
     cooks > 0
-      ? `You've cooked ${plural(cooks, 'meal', 'meals')} from ${plural(cookedRecipes, 'recipe', 'recipes')}${summits > 0 ? ` and summited ${plural(summits, 'hike', 'hikes')}` : ''}.`
+      ? `You've cooked ${plural(cooks, 'meal', 'meals')} from ${plural(cookedRecipes, 'recipe', 'recipes')}${summits > 0 ? ` and finished ${plural(summits, 'journey', 'journeys')}` : ''}.`
       : null;
 
   return (
@@ -92,7 +92,7 @@ export function SavedScreen({ navigation }: Props) {
           {words.title}
         </Text>
         <Pressable onPress={() => navigation.navigate('Planner')} accessibilityRole="link" hitSlop={10} style={{ minHeight: 44, justifyContent: 'center' }}>
-          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Plan by day</Text>
+          <Text style={[t.label, { color: p.greenDeep }]}>Plan by day</Text>
         </Pressable>
       </View>
       {week.length === 0 ? (
@@ -155,17 +155,6 @@ export function SavedScreen({ navigation }: Props) {
         }}
       />
 
-      {summitedRegions.length > 0 && (
-        <>
-          <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
-            Your journeys
-          </Text>
-          {summitedRegions.map(({ region, recipes: trail }) => (
-            <TrailPostcard key={region.id} region={region} recipes={trail} onPress={() => navigation.navigate('Journey', { id: region.id })} />
-          ))}
-        </>
-      )}
-
       <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
         Saved recipes
       </Text>
@@ -220,8 +209,8 @@ export function SavedScreen({ navigation }: Props) {
                 ? 'Nothing in here yet. Open a saved recipe and tap "Add to a collection".'
                 : `${list.length} in ${current.name}.`
               : list.length === 1
-                ? '1 saved recipe. It opens even without signal.'
-                : `${list.length} saved recipes. They open even without signal.`}
+                ? '1 saved recipe, kept on your phone so it works offline.'
+                : `${list.length} saved recipes, kept on your phone so they work offline.`}
           </Text>
           {list.map((r) => (
             <Animated.View key={r.slug} entering={FadeIn} exiting={FadeOut} layout={LinearTransition}>
@@ -233,11 +222,11 @@ export function SavedScreen({ navigation }: Props) {
               >
                 <Photo uri={r.image} width={76} radius={18} />
                 <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
+                  <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={3}>
                     {displayTitle(r)}
                   </Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s, flexWrap: 'wrap' }}>
-                    <Text style={[t.hand, { color: p.greenDeep, fontSize: 18, lineHeight: 20 }]}>{r.totalText}</Text>
+                    <Text style={[t.label, { color: p.greenDeep }]}>{r.totalText}</Text>
                     <CookedStamp count={saved.cookedCount(r.slug)} color={p.greenDeep} />
                     {watch.changesFor(r.slug).length > 0 && <Text style={[t.small, { color: p.ink, fontFamily: font.sansMedium, backgroundColor: p.greenSoft, paddingHorizontal: 8, borderRadius: 8, overflow: 'hidden' }]}>Updated</Text>}
                   </View>
@@ -245,6 +234,17 @@ export function SavedScreen({ navigation }: Props) {
                 <HeartButton saved onToggle={() => saved.toggle(r.slug)} label={displayTitle(r)} size={40} />
               </Pressable>
             </Animated.View>
+          ))}
+        </>
+      )}
+
+      {summitedRegions.length > 0 && (
+        <>
+          <Text style={[t.section, { color: p.ink, fontSize: 20, marginTop: space.l }]} accessibilityRole="header">
+            Your journeys
+          </Text>
+          {summitedRegions.map(({ region, recipes: trail }) => (
+            <TrailPostcard key={region.id} region={region} recipes={trail} onPress={() => navigation.navigate('Journey', { id: region.id })} />
           ))}
         </>
       )}

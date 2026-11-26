@@ -129,10 +129,10 @@ export function PreferencesScreen() {
 
       <Section title="About">
         <Pressable onPress={() => Linking.openURL('https://www.cheapquickvegan.com')} accessibilityRole="link" style={styles.link}>
-          <Text style={[t.body, { color: p.greenDeep, textDecorationLine: 'underline' }]}>cheapquickvegan.com</Text>
+          <Text style={[t.body, { color: p.greenDeep }]}>cheapquickvegan.com</Text>
         </Pressable>
         <Pressable onPress={() => Linking.openURL('https://www.cheapquickvegan.com/contact')} accessibilityRole="link" style={styles.link}>
-          <Text style={[t.body, { color: p.greenDeep, textDecorationLine: 'underline' }]}>Send feedback or say hi</Text>
+          <Text style={[t.body, { color: p.greenDeep }]}>Send feedback or say hi</Text>
         </Pressable>
       </Section>
     </ScrollView>

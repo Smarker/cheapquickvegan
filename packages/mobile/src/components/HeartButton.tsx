@@ -53,12 +53,12 @@ export function HeartButton({ saved, onToggle, label, size = 52 }: Props) {
         {burstKey > 0 && LEAVES.map((deg) => <Leaf key={`${burstKey}-${deg}`} deg={deg} progress={burst} color={p.green} size={size} />)}
         <Animated.View
           style={[
-            { width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? p.green : p.ground },
+            { width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? p.heart : p.ground },
             lift(p),
             anim,
           ]}
         >
-          <HeartIcon color={saved ? '#FFFFFF' : p.green} filled={saved} size={size * 0.42} />
+          <HeartIcon color={saved ? '#FFFFFF' : p.heart} filled={saved} size={size * 0.42} />
         </Animated.View>
       </View>
     </Pressable>

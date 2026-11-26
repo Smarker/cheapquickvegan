@@ -117,7 +117,17 @@ const STATED_GRAMS = /\s*\((?:or\s+|about\s+|~)?(\d+(?:\.\d+)?)\s*g\)/i;
  * The line in the chosen units, or unchanged when it's already there, is a count (1 onion), is a small
  * spoon amount in grams mode, or is an ingredient whose weight per cup isn't known.
  */
+// "1 cup + 2 ½ tbsp": a scaled amount written as a bigger measure plus a little.
+const COMPOUND = new RegExp(String.raw`^(\s*)(${NUM})\s*(cups?|tbsp)\s*\+\s*(${NUM})\s*(tbsp|tsp)(?=\s|$)`, 'i');
+
 export function convertLine(line: string, to: Units): string {
+  // Weigh a compound amount as one: add the parts up in teaspoons, then convert that.
+  const c = to === 'grams' ? line.match(COMPOUND) : null;
+  if (c) {
+    const tsp = (toNumber(c[2]) * ML[unitKey(c[3])] + toNumber(c[4]) * ML[unitKey(c[5])]) / ML.tsp;
+    const out = convertLine(`${c[1]}${tsp} tsp${line.slice(c[0].length)}`, to);
+    return /^\s*[\d.]+ tsp/.test(out) ? line : out;
+  }
   const m = line.match(QUANTITY);
   if (!m) return line;
   const [whole, lead, lowText, highText, rawUnit, of] = m;

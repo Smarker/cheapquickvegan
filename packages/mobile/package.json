@@ -8,6 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "sync:recipes": "tsx scripts/sync-recipes.ts",
+    "build:relief": "tsx scripts/build-relief.mts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -43,6 +44,8 @@
   "devDependencies": {
     "@types/react": "~19.1.17",
     "babel-preset-expo": "~54.0.12",
+    "pngjs": "^7.0.0",
+    "sharp": "^0.35.3",
     "tsx": "^4.7.2",
     "typescript": "~5.9.2",
     "vitest": "^4.0.18"

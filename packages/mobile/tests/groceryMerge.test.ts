@@ -26,6 +26,8 @@ describe('mergeLines', () => {
   });
   it('adds counts and fractions', () => {
     expect(mergeLines(items('1 red onion, sliced', '½ red onion'))[0].text).toBe('1 ½ red onion');
+    expect(mergeLines(items('1 red onion, sliced', '2 red onions'))[0].text).toBe('3 red onions');
+    expect(mergeLines(items('1 potato', '1 potato'))[0].text).toBe('2 potatoes');
     expect(mergeLines(items('1 cup spinach', '3 cups spinach'))[0].text).toBe('4 cups spinach');
   });
   it('keeps one-off lines, in shopping words', () => {

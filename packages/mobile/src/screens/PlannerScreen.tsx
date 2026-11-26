@@ -171,7 +171,7 @@ export function PlannerScreen({ navigation }: Props) {
                 if (slot === 'extra' && !plan[day]?.dinner) return null;
                 return (
                   <Pressable key={slot} onPress={() => setAdding(here)} accessibilityRole="button" hitSlop={4} style={styles.add}>
-                    <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>+ {ADD_LABEL[slot]}</Text>
+                    <Text style={[t.label, { color: p.greenDeep }]}>+ {ADD_LABEL[slot]}</Text>
                   </Pressable>
                 );
               }

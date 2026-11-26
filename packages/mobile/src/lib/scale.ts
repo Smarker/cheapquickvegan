@@ -63,7 +63,22 @@ function spoonText(low: number, high: number | null = null): string {
   const pick = ([240, 15, 5] as const).find((size) => top / size >= (size === 240 ? 0.25 : size === 15 ? 0.5 : 0) && vals.every((v) => clean(v / size, size))) ?? (top >= 15 ? 15 : 5);
   const unit = pick === 240 ? (top / 240 > 1.1 ? 'cups' : 'cup') : pick === 15 ? 'tbsp' : 'tsp';
   const n = (ml: number) => frac(Math.max(pick === 5 ? 0.125 : 0, snap(ml / pick, pick)));
-  return high != null ? `${n(low)}–${n(high)} ${unit}` : `${n(low)} ${unit}`;
+  if (high != null) return `${n(low)}–${n(high)} ${unit}`;
+  // Nobody counts out 18 ½ tablespoons: past 8 tbsp, or from 3 tsp (a tablespoon's worth), use the bigger measure plus a little.
+  if ((pick === 15 && low / 15 > 8) || (pick === 5 && low / 5 >= 3 - 1e-9)) return compound(low, pick === 15 ? 240 : 15);
+  return `${n(low)} ${unit}`;
+}
+
+/** "1 cup + 2 ½ tbsp", "2 tbsp + 1 tsp": the biggest measure that fits, then what's left in spoons. */
+function compound(ml: number, big: 240 | 15): string {
+  const whole = Math.floor(ml / big);
+  const part = FRACS[big].filter((f) => f < 1 && (whole + f) * big <= ml + 0.01).pop() ?? 0;
+  const bigN = whole + part;
+  const bigText = big === 240 ? `${frac(bigN)} ${bigN > 1.1 ? 'cups' : 'cup'}` : `${frac(bigN)} tbsp`;
+  const left = ml - bigN * big;
+  if (left < 2.5) return bigText;
+  if (big === 240 && left >= 7.5) return `${bigText} + ${frac(snap(left / 15, 15))} tbsp`;
+  return `${bigText} + ${frac(Math.max(0.125, snap(left / 5, 5)))} tsp`;
 }
 
 function amount(n: number, unit: string | null, rest = ''): string {
