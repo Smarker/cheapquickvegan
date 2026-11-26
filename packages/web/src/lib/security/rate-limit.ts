@@ -100,6 +100,12 @@ export function getClientIp(request: Request): string {
 
   // Vercel sets x-real-ip to the connecting client and overwrites x-forwarded-for,
   // so prefer x-real-ip. Anything that isn't a valid IP is treated as unknown.
+  //
+  // TODO(cloudflare): when the site moves off Vercel to Cloudflare, read
+  // cf-connecting-ip first instead. Cloudflare sets it to the real client and
+  // overwrites any copy the client sends; x-real-ip and x-forwarded-for are then
+  // client-controlled and must not be trusted. Don't add cf-connecting-ip while
+  // still on Vercel: there, any client can send it with a fake value.
   const candidate =
     headers.get('x-real-ip')?.trim() ||
     headers.get('x-forwarded-for')?.split(',')[0].trim() ||
