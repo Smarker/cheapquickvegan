@@ -48,6 +48,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // iOS only reads the universal-links file when it's served as JSON.
+        source: "/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/guides/images/:path*",
         headers: [
           {

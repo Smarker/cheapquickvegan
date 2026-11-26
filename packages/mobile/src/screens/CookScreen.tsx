@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, useAnimatedStyle, useReducedMotion, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line } from 'react-native-svg';
@@ -22,6 +22,7 @@ import { HighlightedText } from '../components/HighlightedText';
 import { StepBadge } from '../components/StepBadge';
 import { Hint } from '../components/Hint';
 import { RecipeGone } from '../components/RecipeGone';
+import { TurnedOut } from '../components/TurnedOut';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -168,7 +169,7 @@ export function CookScreen({ route, navigation }: Props) {
   const readPage = (i: number) => {
     const pg = pages[i];
     if (!pg) return;
-    voice.say(prefs.readAloud ? [pg.title, ...pg.steps].join('. ') : `Step ${i + 1}. ${pg.title}.`);
+    voice.say(prefs.readAloud ? [pg.title, ...pg.steps].join('. ') : `Part ${i + 1}. ${pg.title}.`);
   };
 
   // Hands-free: what a cook might ask with their hands full, answered out loud.
@@ -237,6 +238,8 @@ export function CookScreen({ route, navigation }: Props) {
     return (
       <View style={[styles.root, { paddingTop: insets.top + space.l, paddingBottom: insets.bottom + space.l }]}>
         <StatusBar style="light" />
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <Animated.View entering={reduce ? undefined : FadeIn.duration(400)} style={styles.finish}>
           <View style={styles.potRow}>
             <StirringPot color={k.ink} size={170} />
@@ -253,7 +256,12 @@ export function CookScreen({ route, navigation }: Props) {
               {saved.isSaved(r.slug) ? "Saved. It'll be in your Saved tab for next time." : 'Liked it? Save it for next time.'}
             </Text>
           </View>
+          <View style={[styles.turnedOut, { borderTopColor: k.line }]}>
+            <TurnedOut recipe={r} colors={{ ink: k.ink, soft: k.soft, line: k.line, accent: k.accent, field: k.raised }} />
+          </View>
         </Animated.View>
+        </ScrollView>
+        </KeyboardAvoidingView>
         {timer && (
           <View style={{ paddingHorizontal: space.xl, marginBottom: space.m }}>
             <KitchenTimer
@@ -282,11 +290,12 @@ export function CookScreen({ route, navigation }: Props) {
 
       <View style={styles.top}>
         <Pressable onPress={leave} accessibilityRole="button" accessibilityLabel="Stop cooking" hitSlop={12} style={styles.close}>
-          <Text style={[t.label, { color: k.ink, fontSize: 16 }]}>Done</Text>
+          <Text style={[t.label, { color: k.ink, fontSize: 16 }]}>Close</Text>
         </Pressable>
         <View style={{ alignItems: 'center', flexShrink: 1 }}>
           <Text style={[t.label, { color: k.soft }]} accessibilityLiveRegion="polite">
-            {pages.length > 1 ? `${index + 1} of ${pages.length}` : title}
+            {/* Parts, not steps: the step badges below carry their own numbers. */}
+            {pages.length > 1 ? `Part ${index + 1} of ${pages.length}` : title}
           </Text>
           {/* Scaled? Say so where the amounts are read, so a restart or a glance never means the wrong amount. */}
           {scaledYield && (
@@ -361,7 +370,7 @@ export function CookScreen({ route, navigation }: Props) {
         }}
         renderItem={({ item, index: i }) => (
           <ScrollView style={{ width }} contentContainerStyle={styles.page}>
-            <Text style={[t.hand, { color: k.greenDeep, fontSize: 22 }]} accessibilityRole="header">
+            <Text style={[t.section, { color: k.greenDeep }]} accessibilityRole="header">
               {item.title}
             </Text>
             {item.steps.map((s: string, si: number) => {
@@ -483,7 +492,8 @@ const styles = StyleSheet.create({
   back: { minHeight: 56, paddingHorizontal: space.xl, borderRadius: 28, borderWidth: 2, justifyContent: 'center' },
   primary: { minHeight: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xl },
   primaryText: { fontFamily: font.sansBold, fontSize: 17, color: '#1D1E19' },
-  finish: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.l, paddingHorizontal: space.xl },
+  finish: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.l, paddingHorizontal: space.xl, paddingVertical: space.l },
+  turnedOut: { alignSelf: 'stretch', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.l, marginTop: space.s },
   finishTitle: { color: k.ink, fontSize: 30, lineHeight: 36, textAlign: 'center' },
   finishRow: { flexDirection: 'row', alignItems: 'center', gap: space.l, marginTop: space.l, alignSelf: 'stretch' },
 });

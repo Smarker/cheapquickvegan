@@ -26,6 +26,7 @@ import {
   displayTitle,
   equipmentCount,
   greeting,
+  isMain,
   isWeekend,
   mealWord,
   projects,
@@ -44,18 +45,24 @@ import { Blazes } from '../components/Blazes';
 import { Hint } from '../components/Hint';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
+import { useJournal } from '../lib/journal';
+import { favorites, moreLikeLoved } from '../lib/personal';
 import type { DiscoverStack } from '../navigation';
 import { font, lift, space, spring, tintFor, type as t, usePalette, type Palette } from '../theme/tokens';
 
 const GAP = 18;
 const SIGN_GAP = 84;
+const SIGN_W = SIGN_GAP - 4;
 
 type Props = NativeStackScreenProps<DiscoverStack, 'Discover'>;
 
 export function DiscoverScreen({ navigation }: Props) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
+  // Large text: gear tiles go two to a row so their names and counts stay whole.
+  const gearCols = fontScale > 1.2 ? 2 : 3;
+  const gearW = Math.floor((width - space.xl * 2 - space.m * (gearCols - 1)) / gearCols);
   const saved = useSaved();
   const cardW = Math.min(width * 0.62, 270);
   const net = useNetInfo();
@@ -87,10 +94,13 @@ export function DiscoverScreen({ navigation }: Props) {
   const matches = useMemo(() => tonight(limit, gear, meal).filter(prefs.fits), [limit, gear, meal, dataVersion, prefs.fits]);
   // The trail is a timeline: every match, quickest on the left.
   const featured = matches;
-  // A signpost stands between two cards wherever the time steps up (30 min, 45 min, 1 hr…).
+  // A signpost stands between two cards wherever the time steps up (30 min, 45 min, 1 hr…),
+  // and where the meal itself gives way to sides and snacks.
   const signs = featured.map((r, i) => {
     const next = featured[i + 1];
-    return next && timeStep(next.totalMinutes) !== timeStep(r.totalMinutes) ? timeStep(next.totalMinutes) : null;
+    if (!next) return null;
+    if (isMain(r, meal) && !isMain(next, meal)) return 'Sides';
+    return timeStep(next.totalMinutes) !== timeStep(r.totalMinutes) ? timeStep(next.totalMinutes) : null;
   });
   const offsets = featured.reduce<number[]>((acc, _, i) => {
     acc.push(i === 0 ? 0 : acc[i - 1] + cardW + (signs[i - 1] ? SIGN_GAP : GAP));
@@ -102,13 +112,24 @@ export function DiscoverScreen({ navigation }: Props) {
     wider === undefined ? undefined : wider === null ? 'See every recipe' : `See ${TIME_OPTIONS.find((o) => o.value === wider)?.label} recipes`;
   const slow = useMemo(() => projects().filter(prefs.fits).slice(0, 8), [dataVersion, prefs.fits]);
   const open = (r: Recipe) => navigation.navigate('Recipe', { slug: r.slug });
+  // Personal shelves from "How did it turn out?". Each hides itself when empty.
+  const journal = useJournal();
+  const loved = journal.withVerdict('loved');
+  const faves = favorites(recipes, loved, saved.cookedCount);
+  const moreLike = moreLikeLoved(recipes, loved, saved.cookedCount, prefs.fits).slice(0, 10);
 
   const otherMeal: Meal = meal === 'breakfast' ? 'dinner' : 'breakfast';
   const gearLabel = GEAR.find((g) => g.tag === gear)?.label;
 
-  const pickGear = (tag: string) => {
+  const pickGear = (tag: string, widenTo?: TimeLimit) => {
     setGear(gear === tag ? null : tag);
+    if (widenTo !== undefined && gear !== tag) setLimit(widenTo);
     scroller.current?.scrollTo({ y: 0, animated: true });
+  };
+  // For gear with nothing under the current time: the next time limit that has something.
+  const widerFor = (tag: string): TimeLimit | undefined => {
+    const from = TIME_OPTIONS.findIndex((o) => o.value === limit);
+    return TIME_OPTIONS.slice(from + 1).find((o) => equipmentCount(tag, o.value, meal) > 0)?.value;
   };
 
   return (
@@ -229,6 +250,9 @@ export function DiscoverScreen({ navigation }: Props) {
         </>
       )}
 
+      <Shelf title="Your favorites" note="The ones you loved, most-cooked first." items={faves} onOpen={open} />
+      <Shelf title="More like what you loved" note="Same kind of dish or cuisine, not cooked yet." items={moreLike} onOpen={open} />
+
       <View style={{ marginTop: space.xl }}>
         <View style={styles.pad}>
           <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
@@ -267,7 +291,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 <Text style={[t.hand, { color: p.greenDeep, fontSize: 17, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
                   {AREAS.find((a) => a.id === region.area)?.short ?? region.name}
                 </Text>
-                <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
+                <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={3}>
                   {region.trail}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s }}>
@@ -284,31 +308,34 @@ export function DiscoverScreen({ navigation }: Props) {
 
       <View style={[styles.pad, { marginTop: space.xl }]}>
         <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
-          What's on your counter?
+          Cook with your gear
         </Text>
-        <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Tap what you've got and I'll show what it can make.</Text>
+        <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>Tap a pan or gadget and I'll show what it can make.</Text>
         <View style={styles.gearGrid}>
           {GEAR.filter((g) => !prefs.missingGear.includes(g.tag)).map(({ tag, label, Doodle }, i) => {
             const on = gear === tag;
             const count = equipmentCount(tag, limit, meal);
             const bg = [p.greenSoft, p.sageSoft, p.sand][i % 3];
+            // Nothing this quick: say so, and a tap opens the time up to where there is something.
+            const wider = count === 0 ? widerFor(tag) : undefined;
+            const none = count === 0 && wider === undefined;
+            const countText = count > 0 ? `${count} ${count === 1 ? 'recipe' : 'recipes'}` : none ? `None for ${meal}` : 'Takes longer';
             return (
               <GearTile
                 key={tag}
                 index={i}
-                onPress={() => pickGear(tag)}
+                width={gearW}
+                disabled={none}
+                onPress={() => pickGear(tag, wider)}
                 accessibilityRole="button"
-                accessibilityState={{ selected: on }}
-                accessibilityLabel={`${label}, ${count === 0 ? `nothing this quick` : `${count} recipes`}`}
+                accessibilityState={{ selected: on, disabled: none }}
+                accessibilityLabel={`${label}, ${countText}`}
+                accessibilityHint={wider !== undefined ? `Shows ${label.toLowerCase()} recipes up to ${TIME_OPTIONS.find((o) => o.value === wider)?.label}` : undefined}
                 style={[styles.gear, { backgroundColor: bg, borderColor: on ? p.greenDeep : 'transparent' }]}
-                doodle={<Doodle color={p.ink} />}
+                doodle={<Doodle color={count === 0 ? p.muted : p.ink} />}
               >
-                <Text style={[t.label, { color: p.ink, textAlign: 'center', alignSelf: 'stretch' }]} numberOfLines={1}>
-                  {label}
-                </Text>
-                <Text style={[t.label, { color: p.greenDeep, alignSelf: 'stretch', textAlign: 'center' }]} numberOfLines={1}>
-                  {count === 0 ? `0 recipes` : `${count} ${count === 1 ? 'recipe' : 'recipes'}`}
-                </Text>
+                <Text style={[t.label, { color: p.ink, textAlign: 'center', alignSelf: 'stretch' }]}>{label}</Text>
+                <Text style={[t.label, { color: count === 0 ? p.muted : p.greenDeep, alignSelf: 'stretch', textAlign: 'center' }]}>{countText}</Text>
               </GearTile>
             );
           })}
@@ -368,6 +395,8 @@ function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, coo
   const photoW = width - 20;
   const tilt = index % 2 ? 1.2 : -1.2;
   const reduce = useReducedMotion();
+  // Large text gets a third line, so long titles aren't cut mid-word.
+  const titleLines = useWindowDimensions().fontScale > 1.3 ? 3 : 2;
   // Pressing straightens the pinned card and lifts it a touch.
   const press = useSharedValue(0);
   const cardStyle = useAnimatedStyle(() => ({
@@ -397,7 +426,7 @@ function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, coo
           <CookedStamp count={cooked} color="#2B2A24" style={styles.stamp} />
         </View>
         <View style={styles.cardBody}>
-          <Text style={[t.cardTitle, { color: p.ink, minHeight: t.cardTitle.lineHeight * 2 }]} numberOfLines={2}>
+          <Text style={[t.cardTitle, { color: p.ink, minHeight: t.cardTitle.lineHeight * titleLines }]} numberOfLines={titleLines}>
             {title}
           </Text>
           <Text style={[t.small, { color: p.muted }]} numberOfLines={1}>
@@ -423,7 +452,7 @@ function TrailCard({ r, index, width, gapAfter, sign, onOpen, saved, onSave, coo
           <View style={[styles.markerPost, { backgroundColor: p.ink, height: 10 }]} />
         </View>
       </View>
-      {sign && <Signpost p={p} label={sign} left={width + (gapAfter - 72) / 2} />}
+      {sign && <Signpost p={p} label={sign} left={width + (gapAfter - SIGN_W) / 2} />}
     </Animated.View>
   );
 }
@@ -440,7 +469,8 @@ function Signpost({ p, label, left }: { p: Palette; label: string; left: number 
   return (
     <Animated.View pointerEvents="none" style={[styles.sign, { left, transformOrigin: 'bottom' }, style]} accessible={false}>
       <View style={[styles.board, { borderColor: p.ink, backgroundColor: p.sand }]}>
-        <Text style={[t.hand, { color: p.ink, fontSize: 16, lineHeight: 18 }]} numberOfLines={1}>
+        {/* The board is planted between two cards, so its text grows only a little with large text. */}
+        <Text style={[t.hand, { color: p.ink, fontSize: 16, lineHeight: 18, paddingRight: 3 }]} numberOfLines={1} textBreakStrategy="simple" maxFontSizeMultiplier={1.2}>
           {label}
         </Text>
       </View>
@@ -451,17 +481,20 @@ function Signpost({ p, label, left }: { p: Palette; label: string; left: number 
 
 type GearTileProps = {
   index: number;
+  width: number;
+  disabled: boolean;
   onPress: () => void;
   doodle: React.ReactNode;
   style: object;
   children: React.ReactNode;
   accessibilityRole: 'button';
-  accessibilityState: { selected: boolean };
+  accessibilityState: { selected: boolean; disabled: boolean };
   accessibilityLabel: string;
+  accessibilityHint?: string;
 };
 
 /** An equipment tile, tilted like a sticker. Its doodle gives a little wiggle when tapped. */
-function GearTile({ index, onPress, doodle, style, children, ...a11y }: GearTileProps) {
+function GearTile({ index, width, disabled, onPress, doodle, style, children, ...a11y }: GearTileProps) {
   const reduce = useReducedMotion();
   const wiggle = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -470,19 +503,53 @@ function GearTile({ index, onPress, doodle, style, children, ...a11y }: GearTile
   return (
     <Pressable
       {...a11y}
+      disabled={disabled}
       onPress={() => {
         if (!reduce) wiggle.value = withSequence(withTiming(-9, { duration: 70 }), withTiming(8, { duration: 90 }), withTiming(-5, { duration: 80 }), withSpring(0, spring));
         onPress();
       }}
       onPressIn={() => (scale.value = withSpring(0.95, spring))}
       onPressOut={() => (scale.value = withSpring(1, spring))}
-      style={{ width: '31%' }}
+      style={{ width }}
     >
       <Animated.View style={[style, { width: '100%' }, tileStyle]}>
         <Animated.View style={doodleStyle}>{doodle}</Animated.View>
         {children}
       </Animated.View>
     </Pressable>
+  );
+}
+
+/** A row of recipe photos under a heading, like "For a slow weekend". Nothing at all when empty. */
+function Shelf({ title, note, items, onOpen }: { title: string; note: string; items: Recipe[]; onOpen: (r: Recipe) => void }) {
+  const p = usePalette();
+  if (!items.length) return null;
+  return (
+    <View style={{ marginTop: space.xl }}>
+      <View style={styles.pad}>
+        <Text style={[t.section, { color: p.ink }]} accessibilityRole="header">
+          {title}
+        </Text>
+        <Text style={[t.hand, { color: p.muted, marginTop: 2 }]}>{note}</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slowRow}>
+        {items.map((r) => (
+          <Pressable
+            key={r.slug}
+            onPress={() => onOpen(r)}
+            accessibilityRole="button"
+            accessibilityLabel={`${displayTitle(r)}, ${r.totalText ?? ''}`}
+            style={({ pressed }) => [{ width: 150, gap: 6, opacity: pressed ? 0.8 : 1 }]}
+          >
+            <Photo uri={r.image} width={150} height={150} radius={22} />
+            <Text style={[t.rowTitle, { color: p.ink }]} numberOfLines={2}>
+              {displayTitle(r)}
+            </Text>
+            <Text style={[t.label, { color: p.greenDeep }]}>{r.totalText}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -505,9 +572,9 @@ const styles = StyleSheet.create({
   marker: { alignItems: 'center' },
   markerPost: { width: 3, borderRadius: 2 },
   markerBoard: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 2 },
-  gearGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.m, marginTop: space.l },
+  gearGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.m, rowGap: space.m, marginTop: space.l },
   gear: { alignItems: 'center', gap: 4, paddingVertical: space.m, paddingHorizontal: 4, borderRadius: 20, borderWidth: 2 },
-  sign: { position: 'absolute', bottom: 22, width: 72, alignItems: 'center' },
+  sign: { position: 'absolute', bottom: 22, width: SIGN_W, alignItems: 'center' },
   board: { borderWidth: 2, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, transform: [{ rotate: '-4deg' }] },
   post: { width: 2.5, height: 34, borderRadius: 2 },
   journey: { width: 190, borderRadius: 24, padding: space.l, gap: 6 },

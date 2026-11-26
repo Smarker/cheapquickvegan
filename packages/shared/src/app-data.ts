@@ -3,6 +3,8 @@ import type { RecipeGroup } from "./types";
 
 /** A recipe as the mobile app uses it: plain fields, parsed sections, absolute image URL. */
 export interface AppRecipe {
+  /** The Notion page id: what the website keys ratings and comments by. */
+  id: string | null;
   slug: string;
   title: string;
   shortTitle: string | null;
@@ -35,6 +37,7 @@ export interface AppGuide {
 
 /** The fields of a website recipe the app needs. Matches packages/web's Recipe type. */
 export interface SourceRecipe {
+  id?: string;
   slug: string;
   title: string;
   description?: string;
@@ -98,6 +101,7 @@ export function toAppRecipe(r: SourceRecipe, siteUrl: string): AppRecipe {
   const sections = parseRecipeSections(r.content);
   const totalText = detail(r.content, "Total Time");
   return {
+    id: r.id ?? null,
     slug: r.slug,
     title: r.title,
     shortTitle: r.shortTitle?.trim() || null,

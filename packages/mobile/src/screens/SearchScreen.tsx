@@ -307,11 +307,11 @@ function RecipeRow({ recipe: r, note, index, onPress }: { recipe: Recipe; note?:
             {displayTitle(r)}
           </Text>
           <Text style={[t.small, { color: p.muted }]} numberOfLines={1}>
-            {note ?? [r.category, r.totalText].filter(Boolean).join(' · ')}
+            {note ?? r.category}
           </Text>
         </View>
         <Text style={[t.label, { color: p.greenDeep, paddingRight: 4 }]} numberOfLines={1} textBreakStrategy="simple">
-          {r.totalMinutes != null ? `${r.totalMinutes} min` : ''}
+          {r.totalText ?? ''}
         </Text>
       </Pressable>
     </Animated.View>

@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { useLayoutEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
 import { CalendarIcon, CheckIcon, ListIcon, ClockIcon, PanIcon, ServesIcon, ShareIcon } from '../components/Icons';
@@ -13,13 +13,17 @@ import { GroceryPicker } from '../components/GroceryPicker';
 import { RecipeGone } from '../components/RecipeGone';
 import { IngredientDoodle } from '../components/IngredientDoodle';
 import { Pill } from '../components/Pill';
-import { displayTitle, recipes } from '../lib/recipes';
+import { displayTitle, recipes, type Recipe } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { ingredientAmounts, ingredientTerms, toolTerms } from '../lib/cook';
 import { canConvert, convertInStep, convertLine, linesIn, writtenIn } from '../lib/units';
 import { scaleInStep, scaleLine, scaleYield, useScale } from '../lib/scale';
 import { planWords } from '../lib/plan';
 import { allergenLabel } from '../lib/allergens';
+import { aheadOf, type Ahead } from '../lib/ahead';
+import { swapsFor, type Swaps } from '../lib/swaps';
+import { hasNotes, useJournal, verdictLabel } from '../lib/journal';
+import { TurnedOut } from '../components/TurnedOut';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
@@ -43,6 +47,9 @@ export function RecipeScreen({ route, navigation }: Props) {
   const [picking, setPicking] = useState(false);
   // Cooked it without cook mode (from Directions, or from memory): one tap counts it, and it can be undone.
   const [justMarked, setJustMarked] = useState(false);
+  // Once the sheet has scrolled up under the header, the header takes the sheet's colour instead of the photo's tint.
+  const [topH, setTopH] = useState(0);
+  const [inSheet, setInSheet] = useState(false);
   // Tapping the cooked stamp offers to take one off, for a cook counted by mistake.
   const [fixing, setFixing] = useState(false);
   const r = recipes.find((x) => x.slug === route.params.slug);
@@ -52,7 +59,7 @@ export function RecipeScreen({ route, navigation }: Props) {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerStyle: { backgroundColor: tint },
+      headerStyle: { backgroundColor: inSheet ? p.ground : tint },
       headerRight: () =>
         r ? (
           <Pressable onPress={() => shareRecipe(r)} accessibilityRole="button" accessibilityLabel="Share this recipe" hitSlop={12} style={{ padding: 6 }}>
@@ -60,7 +67,7 @@ export function RecipeScreen({ route, navigation }: Props) {
           </Pressable>
         ) : null,
     });
-  }, [navigation, tint, r, p.ink]);
+  }, [navigation, tint, inSheet, r, p.ink, p.ground]);
 
   if (!r) return <RecipeGone slug={route.params.slug} onBack={() => navigation.goBack()} />;
   const title = displayTitle(r);
@@ -99,8 +106,18 @@ export function RecipeScreen({ route, navigation }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: p.ground }}>
-    <ScrollView style={{ backgroundColor: tint }} contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={styles.top}>
+    <ScrollView
+      style={{ backgroundColor: tint }}
+      contentContainerStyle={{ flexGrow: 1 }}
+      // The Ingredients / Directions / Tips tabs stay pinned under the header on a long recipe.
+      stickyHeaderIndices={[2]}
+      scrollEventThrottle={16}
+      onScroll={(e) => {
+        const under = topH > 0 && e.nativeEvent.contentOffset.y >= topH - 1;
+        if (under !== inSheet) setInSheet(under);
+      }}
+    >
+      <View style={styles.top} onLayout={(e) => setTopH(e.nativeEvent.layout.height)}>
         <Photo uri={r.image.replace('-1x1', '-4x3')} width={photo} height={photo * 0.75} radius={28} floating />
         <Text style={[t.title, { color: p.ink }]} accessibilityRole="header">
           {title}
@@ -165,16 +182,23 @@ export function RecipeScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <View style={[styles.sheet, { backgroundColor: p.ground }]}>
+      <View style={[styles.sheetHead, { backgroundColor: p.ground }]}>
         <View style={[styles.grabber, { backgroundColor: p.hairline }]} />
         {!!r.description && <Text style={[t.body, { color: p.muted }]}>{r.description}</Text>}
-        <RecipeWarning warnings={prefs.warningsFor(r)} />
+        <RecipeWarning warnings={prefs.warningsFor(r)} swaps={swapsFor(allLines, prefs.avoid)} />
+        <YourNotes recipe={r} cooked={saved.cookedCount(r.slug) > 0} />
+        <BeforeYouStart ahead={aheadOf(allLines, r.steps.flatMap((g) => g.items))} />
+      </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s }} accessibilityRole="tablist">
+      <View style={[styles.tabsBar, { backgroundColor: p.ground }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s, paddingHorizontal: space.xl }} accessibilityRole="tablist">
           {tabs.map((x) => (
             <Pill key={x.key} label={x.label} selected={tab === x.key} onPress={() => setTab(x.key)} role="tab" />
           ))}
         </ScrollView>
+      </View>
+
+      <View style={[styles.sheetBody, { backgroundColor: p.ground }]}>
 
         {tab === 'ingredients' && (
           <View style={styles.sizeRow}>
@@ -328,7 +352,7 @@ export function RecipeScreen({ route, navigation }: Props) {
 const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
 /** "Contains soy and gluten" / "Needs a blender", for the things this cook said to avoid or doesn't have. */
-function RecipeWarning({ warnings }: { warnings: ReturnType<ReturnType<typeof usePrefs>['warningsFor']> }) {
+function RecipeWarning({ warnings, swaps }: { warnings: ReturnType<ReturnType<typeof usePrefs>['warningsFor']>; swaps: Swaps }) {
   const p = usePalette();
   if (!warnings.contains.length && !warnings.needs.length) return null;
   return (
@@ -338,9 +362,89 @@ function RecipeWarning({ warnings }: { warnings: ReturnType<ReturnType<typeof us
           Seems to contain {list(warnings.contains.map((a) => allergenLabel(a).toLowerCase()))}. That's from the ingredient list, so check labels too.
         </Text>
       )}
+      {warnings.contains.length > 0 && swaps.swaps.length > 0 && (
+        <View style={styles.swaps}>
+          <Text style={[t.label, { color: p.ink }]}>Swaps to try</Text>
+          {swaps.swaps.map((s) => (
+            <Text key={s.name} style={[t.body, { color: p.ink }]}>
+              <Text style={{ fontFamily: font.sansMedium }}>{s.name}:</Text> {s.use}
+            </Text>
+          ))}
+          <Text style={[t.small, { color: p.muted }]}>
+            {swaps.incomplete ? "Common swaps, not tested in this recipe. Some ingredients here have no good swap." : 'Common swaps, not tested in this recipe.'}
+          </Text>
+        </View>
+      )}
       {warnings.needs.length > 0 && (
         <Text style={[t.body, { color: p.ink }]}>Needs {list(warnings.needs.map((n) => n.toLowerCase()))}, which you said you don't have.</Text>
       )}
+    </View>
+  );
+}
+
+/**
+ * What this cook said last time: how it turned out, their note and swaps. Once it's been
+ * cooked with nothing said yet, a quiet link asks. Either opens the same form as cook mode.
+ */
+function YourNotes({ recipe: r, cooked }: { recipe: Recipe; cooked: boolean }) {
+  const p = usePalette();
+  const journal = useJournal();
+  const [editing, setEditing] = useState(false);
+  const e = journal.entry(r.slug);
+  if (!hasNotes(e) && !cooked) return null;
+  return (
+    <>
+      {hasNotes(e) ? (
+        <View style={[styles.warn, { backgroundColor: p.sand, borderColor: p.hairline }]}>
+          <View style={styles.notesHead}>
+            <Text style={[t.label, { color: p.ink }]}>Your notes{e.verdict ? ` · ${verdictLabel(e.verdict)}` : ''}</Text>
+            <Pressable onPress={() => setEditing(true)} accessibilityRole="button" accessibilityLabel="Edit your notes" hitSlop={10} style={[styles.chip, { borderColor: p.hairline }]}>
+              <Text style={[t.small, styles.chipText, { color: p.greenDeep }]}>Edit</Text>
+            </Pressable>
+          </View>
+          {!!e.note.trim() && <Text style={[t.body, { color: p.ink }]}>{e.note.trim()}</Text>}
+          {!!e.swaps.trim() && (
+            <Text style={[t.body, { color: p.ink }]}>
+              <Text style={{ fontFamily: font.sansMedium }}>Swapped:</Text> {e.swaps.trim()}
+            </Text>
+          )}
+        </View>
+      ) : (
+        <Pressable onPress={() => setEditing(true)} accessibilityRole="button" hitSlop={8} style={styles.units}>
+          <Text style={[t.label, { color: p.greenDeep, textDecorationLine: 'underline' }]}>How did it turn out?</Text>
+        </Pressable>
+      )}
+      <Modal visible={editing} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditing(false)}>
+        <ScrollView style={{ backgroundColor: p.ground }} contentContainerStyle={styles.sheet} keyboardShouldPersistTaps="handled">
+          <TurnedOut recipe={r} colors={{ ink: p.ink, soft: p.muted, line: p.hairline, accent: p.accent, field: p.sand }} />
+          <Pressable onPress={() => setEditing(false)} accessibilityRole="button" style={[styles.cookBtn, { backgroundColor: p.accent, justifyContent: 'center' }]}>
+            <Text style={{ fontFamily: font.sansBold, fontSize: 17, color: '#2B2A24' }}>Done</Text>
+          </Pressable>
+        </ScrollView>
+      </Modal>
+    </>
+  );
+}
+
+/** Things to get ready first and long hands-off waits, read from the recipe, so none of it is a surprise mid-cook. */
+function BeforeYouStart({ ahead }: { ahead: Ahead }) {
+  const p = usePalette();
+  if (!ahead.tasks.length && !ahead.waits.length) return null;
+  return (
+    <View style={[styles.warn, { backgroundColor: p.sand, borderColor: p.hairline }]}>
+      <Text style={[t.label, { color: p.ink }]}>Before you start</Text>
+      {ahead.tasks.map((task) => (
+        <View key={task} style={styles.aheadRow}>
+          <View style={[styles.dot, { backgroundColor: p.green }]} />
+          <Text style={[t.body, { flex: 1, color: p.ink }]}>{task}</Text>
+        </View>
+      ))}
+      {ahead.waits.map((w) => (
+        <View key={w.text} style={styles.aheadRow}>
+          <ClockIcon color={p.green} size={18} />
+          <Text style={[t.body, { flex: 1, color: p.ink }]}>Plan for {w.text}, hands off</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -416,6 +520,10 @@ const styles = StyleSheet.create({
   sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.s, marginTop: space.l },
   stepper: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   warn: { borderWidth: 1.5, borderRadius: 16, padding: space.m, gap: space.xs },
+  swaps: { gap: space.xs, marginTop: space.s },
+  notesHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s },
+  sheet: { padding: space.xl, paddingTop: space.xxl, gap: space.xl },
+  aheadRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s },
   top: { paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
   facts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.l, rowGap: space.s },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -425,7 +533,9 @@ const styles = StyleSheet.create({
   addList: { flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: space.xl, borderRadius: 24, borderWidth: 2, marginTop: space.s },
   cookBar: { paddingHorizontal: space.xl, paddingVertical: space.m, borderTopWidth: StyleSheet.hairlineWidth },
   cookBtn: { minHeight: 56, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xl },
-  sheet: { flexGrow: 1, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: space.xl, paddingTop: space.m, gap: space.l },
+  sheetHead: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: space.xl, paddingTop: space.m, paddingBottom: space.s, gap: space.l },
+  tabsBar: { paddingVertical: space.s },
+  sheetBody: { flexGrow: 1, paddingHorizontal: space.xl, paddingTop: space.s, paddingBottom: space.xl, gap: space.l },
   grabber: { alignSelf: 'center', width: 64, height: 5, borderRadius: 3, marginBottom: space.s },
   group: { gap: space.s },
   ing: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },

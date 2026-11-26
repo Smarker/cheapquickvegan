@@ -27,7 +27,8 @@ Stephanie's own cheap, quick recipes, shaped by her partner's Italian family, wi
 - App ratings go to the website's `/api/ratings/quick` endpoint. Before launch, the IP fallback must stop matching phones on shared carrier IPs.
 - Short display titles: a Notion "Short title" field is planned. Until it exists, the app shortens titles by dropping text in parentheses and after a colon.
 - Cost per serving: not shown until a real data field exists. Planned for later.
-- No shop, Notion meal planners or upsells in the app.
+- No shop or links to the Notion meal planners in the app. The weekly planner may become a paid feature later; nothing else in the app is upsold.
+- App ratings from development builds are never sent to the live site.
 - Planned: Stephanie's own cooking videos and reels in the app, tap to play (never autoplay), shown beside the steps they demonstrate.
 - Cooking journeys: each area (Italy & the Mediterranean, Asia, American classics, Latin America) has a few hikes graded as a whole (easy, medium, hard), with rest stops and travel guides along the way. A hand-drawn trail map shows every hike; cooks start wherever they like.
 
