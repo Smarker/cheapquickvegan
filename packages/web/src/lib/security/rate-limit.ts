@@ -3,6 +3,8 @@
  * Prevents spam by limiting submissions per IP address
  */
 
+import { isIP } from 'node:net';
+
 interface RateLimitEntry {
   count: number;
   firstAttempt: number;
@@ -94,20 +96,20 @@ export function checkRateLimit(
  * @returns IP address string
  */
 export function getClientIp(request: Request): string {
-  // Check various headers that might contain the IP
   const headers = request.headers;
 
-  const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    // x-forwarded-for can contain multiple IPs, take the first one
-    return forwarded.split(',')[0].trim();
-  }
+  // Vercel sets x-real-ip to the connecting client and overwrites x-forwarded-for,
+  // so prefer x-real-ip. Anything that isn't a valid IP is treated as unknown.
+  //
+  // TODO(cloudflare): when the site moves off Vercel to Cloudflare, read
+  // cf-connecting-ip first instead. Cloudflare sets it to the real client and
+  // overwrites any copy the client sends; x-real-ip and x-forwarded-for are then
+  // client-controlled and must not be trusted. Don't add cf-connecting-ip while
+  // still on Vercel: there, any client can send it with a fake value.
+  const candidate =
+    headers.get('x-real-ip')?.trim() ||
+    headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    '';
 
-  const realIp = headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-
-  // Fallback (this won't work in production but useful for local dev)
-  return 'unknown';
+  return isIP(candidate) ? candidate : 'unknown';
 }
