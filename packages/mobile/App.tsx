@@ -10,6 +10,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/
 import { linking } from './src/linking';
 import { JournalProvider } from './src/lib/journal';
 import { PlannerProvider } from './src/lib/plannerStore';
+import { RecentlyViewedProvider } from './src/lib/recentlyViewed';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -37,10 +38,12 @@ export default function App() {
       <PrefsProvider>
       <JournalProvider>
       <PlannerProvider>
+      <RecentlyViewedProvider>
       <NavigationContainer linking={linking} theme={{ ...base, colors: { ...base.colors, background: p.ground, card: p.ground, text: p.ink, primary: p.ink } }}>
         <RootTabs />
       </NavigationContainer>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      </RecentlyViewedProvider>
       </PlannerProvider>
       </JournalProvider>
       </PrefsProvider>

@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { CookedStamp } from '../components/CookedStamp';
 import { HeartButton } from '../components/HeartButton';
@@ -24,6 +24,7 @@ import { aheadOf, type Ahead } from '../lib/ahead';
 import { swapsFor, type Swaps } from '../lib/swaps';
 import { hasNotes, useJournal, verdictLabel } from '../lib/journal';
 import { TurnedOut } from '../components/TurnedOut';
+import { useRecentlyViewed } from '../lib/recentlyViewed';
 import { usePrefs, useUnits } from '../lib/prefs';
 import { isJustWater, useGrocery } from '../lib/grocery';
 import { useSaved } from '../lib/saved';
@@ -56,6 +57,13 @@ export function RecipeScreen({ route, navigation }: Props) {
   // How many it's being made for. Every amount below follows it, then the grams/cups choice.
   const scale = useScale(route.params.slug, r?.yieldText, r ? r.ingredients.flatMap((g) => g.items) : []);
   const tint = tintFor(p, r?.category ?? null);
+  // Remember it for "Recently viewed" in Search.
+  const viewed = useRecentlyViewed();
+  const exists = !!r;
+  useEffect(() => {
+    if (exists) viewed.add(route.params.slug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params.slug, exists]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

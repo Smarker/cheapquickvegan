@@ -14,7 +14,8 @@ import { Pill } from '../components/Pill';
 import { TimePicker } from '../components/TimePicker';
 import { useDataVersion } from '../lib/data';
 import type { Art } from '../lib/ingredientArt';
-import { displayTitle, projects, type Recipe, type TimeLimit } from '../lib/recipes';
+import { displayTitle, projects, recipes, type Recipe, type TimeLimit } from '../lib/recipes';
+import { useRecentlyViewed } from '../lib/recentlyViewed';
 import { FRIDGE, fridgeMatches, fridgeOptions, popularIngredients, searchGuides, searchRecipes } from '../lib/search';
 import { font, space, tintFor, type as t, usePalette } from '../theme/tokens';
 
@@ -30,6 +31,9 @@ export function SearchScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState<TimeLimit>(null);
   const [recent, setRecent] = useState<string[]>([]);
+  const viewed = useRecentlyViewed()
+    .slugs.map((s) => recipes.find((r) => r.slug === s))
+    .filter((r): r is Recipe => !!r);
   const [picked, setPicked] = useState<Art[]>([]);
   // The fridge picker stays one tap away until it's wanted, so Search opens calm.
   const [fridgeOpen, setFridgeOpen] = useState(false);
@@ -110,12 +114,34 @@ export function SearchScreen({ navigation }: Props) {
           <View style={{ gap: space.l, marginTop: space.s }}>
             {recent.length > 0 && (
               <View style={{ gap: space.s }}>
-                <Text style={[t.section, { color: p.ink, fontSize: 18 }]}>Recent</Text>
+                <Text style={[t.section, { color: p.ink, fontSize: 18 }]}>Recent searches</Text>
                 <View style={styles.chips}>
                   {recent.map((r) => (
                     <Pill key={r} label={r} onPress={() => setQuery(r)} />
                   ))}
                 </View>
+              </View>
+            )}
+            {/* Pick up where you left off: the recipes opened lately, newest first. */}
+            {viewed.length > 0 && (
+              <View style={{ gap: space.s }}>
+                <Text style={[t.section, { color: p.ink, fontSize: 18 }]}>Recently viewed</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.m }}>
+                  {viewed.map((r) => (
+                    <Pressable
+                      key={r.slug}
+                      onPress={() => navigation.navigate('Recipe', { slug: r.slug })}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${displayTitle(r)}, ${r.totalText ?? ''}`}
+                      style={({ pressed }) => [{ width: 120, gap: 4, opacity: pressed ? 0.8 : 1 }]}
+                    >
+                      <Photo uri={r.image} width={120} height={120} radius={20} />
+                      <Text style={[t.small, { color: p.ink, fontFamily: font.sansMedium }]} numberOfLines={2}>
+                        {displayTitle(r)}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
               </View>
             )}
             <View style={{ gap: space.s }}>
