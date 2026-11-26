@@ -23,6 +23,7 @@ import { StepBadge } from '../components/StepBadge';
 import { Hint } from '../components/Hint';
 import { RecipeGone } from '../components/RecipeGone';
 import { TurnedOut } from '../components/TurnedOut';
+import { newMilestone, progressOf } from '../lib/cairn';
 import { displayTitle, recipes } from '../lib/recipes';
 import { useDataVersion } from '../lib/data';
 import { useSaved } from '../lib/saved';
@@ -69,6 +70,7 @@ export function CookScreen({ route, navigation }: Props) {
   const amounts = useMemo(() => ingredientAmounts(lines), [lines]);
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
+  const [milestone, setMilestone] = useState<string | null>(null);
   const [timer, setTimer] = useState<RunningTimer | null>(null);
   const notification = useRef<string | null>(null);
 
@@ -160,6 +162,11 @@ export function CookScreen({ route, navigation }: Props) {
 
   const finish = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // A milestone crossed by this cook gets one quiet line on the finish screen.
+    const summits = Object.keys(saved.summits).length;
+    const before = progressOf(recipes, saved.cookedCount, summits);
+    const after = progressOf(recipes, (s) => saved.cookedCount(s) + (s === r.slug ? 1 : 0), summits);
+    setMilestone(newMilestone(before, after));
     setTimesCooked(saved.markCooked(r.slug));
     // A running timer stays: finishing the steps doesn't mean the oven is done.
     voice.stop();
@@ -250,6 +257,7 @@ export function CookScreen({ route, navigation }: Props) {
             {timesCooked > 1 ? `That's time number ${timesCooked} for this one. Must be a keeper!` : 'Time to dig in. I hope it hits the spot!'}
           </Text>
           <CookedStamp count={timesCooked} color={k.greenDeep} style={{ alignSelf: 'center' }} />
+          {milestone && <Text style={[t.hand, { color: k.greenDeep, textAlign: 'center', fontSize: 20 }]}>{milestone}</Text>}
           <View style={styles.finishRow}>
             <HeartButton saved={saved.isSaved(r.slug)} onToggle={() => saved.toggle(r.slug)} label={title} size={56} />
             <Text style={[t.hand, { color: k.greenDeep, flex: 1 }]}>

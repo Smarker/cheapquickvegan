@@ -4,6 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CookedStamp } from '../components/CookedStamp';
+import { Cairn } from '../components/Cairn';
+import { cairns } from '../lib/cairn';
 import { EmptyBowl } from '../components/Doodles';
 import { GroceryPicker, type PickerGroup } from '../components/GroceryPicker';
 import { HeartButton } from '../components/HeartButton';
@@ -72,6 +74,7 @@ export function SavedScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
+      <Cairn stacks={cairns(recipes.filter((r) => saved.cookedCount(r.slug) > 0).map((r) => ({ slug: r.slug, firstCookedOn: saved.firstCookedOn(r.slug) })))} />
       {record && <Text style={[t.body, { color: p.muted }]}>{record}</Text>}
 
       <View style={styles.planHead}>
